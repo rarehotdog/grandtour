@@ -1,0 +1,2852 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#1B2A4A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Grand Tour">
+  <title>Grand Tour 2026 · Taehyeon × Juyeon</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✈️</text></svg>">
+  <style>
+    * { -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; padding: 0; background: #FAF6EF; overscroll-behavior-y: contain; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif; }
+    #root { min-height: 100vh; }
+    .loading { padding: 60px 16px; text-align: center; color: #999; font-size: 14px; }
+    button { font-family: inherit; }
+    /* Smooth scroll on iOS */
+    main { -webkit-overflow-scrolling: touch; }
+    /* Hide scrollbars on horizontal sub-tabs */
+    main > div > div { scrollbar-width: thin; }
+  </style>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+</head>
+<body>
+  <div id="root">
+    <div class="loading">⏳ Grand Tour 로딩 중...</div>
+  </div>
+  <script type="text/babel" data-presets="react">
+const { useState, useEffect, useRef } = React;
+
+// =================== TRIP DATA ===================
+const TRIP_START = new Date('2026-06-15T00:00:00');
+const TRIP_END = new Date('2026-07-12T23:59:59');
+
+const CHAPTERS = [
+  { id: 'p', name: '서막', flag: '✈️', icon: '🌏', country: '', theme: 'Prologue', tag: '시작의 의식', color: '#F5F5F4', accent: '#57534E', coords: null },
+  { id: 'paris', name: '파리', flag: '🇫🇷', icon: '🗼', country: 'France', theme: 'Taste · 취향', tag: '정보가 무료인 시대, 무엇이 희소한가', color: '#FCE7F3', accent: '#BE185D', coords: { lat: 48.8566, lng: 2.3522 }, search: 'Paris, France', dates: '6/15~17' },
+  { id: 'london', name: '런던', flag: '🇬🇧', icon: '🌉', country: 'United Kingdom', theme: 'Scale · 스케일', tag: '스케일이라는 발명품', color: '#E0E7FF', accent: '#3730A3', coords: { lat: 51.5074, lng: -0.1278 }, search: 'London, United Kingdom', dates: '6/17~21' },
+  { id: 'dol', name: '돌로미티', flag: '🇮🇹', icon: '⛰️', country: 'Italy', theme: 'Silence · 침묵', tag: 'AI가 닿을 수 없는 침묵', color: '#D1FAE5', accent: '#065F46', coords: { lat: 46.5762, lng: 11.6726 }, search: 'Ortisei, Dolomites, Italy', dates: '6/21~24' },
+  { id: 'flo', name: '피렌체', flag: '🇮🇹', icon: '🎨', country: 'Italy', theme: 'Patronage · 후원', tag: '후원자가 되는 일의 위대함', color: '#FED7AA', accent: '#9A3412', coords: { lat: 43.7696, lng: 11.2558 }, search: 'Florence, Italy', dates: '6/24~26' },
+  { id: 'rom', name: '로마', flag: '🇮🇹', icon: '🏛️', country: 'Italy', theme: 'System · 시스템', tag: '1000년을 버티는 시스템', color: '#FEF3C7', accent: '#854D0E', coords: { lat: 41.9028, lng: 12.4964 }, search: 'Rome, Italy', dates: '6/26~29' },
+  { id: 'pos', name: '포지타노', flag: '🇮🇹', icon: '🌊', country: 'Italy', theme: 'Rest · 휴식', tag: '절대적 휴식이 만드는 명료함', color: '#BAE6FD', accent: '#075985', coords: { lat: 40.6280, lng: 14.4842 }, search: 'Positano, Amalfi Coast, Italy', dates: '6/29~7/1' },
+  { id: 'tx', name: '완충', flag: '🚐', icon: '🚐', country: 'Italy', theme: 'Risk · 완충', tag: '리스크 줄이는 것도 전략', color: '#F5F5F4', accent: '#57534E', coords: { lat: 41.7995, lng: 12.2462 }, search: 'Rome Fiumicino Airport, Italy', dates: '7/1~2' },
+  { id: 'san', name: '산토리니', flag: '🇬🇷', icon: '🏝️', country: 'Greece', theme: 'Rebirth · 재탄생', tag: '파괴된 위에 다시 짓는다', color: '#CFFAFE', accent: '#155E75', coords: { lat: 36.3932, lng: 25.4615 }, search: 'Santorini, Greece', dates: '7/2~5' },
+  { id: 'ath', name: '아테네', flag: '🇬🇷', icon: '🦉', country: 'Greece', theme: 'Mission · 미션', tag: '나의 Nike를 발견하는 날', color: '#F5F5F4', accent: '#44403C', coords: { lat: 37.9838, lng: 23.7275 }, search: 'Athens, Greece', dates: '7/5~7' },
+  { id: 'dxb', name: '두바이·아부다비', flag: '🇦🇪', icon: '🌆', country: 'UAE', theme: 'Frontier · 미래', tag: '사막 위에 세운 청사진', color: '#FDE68A', accent: '#92400E', coords: { lat: 25.2048, lng: 55.2708 }, search: 'Dubai, United Arab Emirates', dates: '7/7~10' },
+  { id: 'ret', name: '귀국', flag: '🇰🇷', icon: '🏠', country: 'Korea', theme: 'Return · 귀환', tag: '우리, 이제 시작이다', color: '#F5F5F4', accent: '#262626', coords: null, dates: '7/10~12' },
+];
+
+const C = (id) => CHAPTERS.find(c => c.id === id);
+
+// Google Maps deep link helper
+const mapsUrl = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
+
+// Image compression helper (resize to max 1000px, JPEG 0.7)
+const compressImage = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      const maxSize = 1000;
+      let { width, height } = img;
+      const scale = Math.min(maxSize / width, maxSize / height, 1);
+      canvas.width = Math.round(width * scale);
+      canvas.height = Math.round(height * scale);
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    };
+    img.onerror = reject;
+    img.src = e.target.result;
+  };
+  reader.onerror = reject;
+  reader.readAsDataURL(file);
+});
+
+// =================== RECOMMENDATIONS ===================
+// Curated recommendations per city: morning / afternoon / evening / hidden gems
+const RECOMMENDATIONS = {
+  paris: {
+    morning: [
+      { t: 'Du Pain et des Idées', why: '1850년대 빵집 · 에스카르고 페이스트리', tip: '11:00 전 추천 (sold out 잦음)', tag: '🥐' },
+      { t: 'Sainte-Chapelle', why: '13세기 스테인드글라스의 정수', tip: 'Notre-Dame 닫힌 동안 1순위', tag: '🏛️' },
+      { t: 'Musée Marmottan Monet', why: '모네 80점 · 관광객 거의 없음', tip: '루브르 군중 회피', tag: '🎨' },
+    ],
+    afternoon: [
+      { t: 'Le Marais 도보', why: '작은 부티크 + 갤러리 + 베이글', tip: 'Rue des Rosiers 베이글', tag: '🛍️' },
+      { t: 'Shakespeare and Company', why: '헤밍웨이가 살던 서점', tip: '2층 카페 = 시간 정지', tag: '📚' },
+      { t: 'Jardin du Palais Royal', why: '조용한 비밀 정원 + Buren 줄무늬 기둥', tag: '🌳' },
+    ],
+    evening: [
+      { t: 'Septime', why: '미슐랭 1성 · 모던 비스트로의 정의', tip: '예약 3주 전, 어려움', tag: '🌟' },
+      { t: 'Clamato', why: 'Septime의 캐주얼 자매 · 해산물', tip: '워크인 가능', tag: '🍷' },
+      { t: 'Pont des Arts 야경', why: '센강 위 보행자 다리', tag: '🌃' },
+    ],
+    hidden: [
+      { t: 'Atelier des Lumières', why: '몰입형 디지털 아트 · 인상파→Klimt', tag: '✨' },
+      { t: 'Promenade Plantée', why: 'NYC High Line의 원조 (1993)', tag: '🌷' },
+      { t: 'Le Bal Café', why: '사진 갤러리 + 카페 (Pigalle)', tag: '☕' },
+    ],
+  },
+  london: {
+    morning: [
+      { t: 'The Wolseley', why: '영국 클래식 조식 · Piccadilly 그랜드 카페', tip: '예약 권장', tag: '🍳' },
+      { t: 'Hampstead Heath', why: '북런던 야생 공원 · Parliament Hill 뷰', tag: '🌳' },
+      { t: 'Notting Hill 산책', why: 'Portobello Road 토요일 마켓', tag: '🏘️' },
+    ],
+    afternoon: [
+      { t: 'Maltby Street Market', why: 'Borough보다 한적 · 진짜 미식', tip: '토요일만', tag: '🥪' },
+      { t: 'Wallace Collection', why: '무료 · Rembrandt + Vermeer + Fragonard', tag: '🎨' },
+      { t: 'Dover Street Market', why: 'Comme des Garçons 컨셉스토어', tag: '🛍️' },
+    ],
+    evening: [
+      { t: 'American Bar at the Savoy', why: '1893년 · 세계 칵테일 바 1위 다회 수상', tip: '드레스 코드', tag: '🍸' },
+      { t: 'Sir John Soane\'s Museum 야간', why: '월·금 밤 6-9시 촛불 투어 (예약!)', tag: '🕯️' },
+      { t: 'West End 뮤지컬', why: 'Hamilton/Six/Cabaret', tip: 'TodayTix 할인', tag: '🎭' },
+    ],
+    hidden: [
+      { t: 'Primrose Hill 일몰', why: '런던 스카이라인 전망 1순위', tag: '🌅' },
+      { t: 'God\'s Own Junkyard', why: 'Walthamstow 네온 박물관', tag: '💡' },
+      { t: 'Daunt Books Marylebone', why: '나무 + 갤러리 같은 서점', tag: '📚' },
+    ],
+  },
+  dol: {
+    morning: [
+      { t: 'Seceda 케이블카', why: '08:30 첫차 추천 · 일출 후 능선 트레킹', tip: '미리 온라인 티켓', tag: '⛰️' },
+      { t: 'Bar Lulu Ortisei', why: '현지 커피 + 아펠슈트루델', tag: '☕' },
+      { t: 'Tre Cime trail', why: 'Dolomites 시그니처 3 봉우리 (당일 가능)', tip: '운전 1시간', tag: '🥾' },
+    ],
+    afternoon: [
+      { t: 'Sass Pordoi 케이블카', why: '3,000m "Dolomites의 테라스"', tag: '🚠' },
+      { t: 'Lago di Braies', why: '에메랄드 호수 · Dolomites 사진 명소', tip: '운전 1.5h, 일찍 출발', tag: '💎' },
+      { t: 'Alpe di Siusi', why: '유럽 최대 고원 · 자전거 가능', tag: '🚲' },
+    ],
+    evening: [
+      { t: 'Hotel Digon 디너 (하프보드)', why: '5코스 티롤·이태리 퓨전', tag: '🍷' },
+      { t: 'Sella Pass 드라이브', why: '4개 봉우리 도는 산악도로 (007 모먼트)', tag: '🚗' },
+      { t: '별 보기', why: '광공해 거의 없음 · 정원 라운저', tag: '⭐' },
+    ],
+    hidden: [
+      { t: 'Adolf Munkel Trail', why: 'Geisler Group 발치 · 한적함', tag: '🥾' },
+      { t: 'Malga 알프스 농장 점심', why: '폴렌타 + 굴라쉬 + 산악 와인', tag: '🧀' },
+      { t: 'Vajolet Towers 전망', why: '저녁 알펜글로 (해질녘 분홍빛)', tag: '🌄' },
+    ],
+  },
+  flo: {
+    morning: [
+      { t: 'Bargello Museum', why: '관광객 적은 메디치 컬렉션 · 도나텔로', tag: '🗿' },
+      { t: 'Caffè Gilli (1733)', why: '피렌체 가장 오래된 카페', tag: '☕' },
+      { t: 'Mercato Sant\'Ambrogio', why: 'Centrale보다 로컬 · 진짜 시장', tag: '🍅' },
+    ],
+    afternoon: [
+      { t: 'San Miniato al Monte', why: 'Piazzale Michelangelo보다 한적 + 더 높음', tag: '⛪' },
+      { t: 'Oltrarno 가죽 공방', why: 'Scuola del Cuoio + 작은 장인 매장', tag: '🧳' },
+      { t: 'Bardini Garden', why: 'Boboli 옆 · 인적 드문 비밀 정원', tag: '🌹' },
+    ],
+    evening: [
+      { t: 'Le Volpi e l\'Uva', why: '강 건너 캐주얼 와인바 · 토스카나 와인', tag: '🍷' },
+      { t: 'Trattoria Sostanza', why: 'Bistecca + 버터 치킨 (헐리우드 단골)', tip: '예약 필수', tag: '🥩' },
+      { t: 'Piazzale Michelangelo 일몰', why: 'The Moment ✨', tag: '🌅' },
+    ],
+    hidden: [
+      { t: 'Brancacci Chapel', why: 'Masaccio 프레스코 (르네상스 원근법 시작)', tag: '🎨' },
+      { t: 'Stibbert Museum', why: '갑옷+무기 컬렉션 (개인 저택)', tag: '⚔️' },
+      { t: 'Vivoli 젤라토 (1929)', why: '피렌체 정통', tag: '🍦' },
+    ],
+  },
+  rom: {
+    morning: [
+      { t: 'Galleria Borghese', why: '베르니니 + 카라바조 + Canova', tip: '사전예약 2시간 슬롯 필수', tag: '🎨' },
+      { t: 'Roscioli Caffè', why: '카르보나라 + 빵집의 정수', tag: '🍝' },
+      { t: 'Pantheon 일찍', why: '관광객 없는 09:00 · 광선 들어옴', tag: '🏛️' },
+    ],
+    afternoon: [
+      { t: 'Capitoline Museums', why: '미켈란젤로가 디자인한 광장 + 늑대상', tag: '🏛️' },
+      { t: 'Appian Way 자전거', why: '고대 로마의 메인 도로 · 일요일 차량 통제', tag: '🚲' },
+      { t: 'Trastevere 골목', why: '진짜 로마 동네 · 점심 산책', tag: '🍕' },
+    ],
+    evening: [
+      { t: 'Pierluigi', why: '해산물 클래식 · Piazza de\' Ricci', tip: '예약 필수', tag: '🦞' },
+      { t: 'La Pergola', why: '로마 유일 3 미슐랭 · Cavalieri 옥상', tip: '예산 ↑', tag: '🌟' },
+      { t: 'Gelateria del Teatro', why: '장미향·라벤더 등 향수 같은 젤라토', tag: '🍦' },
+    ],
+    hidden: [
+      { t: 'Aventine Keyhole', why: '비밀 열쇠구멍 · 성베드로 도시 셋 동시 뷰', tag: '🔑' },
+      { t: 'Domus Aurea', why: '네로의 황금궁전 (예약 가이드 투어)', tag: '👑' },
+      { t: 'Quartiere Coppedè', why: 'Art Nouveau + Art Deco 동네', tag: '🏠' },
+    ],
+  },
+  pos: {
+    morning: [
+      { t: '호텔 발코니 조식', why: 'Villa Gabrisa 절벽 뷰 · 1시간 천천히', tag: '🛏️' },
+      { t: 'Praiano 도보', why: '이웃 마을 (Sentiero degli Dei 시작점)', tag: '🚶' },
+      { t: 'Spiaggia Grande 아침', why: '관광객 도착 전 09:00 전', tag: '🏖️' },
+    ],
+    afternoon: [
+      { t: 'Da Adolfo (보트만)', why: '레몬잎 모짜렐라 · 빨간 깃발 셔틀', tip: '예약 필수', tag: '⛵' },
+      { t: 'Sentiero degli Dei', why: '"신들의 길" Nocelle 출발 가벼운 코스', tag: '🥾' },
+      { t: 'Fornillo Beach', why: 'Spiaggia Grande보다 한적 · 도보 10분', tag: '🌊' },
+    ],
+    evening: [
+      { t: 'Le Sirenuse Champagne Bar', why: '일몰 칵테일 · 마티니 + 절벽뷰', tag: '🍸' },
+      { t: 'La Tagliata', why: '산 위 가족 운영 · 와인 무제한 · 픽업 옴', tag: '🍷' },
+      { t: 'Music on the Rocks', why: '동굴 클럽 (밤문화 원할 때)', tag: '🎵' },
+    ],
+    hidden: [
+      { t: 'Fattoria La Tagliata 농장', why: '저녁 픽업 + 5코스 + 무제한 와인', tag: '🍇' },
+      { t: 'Marina di Praia', why: 'Praiano 작은 만 + 해변 레스토랑', tag: '🛥️' },
+      { t: 'Furore Fjord', why: '이태리의 협만 · 차로 20분', tag: '🏞️' },
+    ],
+  },
+  san: {
+    morning: [
+      { t: 'NOŪS 인피니티 풀', why: '칼데라뷰 · 30분 손잡고 떠 있기', tag: '🏊' },
+      { t: 'Akrotiri 유적', why: '"미노아의 폼페이" 08:00 추천 (더위 회피)', tag: '🏛️' },
+      { t: 'Imerovigli 절벽 산책', why: 'Oia보다 한적 · NOŪS에서 도보', tag: '🚶' },
+    ],
+    afternoon: [
+      { t: 'Catamaran 일주 (반나절)', why: '활화산 + 온천 + Red/White Beach', tip: 'Sunset Oia Sailing', tag: '⛵' },
+      { t: 'Domaine Sigalas', why: '화산토 Assyrtiko 와이너리', tag: '🍷' },
+      { t: 'Red Beach', why: '화산암 절벽 + 붉은 모래', tag: '🏖️' },
+    ],
+    evening: [
+      { t: 'Oia 일몰', why: '인생 일몰 · Castle 옆 골목 추천 (군중 회피)', tip: '17:30 도착', tag: '🌅' },
+      { t: 'Ammoudi Bay', why: 'Oia 아래 어시장 · 옥토퍼스 그릴', tag: '🐙' },
+      { t: 'Selene (Pyrgos)', why: '미슐랭 + 와인 페어링 · 산토리니 정상', tag: '🌟' },
+    ],
+    hidden: [
+      { t: 'Vlychada Beach', why: '검은 모래 + 절벽 (남쪽, 한적)', tag: '🖤' },
+      { t: 'Santo Wines 일몰', why: '와이너리 + 칼데라뷰 테이스팅', tag: '🍇' },
+      { t: 'Pyrgos 마을', why: '산토리니 옛 수도 · 일몰 + 차분함', tag: '🏘️' },
+    ],
+  },
+  ath: {
+    morning: [
+      { t: 'Acropolis 08:00', why: '필수 · 군중+더위 회피', tip: '온라인 예약', tag: '🏛️' },
+      { t: 'Plaka 그릭 커피', why: 'Klepsidra 카페 · Anafiotika 시작점', tag: '☕' },
+      { t: 'Ancient Agora', why: '소크라테스가 토론한 광장 · Stoa 박물관', tag: '🗣️' },
+    ],
+    afternoon: [
+      { t: 'National Archaeological', why: 'Antikythera Mechanism (BC 100 컴퓨터)', tag: '🏺' },
+      { t: 'Monastiraki 벼룩시장', why: '일요일 진짜 시장 · 골동품', tag: '🛍️' },
+      { t: 'Anafiotika 마을', why: 'Acropolis 발치 키클라데스풍 마을', tag: '🏘️' },
+    ],
+    evening: [
+      { t: 'Lycabettus Hill 야경', why: '아테네 최고점 · 푸니쿨라', tag: '🌃' },
+      { t: 'Mani Mani', why: '모던 그릭 · Acropolis 인근 친근함', tip: '예약 권장', tag: '🍽️' },
+      { t: 'GB Roof Garden', why: 'Acropolis 야간 조명 뷰 · 정장 추천', tag: '🌟' },
+    ],
+    hidden: [
+      { t: 'Stavros Niarchos Foundation', why: '렌조 피아노 설계 · 바다 잔디 옥상', tag: '🏛️' },
+      { t: 'Diporto (지하 노포)', why: '100년+ · 지하 비밀 식당 · 점심만', tag: '🍷' },
+      { t: 'Numismatic Museum', why: '쉴리만의 저택 · 동전 박물관', tag: '🪙' },
+    ],
+  },
+  dxb: {
+    morning: [
+      { t: 'Museum of the Future', why: '2022 오픈 · 미래 디스플레이 1순위', tip: '예약 매진 빠름', tag: '🏛️' },
+      { t: 'Arabian Tea House (Al Fahidi)', why: '전통 정원 카페 · 아랍 조식', tag: '🫖' },
+      { t: 'Dubai Marina 모닝 워크', why: '7km 산책로 · 더위 전 6-9시', tag: '🚶' },
+    ],
+    afternoon: [
+      { t: 'La Mer Beach Club', why: '인공섬 비치 + 식당가', tag: '🏖️' },
+      { t: 'Souk Madinat Jumeirah', why: '실내 아랍식 시장 · Burj Al Arab 뷰', tag: '🛍️' },
+      { t: 'Mall of the Emirates Ski Dubai', why: '실내 스키 + 펭귄 (44도 외부 vs 영하)', tag: '⛷️' },
+    ],
+    evening: [
+      { t: 'Burj Khalifa SKY (148층)', why: '일몰 슬롯 · 인생 야경', tip: '예약 필수', tag: '🌆' },
+      { t: 'At.mosphere (122층)', why: 'Burj 안 미슐랭급 · 드레스 코드', tag: '🌟' },
+      { t: 'Dubai Fountain Show', why: 'Burj 옆 · 18:00부터 30분 간격', tag: '⛲' },
+    ],
+    hidden: [
+      { t: 'Al Fahidi Historical', why: '1890년대 페르시아 상인 마을', tag: '🏘️' },
+      { t: 'Alserkal Avenue', why: '두바이의 현대 아트 동네 (Mirzam 초콜릿)', tag: '🎨' },
+      { t: 'Desert Conservation Reserve', why: '1948년식 Land Rover 사파리', tag: '🐪' },
+    ],
+  },
+};
+
+const DAYS_DEFAULT = [
+  { n: 1, d: '6/15', w: '일', c: 'p', city: 'ICN→HKG→CDG', hotel: '기내', moves: '✈️ ICN 야간 출발', hl: '출국·기내 수면', food: '라운지 + 기내식', asi: 'MFA 100% + 복구코드 백업 + 여행 시작 선언문 1페이지', q: '나는 이번 여행에서 무엇을 비우고 채울 것인가?', mo: '비행기에서 손잡고 선언문 함께 작성', int: 'H' },
+  { n: 2, d: '6/16', w: '월', c: 'paris', city: '파리', hotel: 'Hotel Indigo Opera', moves: 'CDG 07:00 → RER B + Metro', hl: '도착·짐 보관·시차 적응 산책', food: '🥐 비스트로 + 카페', asi: '도시 디자인 관찰 메모', q: '파리의 첫 공기는 어떤 색인가?', mo: '센강 다리에서 첫 사진 (둘이서)', int: 'M' },
+  { n: 3, d: '6/17', w: '화', c: 'paris', city: '파리', hotel: 'Hotel Indigo Opera', moves: '도보 + Metro', hl: '루브르·판테온·Café de Flore', food: '🌟 Le Jules Verne (예약!)', asi: '취향 원칙 7개 초안 · "시대정신 한 단어"', q: '정보가 무료가 될수록 무엇이 희소해지는가?', mo: '에펠탑 라이트쇼 보며 클링크 "우리의 다음 페이지"', int: 'M' },
+  { n: 4, d: '6/18', w: '수', c: 'london', city: '파리→런던', hotel: 'Park Hyatt River Thames', moves: '🚄 Eurostar 09:00 → 10:30', hl: '체크인 + Sky Garden 일몰', food: 'Dishoom 또는 호텔', asi: '"이 도시가 표준화한 것" 첫 관찰', q: '국경을 넘는다는 것의 의미는?', mo: 'Sky Garden 일몰 둘이서 와인', int: 'M' },
+  { n: 5, d: '6/19', w: '목', c: 'london', city: '런던', hotel: 'Park Hyatt River Thames', moves: '도보·지하철', hl: 'British Museum + The City + Connaught Bar', food: '🌟 Connaught Bar 마티니', asi: 'British Museum 비즈니스 모델 · 동인도회사→빅테크', q: '제국이 모은 것이 디지털 시대에 어떻게 환생하는가?', mo: '같은 유물 앞 각자 1줄 → 교환', int: 'M+' },
+  { n: 6, d: '6/20', w: '금', c: 'london', city: '런던 (호텔 이동)', hotel: 'InterCon Park Lane', moves: '우버 30분', hl: 'Speaker\'s Corner + Hyde Park + Dishoom', food: 'Dishoom Covent Garden', asi: 'Speaker\'s Corner 1분 연설 녹화', q: '광장은 어떻게 혁명을 만드는가?', mo: 'Speaker\'s Corner 1분 연설 (녹화)', int: 'M' },
+  { n: 7, d: '6/21', w: '토', c: 'london', city: '런던 (옵션 Bath)', hotel: 'InterCon Park Lane', moves: '데이트레인 또는 시내', hl: 'Bath 데이트립 또는 V&A · Tower Bridge 일몰', food: '펍 + 와인', asi: '런던 챕터 마무리 1페이지', q: '내가 만들 인프라가 2000년 가려면?', mo: 'Tower Bridge 앞 1분 침묵 → 1줄', int: 'M' },
+  { n: 8, d: '6/22', w: '일', c: 'dol', city: '런던→베니스→Ortisei', hotel: 'Hotel Digon (Heaven)', moves: '🚕 5:00 호텔 ✈️ BA600 08:50→12:05 🚗 3h', hl: '베이스 정착 + 풀·사우나 (강행군 후 회복)', food: '하프보드 디너', asi: 'Trust Ledger 시작', q: '문명 밖에서 내 OS는 어떻게 리셋되는가?', mo: '풀에서 스파클링 + 별 보기', int: 'H' },
+  { n: 9, d: '6/23', w: '월', c: 'dol', city: 'Alpe di Siusi', hotel: 'Hotel Digon', moves: '🚠 케이블카 + 🚗', hl: 'Alpe di Siusi 트레킹 (3h) + Sella Pass 드라이브', food: '산장 점심 + 하프보드', asi: '"기술이 못 만들 가치 5개" 검증', q: '높은 곳에 오르면 무엇이 단순해지는가?', mo: '초원 누워 구름 보기 (폰 OFF 30분)', int: 'M' },
+  { n: 10, d: '6/24', w: '화', c: 'dol', city: '⭐ Seceda 일출', hotel: 'Hotel Digon', moves: '🌅 05:30 출발 → 케이블카', hl: '⭐ Seceda 정상 일출 + 1원칙 재정의 · 저녁 Anna Stuben', food: '🌟 Anna Stuben 미슐랭', asi: '⭐ "내가 풀려는 진짜 문제" 1페이지 (평생 보관)', q: '내가 풀려는 문제는 정확히 무엇인가? 핵심 변수는?', mo: '⭐ 일출 보며 둘이 무릎 꿇고 결심 1줄', int: 'H' },
+  { n: 11, d: '6/25', w: '수', c: 'flo', city: 'Ortisei→피렌체', hotel: 'FH55 Mediterraneo', moves: '🚗 09:00 → 14:30 (3.5h)', hl: '도착 + Piazzale Michelangelo 일몰', food: '와인+치즈 (피아짤레)', asi: '"내가 후원할 다음 시대" 메모', q: '예술과 자본은 어떻게 만나는가?', mo: '피아짤레 일몰 와인 + 둘만의 30분', int: 'M' },
+  { n: 12, d: '6/26', w: '목', c: 'flo', city: '피렌체', hotel: 'FH55 Mediterraneo', moves: '도보', hl: 'Uffizi (09:00) + Duomo 돔 등반 + All\'Antico Vinaio', food: '🌟 La Ménagère 또는 Trattoria Sostanza', asi: '메디치 후원 포트폴리오 분석 → 내 LP 기준', q: '나의 보티첼리는 어디에 있는가?', mo: '돔 꼭대기에서 다음 도시 베팅', int: 'M' },
+  { n: 13, d: '6/27', w: '금', c: 'rom', city: '피렌체→로마', hotel: 'Hyatt Regency Rome', moves: '🚆 Frecciarossa 1h30m', hl: '도착·체크인 · 자정 트레비 분수', food: 'Da Enzo (Trastevere)', asi: '"1000년 시스템 = 내 비즈니스" 가설', q: '왜 모든 길은 로마로 통하는가?', mo: '트레비 동전 → 10년 후 약속', int: 'L' },
+  { n: 14, d: '6/28', w: '토', c: 'rom', city: 'Colosseum 풀데이', hotel: 'Hyatt Regency Rome', moves: '도보', hl: 'Colosseum 07:00 + Forum + Palatine + Pantheon', food: '🌟 La Pergola 3⭐ 또는 Roscioli', asi: '"Colosseum 운영 시스템" → 현대 스포츠 비즈니스', q: '권력은 어떻게 시스템으로 전환되는가?', mo: '아레나에서 검투사 자세 5분', int: 'H' },
+  { n: 15, d: '6/29', w: '일', c: 'rom', city: '⭐ Vatican + Pantheon', hotel: 'Hyatt Regency Rome', moves: '도보', hl: '⭐ Vatican 06:30 가이드 + Cupola + Pantheon (광선)', food: 'Trastevere 산책', asi: '⭐ Pantheon 1페이지: "내 시스템이 1000년 가려면"', q: '내가 만들 회사가 100년 후에도 남으려면 지금 무엇을 결정해야 하나?', mo: '오쿨루스 아래 나란히 사진', int: 'H' },
+  { n: 16, d: '6/30', w: '월', c: 'pos', city: '로마→포지타노', hotel: 'Villa Gabrisa 허니문스위트', moves: '🚐 프라이빗 트랜스퍼 4h', hl: '⭐ 도착 + ⭐ La Sponda 캔들 400개 디너', food: '🌟 La Sponda (Le Sirenuse)', asi: '메모 잠시 쉼 — 오늘은 1줄만', q: '진짜 휴식은 어떤 결정을 가능하게 하는가?', mo: '⭐ 허니문스위트 자쿠지 + 프로세코', int: 'M' },
+  { n: 17, d: '7/1', w: '화', c: 'pos', city: '⭐ 프라이빗 보트', hotel: 'Villa Gabrisa', moves: '⛵ 보트 9-13시', hl: '카프리 보트 + Da Adolfo 점심 + 자쿠지', food: 'Da Adolfo (보트로만) + Da Gabrisa', asi: '⭐ 중간 결산 1차: 전반부 5챕터 인사이트 5개', q: '바다 위에서 본 절벽은 절벽 위 바다와 어떻게 다른가?', mo: '⭐ 보트 위 5챕터 베스트 1순간 1개씩 교환', int: 'L' },
+  { n: 18, d: '7/2', w: '수', c: 'tx', city: '포지타노→FCO 인근', hotel: 'Hilton Rome Airport', moves: '🚐 17:00 출발 → 21:00 도착', hl: '체크아웃 + 마지막 점심 + 안전 이동', food: '호텔 가벼운 룸서비스', asi: '"새벽 비행 = 호텔 직결" 결정의 가치', q: '리스크를 줄이는 것도 전략인가?', mo: '내일 새벽 출발 시간 둘이 같이 확인', int: 'M' },
+  { n: 19, d: '7/3', w: '목', c: 'san', city: 'FCO→ATH→JTR', hotel: 'NOŪS Santorini', moves: '✈️ 09:30→12:30 환승 ✈️ 15:05→15:55', hl: '도착 + NOŪS 발코니 일몰', food: 'NOŪS 다이닝 ($200 크레딧)', asi: 'ATH 환승 라운지 90분 깊은 메모', q: '왜 어떤 연결은 순조롭고 어떤 것은 어그러지는가?', mo: 'ATH 라운지 둘이만의 90분 회고', int: 'H' },
+  { n: 20, d: '7/4', w: '금', c: 'san', city: '⭐ 의도적 휴식일', hotel: 'NOŪS Santorini', moves: '호텔만', hl: '⭐ 아무것도 안 하기 + Oia 일몰', food: '🌟 Selene (Pyrgos, 미슐랭)', asi: '⭐ 중간 결산 2차: 절반 회고 + 후반부 의도', q: '내 인생의 다음 일몰은 어디일까?', mo: '⭐ Oia 일몰 폰 OFF — 끝까지 보기', int: 'L' },
+  { n: 21, d: '7/5', w: '토', c: 'san', city: 'Akrotiri + 보트', hotel: 'NOŪS Santorini', moves: '🚖 + ⛵', hl: 'Akrotiri 유적 (08:00) + 칼데라 보트 투어', food: 'Lucky\'s Souvlakis', asi: '"파괴 후 다시 짓는다면?" 1페이지', q: '나는 무엇을 부숴야 하는가?', mo: '온천에서 "우리가 부술 것 1개씩"', int: 'M' },
+  { n: 22, d: '7/6', w: '일', c: 'ath', city: 'Santorini→Athens', hotel: 'Athenaeum InterCon', moves: '✈️ A3357 12:30→13:20', hl: 'GB Roof Garden 디너 (Acropolis 야경)', food: '🌟 GB Roof Garden', asi: 'Acropolis 보며 \'Nike\' 키워드 5개', q: '문명의 원형은 무엇을 남겼는가?', mo: '아크로폴리스 야간 조명 보며 클링크', int: 'L' },
+  { n: 23, d: '7/7', w: '월', c: 'ath', city: '⭐ Acropolis + Pnyx', hotel: 'Athenaeum InterCon', moves: '도보 + 지하철', hl: '⭐ Acropolis 08:00 + Agora + ⭐ Pnyx Hill Nike 작성', food: 'Mani Mani', asi: '⭐⭐ "나의 Nike 1페이지" (평생 보관)', q: '내 인생의 승리는 어떤 모습인가? 시작할 1가지는?', mo: '⭐⭐ Pnyx Hill 각자의 Nike 1페이지 발표 (사진 10주년용)', int: 'M' },
+  { n: 24, d: '7/8', w: '화', c: 'dxb', city: 'Athens→Dubai', hotel: 'Andaz Dubai The Palm', moves: '✈️ A3958 08:05→13:50', hl: '도착 + Andaz 비치 (휴식 우선)', food: 'Andaz 비치 다이닝', asi: '"인공섬 Palm = 21세기 메디치급 베팅"', q: '인류는 2500년 만에 사막에 도시를 세웠다. 다음 2500년은?', mo: '비치 첫 모래 찍기 + 칵테일', int: 'H' },
+  { n: 25, d: '7/9', w: '수', c: 'dxb', city: '⭐ Burj Khalifa + At.mosphere', hotel: 'Grand Hyatt Dubai', moves: '🚖 호텔 이동 + 도보', hl: 'Museum of Future + Burj Khalifa 일몰 + ⭐ At.mosphere 디너', food: '🌟 At.mosphere (122층)', asi: '⭐⭐ 다음 1년 결심 3가지 (둘이 사인)', q: '내가 만들 미래도시의 청사진은 무엇인가?', mo: '⭐⭐ At.mosphere 결심 3가지 계약서 사인', int: 'M' },
+  { n: 26, d: '7/10', w: '목', c: 'dxb', city: 'Dubai→Abu Dhabi', hotel: 'Park Hyatt Abu Dhabi', moves: '🚖 1.5h', hl: 'Sheikh Zayed Mosque + Park Hyatt 비치', food: 'Park Hyatt 비치 다이닝', asi: '⭐⭐⭐ 중간결산 3차 (최종): 28일 8챕터 1줄씩 + 다음 1년 핵심', q: '나는 어떻게 변했는가? 변하지 않은 근본은?', mo: '⭐⭐ 비치에서 28일 베스트 5순간 발표', int: 'M' },
+  { n: 27, d: '7/11', w: '금', c: 'ret', city: 'DXB→HKG (귀국 시작)', hotel: '기내', moves: '✈️ 시간 미정', hl: '면세 + 라운지 + 비행 회고', food: '라운지 + 기내식', asi: '2년 준비 로드맵 (2028.02 목표) — 6개월 4 마일스톤', q: '이 여행에서 단 하나 실행한다면?', mo: '비행기에서 손 잡고 "우리, 시작이다"', int: 'M' },
+  { n: 28, d: '7/12', w: '토', c: 'ret', city: 'HKG→ICN (도착)', hotel: '집', moves: '✈️ + 🚖', hl: '⭐⭐⭐ 인천 도착 → "우리, 이제 시작이다"', food: '🍙 편의점 김밥 (해방감!)', asi: '⭐⭐⭐ 노트 봉투에 봉인 — 10주년에 개봉', q: '오늘부터 첫 1주일, 이 여행을 어떻게 살아내는가?', mo: '⭐⭐⭐ 인천 공항 손잡고 → 사진 (10주년용)', int: 'L' },
+];
+
+const HOTELS_DEFAULT = [
+  { n: 1, ci: '6/15', co: '6/17', nights: 2, city: '파리', hotel: 'Hotel Indigo Paris-Opera', conf: 'IHG 포인트 2박', status: 'ok' },
+  { n: 2, ci: '6/17', co: '6/19', nights: 2, city: '런던', hotel: 'Park Hyatt London River Thames', conf: 'Hyatt · 39266341', status: 'ok' },
+  { n: 3, ci: '6/19', co: '6/21', nights: 2, city: '런던', hotel: 'InterContinental London Park Lane', conf: 'IHG · 83867534', status: 'ok' },
+  { n: 4, ci: '6/21', co: '6/24', nights: 3, city: 'Ortisei', hotel: 'Hotel Digon (Heaven Room)', conf: 'hoteldigon.com 직접예약', status: 'pending' },
+  { n: 5, ci: '6/24', co: '6/26', nights: 2, city: '피렌체', hotel: 'FH55 Grand Hotel Mediterraneo', conf: '49316SF000909', status: 'ok' },
+  { n: 6, ci: '6/26', co: '6/29', nights: 3, city: '로마', hotel: 'Hyatt Regency Rome / Cavalieri', conf: 'Hyatt 포인트', status: 'ok' },
+  { n: 7, ci: '6/29', co: '7/1', nights: 2, city: '포지타노', hotel: 'Villa Gabrisa (허니문 · ★중앙 발코니)', conf: 'villagabrisa.it 직접예약', status: 'pending' },
+  { n: 8, ci: '7/1', co: '7/2', nights: 1, city: 'FCO 인근', hotel: 'Hilton Rome Airport', conf: '⚠️ 즉시 예약 필요', status: 'urgent' },
+  { n: 9, ci: '7/2', co: '7/5', nights: 3, city: '산토리니', hotel: 'NOŪS Santorini', conf: '37172SF013416 · $200 F&B', status: 'ok' },
+  { n: 10, ci: '7/5', co: '7/7', nights: 2, city: '아테네', hotel: 'Athenaeum InterContinental', conf: '69841666 · $100 크레딧', status: 'ok' },
+  { n: 11, ci: '7/7', co: '7/8', nights: 1, city: '두바이 (Palm)', hotel: 'Andaz Dubai The Palm', conf: '150618RA009699', status: 'ok' },
+  { n: 12, ci: '7/8', co: '7/9', nights: 1, city: '두바이 (Downtown)', hotel: 'Grand Hyatt Dubai', conf: 'Hyatt · 54481384', status: 'ok' },
+  { n: 13, ci: '7/9', co: '7/10', nights: 1, city: '아부다비', hotel: 'Park Hyatt Abu Dhabi', conf: 'Hyatt · 60672934', status: 'ok' },
+];
+
+const FLIGHTS_DEFAULT = [
+  { d: '6/15', route: 'ICN → HKG → CDG', no: 'Cathay (시간 미정)', t: '야간', note: '기내 수면 우선' },
+  { d: '6/17', route: 'Paris → London', no: 'Eurostar 9035', t: '09:00 → 10:30', note: 'Gare du Nord → St Pancras' },
+  { d: '6/21', route: 'LHR → VCE', no: 'BA600', t: '08:50 → 12:05', note: 'T5 출발 · Hertz 픽업' },
+  { d: '7/2', route: 'FCO → ATH', no: 'Aegean A3651', t: '09:30 → 12:30', note: '환승 2h35m' },
+  { d: '7/2', route: 'ATH → JTR', no: 'Aegean A3368', t: '15:05 → 15:55', note: '산토리니 도착' },
+  { d: '7/5', route: 'JTR → ATH', no: 'Aegean A3357', t: '12:30 → 13:20', note: '아테네 진입' },
+  { d: '7/7', route: 'ATH → DXB', no: 'Emirates A3958', t: '08:05 → 13:50', note: '두바이 직항' },
+  { d: '7/10', route: 'DXB → HKG → ICN', no: '귀국편 (시간 미정)', t: 'TBD', note: 'D-21 확정' },
+];
+
+const CHECKLIST = {
+  'D-30 · 즉시 처리': [
+    { id: 'c1', t: 'Hotel Digon 예약 확정 (6/22~24, Heaven Room, 하프보드)', urgent: true },
+    { id: 'c2', t: 'Villa Gabrisa 허니문스위트 예약 (6/30~7/1, ★중앙 발코니)', urgent: true },
+    { id: 'c3', t: 'Hilton Rome Airport 7/2 1박 예약 (FCO 도보권)', urgent: true },
+    { id: 'c4', t: 'Movi · Palazzo Talamo 환불 가능 여부 확인', urgent: false },
+    { id: 'c5', t: 'X Alp · La Maliosa FORA 취소 요청 (6/15 전 무료)', urgent: false },
+    { id: 'c6', t: '귀국편 DXB→HKG→ICN 시간 확정', urgent: false },
+    { id: 'c7', t: 'MFA 100% 활성화 (금융+메일+클라우드)', urgent: true },
+    { id: 'c8', t: '복구코드 백업 USB · 양가 공유', urgent: false },
+  ],
+  'D-30 · 레스토랑 예약': [
+    { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너 (4주 전)', urgent: true },
+    { id: 'r2', t: 'La Sponda 포지타노 6/30 캔들 400개 디너', urgent: true },
+    { id: 'r3', t: 'Anna Stuben 돌로미티 6/24 미슐랭', urgent: false },
+    { id: 'r4', t: 'La Pergola 로마 6/28 3⭐', urgent: false },
+    { id: 'r5', t: 'Selene 산토리니 7/4 미슐랭', urgent: false },
+    { id: 'r6', t: 'At.mosphere 두바이 7/9 (Burj 122층)', urgent: false },
+    { id: 'r7', t: 'Da Adolfo 포지타노 7/1 점심 (보트 셔틀)', urgent: false },
+    { id: 'r8', t: 'GB Roof Garden 아테네 7/6', urgent: false },
+  ],
+  'D-30 · 입장권 / 투어': [
+    { id: 't1', t: 'Uffizi Gallery 6/26 (사전예약 30일)', urgent: true },
+    { id: 't2', t: 'Vatican 가이드 투어 6/29 06:30', urgent: true },
+    { id: 't3', t: 'Colosseum 언더그라운드 6/28', urgent: true },
+    { id: 't4', t: 'Burj Khalifa SKY 일몰 7/9', urgent: true },
+    { id: 't5', t: 'Museum of the Future 두바이', urgent: false },
+    { id: 't6', t: 'Duomo 돔 등반 6/26', urgent: false },
+    { id: 't7', t: 'Acropolis 08:00 입장 7/7', urgent: false },
+    { id: 't8', t: 'British Museum 시간슬롯 6/19', urgent: false },
+  ],
+  'D-21 · 교통 / 행정': [
+    { id: 'a1', t: '렌터카 VCE 픽업 / Florence 반납 (ZTL 사전등록)', urgent: true },
+    { id: 'a2', t: '프라이빗 트랜스퍼: 로마→포지타노 6/30', urgent: true },
+    { id: 'a3', t: '프라이빗 트랜스퍼: 포지타노→FCO 7/2 17:00', urgent: true },
+    { id: 'a4', t: 'Frecciarossa 피렌체→로마 6/27 (Executive)', urgent: false },
+    { id: 'a5', t: 'Eurostar 파리→런던 6/18', urgent: false },
+    { id: 'a6', t: '국제운전면허증 발급', urgent: true },
+    { id: 'a7', t: '여행자보험 가입 (Amex Plat 자동보장 확인)', urgent: true },
+    { id: 'a8', t: '두바이 비자 확인 (한국 무비자 30일)', urgent: false },
+  ],
+  'D-14 · 통신 / 금융': [
+    { id: 'f1', t: 'eSIM 또는 로밍 (Airalo 권역 단일 권장)', urgent: false },
+    { id: 'f2', t: '환전 €500 + GBP £200 + AED 500', urgent: false },
+    { id: 'f3', t: '카드사 해외 사용 등록 (Amex Plat + 백업 2장)', urgent: false },
+    { id: 'f4', t: 'VPN 앱 설치·테스트', urgent: false },
+    { id: 'f5', t: '여권 6개월 유효 확인 (둘 다)', urgent: true },
+    { id: 'f6', t: '예방접종·상비약 확인', urgent: false },
+  ],
+  'D-7 · 안전 / 정보': [
+    { id: 's1', t: 'UAE 최종 재판단 (여행경보·항공·호텔 환불)', urgent: true },
+    { id: 's2', t: '비상연락처 시트 양가 부모님 공유', urgent: true },
+    { id: 's3', t: '호텔 13개 예약번호·체크인 시각 재확인', urgent: false },
+    { id: 's4', t: '항공 7편 시간·터미널·라운지 확인', urgent: false },
+    { id: 's5', t: '허니문 어메니티 요청 (Digon · Villa Gabrisa 등)', urgent: false },
+    { id: 's6', t: '사진·메모 클라우드 자동백업 설정', urgent: false },
+    { id: 's7', t: 'Pre-mortem 5개 작성 (내일 비행 망칠 리스크)', urgent: false },
+  ],
+  'D-3 · 짐 / 출국': [
+    { id: 'p1', t: '미니백 분리 (포지타노 2박 + FCO + 산토리니 3박)', urgent: false },
+    { id: 'p2', t: '항공편 온라인 체크인', urgent: false },
+    { id: 'p3', t: '여권·카드·약 핸드캐리 분리', urgent: true },
+    { id: 'p4', t: 'AirTag 활성화 (캐리어 + 지갑)', urgent: false },
+    { id: 'p5', t: '노트 + 펜 챙기기 (메모 시스템 필수)', urgent: true },
+    { id: 'p6', t: '20kg 짐 무게 측정 (출발 17kg 이하 목표)', urgent: false },
+  ],
+};
+
+const PACKING = {
+  '👔 상의 (9-10장)': [
+    { id: 'pk1', t: '린넨 셔츠 화이트 1장', src: '한국 또는 🇮🇹' },
+    { id: 'pk2', t: '린넨 셔츠 네이비 / 베이지 1장', src: '한국 또는 🇮🇹' },
+    { id: 'pk3', t: '버튼다운 셔츠 화이트 (블레이저 안)', src: '한국' },
+    { id: 'pk4', t: 'Celine 데님 숏슬리브 ✓ 보유', src: '✅' },
+    { id: 'pk5', t: '머슬핏 반팔 흰/검 2장 ✓ 보유', src: '✅' },
+    { id: 'pk6', t: '헨리넥 반팔 ✓ 보유', src: '✅' },
+    { id: 'pk7', t: '폴로 셔츠 1-2장 (네이비/베이지)', src: '한국' },
+    { id: 'pk8', t: '운동용 드라이 티 1장 ✓ 보유', src: '✅' },
+  ],
+  '👖 하의 (4-5장)': [
+    { id: 'h1', t: '린넨 치노 베이지/올리브', src: '한국 또는 🇮🇹' },
+    { id: 'h2', t: '클래식 치노 네이비 (블레이저 매칭)', src: '한국' },
+    { id: 'h3', t: '청바지 슬림 ✓ 보유', src: '✅' },
+    { id: 'h4', t: '이태리식 반바지 베이지', src: '한국 또는 🇮🇹' },
+    { id: 'h5', t: '트레킹 팬츠 / 조거 (돌로미티)', src: '한국' },
+  ],
+  '🧥 자켓 (2장 핵심!)': [
+    { id: 'j1', t: '⭐ 언컨스트럭티드 네이비 블레이저 (디너 4번 커버)', src: '🇰🇷 필수' },
+    { id: 'j2', t: '⭐ 경량 패딩 (Seceda 일출 영하 대비!)', src: '🇰🇷 필수' },
+  ],
+  '👞 신발 (4족 약 3kg)': [
+    { id: 's1', t: '운동화 (시티 워킹 14일+) ✓ 보유', src: '✅' },
+    { id: 's2', t: '⭐ 트레일 러닝화 (Salomon 등, 길들이기 필수)', src: '🇰🇷' },
+    { id: 's3', t: '⭐ 로퍼 (디너+박물관+블레이저)', src: '한국 또는 🇮🇹 피렌체' },
+    { id: 's4', t: '가죽 샌들 (그리스 또는 한국)', src: '🇬🇷 또는 한국' },
+    { id: 's5', t: '쪼리 슬리퍼 (호텔 풀 전용) ✓ 보유', src: '✅' },
+  ],
+  '🎽 액세서리 ("Fancy"의 핵심)': [
+    { id: 'a1', t: '⭐ 가죽 벨트 브라운 (피렌체 추천!)', src: '🇮🇹' },
+    { id: 'a2', t: '가죽 벨트 블랙', src: '한국' },
+    { id: 'a3', t: '선글라스 (Persol/Ray-Ban HKG 면세)', src: '✈️ 면세' },
+    { id: 'a4', t: '파나마 햇 / 페도라 (베이지)', src: '한국 또는 🇮🇹' },
+    { id: 'a5', t: '베이스볼캡 (트레킹·러닝)', src: '한국' },
+    { id: 'a6', t: '시계 + 가죽 스트랩', src: '✓ 보유' },
+    { id: 'a7', t: '⭐ 돌로미티용 비니 + 장갑 (영하 대비)', src: '🇰🇷 필수' },
+    { id: 'a8', t: '포켓 스퀘어 화이트 (미슐랭 디너)', src: '한국' },
+  ],
+  '🩳 수영복 / 운동': [
+    { id: 'sw1', t: '수영복 1 (호텔 풀)', src: '✓ 보유' },
+    { id: 'sw2', t: '스윔 쇼츠 (비치·보트·린넨셔츠 매칭)', src: '한국' },
+    { id: 'sw3', t: '운동복 상하 1세트 ✓ 보유', src: '✅' },
+  ],
+  '💻 테크 (3kg)': [
+    { id: 'tt1', t: 'MacBook 14" + 충전기', src: '✓ 보유' },
+    { id: 'tt2', t: 'USB-C 허브', src: '한국' },
+    { id: 'tt3', t: '⭐ 멀티 어댑터 (UK+EU+UAE 한 번에)', src: '🇰🇷 필수' },
+    { id: 'tt4', t: '보조 배터리 10000mAh', src: '✓ 보유' },
+    { id: 'tt5', t: 'AirPods Pro (비행기 필수!)', src: '✓ 보유' },
+    { id: 'tt6', t: '⭐ 폴라로이드 Instax Mini (매일 한 장)', src: '한국' },
+    { id: 'tt7', t: 'AirTag 2개', src: '✓ 보유' },
+    { id: 'tt8', t: 'Kindle / iPad (책 무게 대신)', src: '✓ 보유' },
+  ],
+  '🧴 토일러트리 / 약품': [
+    { id: 'tx1', t: '⭐ 자외선차단제 SPF50+ 4-5개 (한국 산)', src: '🇰🇷 필수' },
+    { id: 'tx2', t: '애프터선 로션', src: '한국' },
+    { id: 'tx3', t: '립밤 SPF', src: '한국' },
+    { id: 'tx4', t: '진통제 + 지사제 + 항히스타민', src: '한국' },
+    { id: 'tx5', t: '멀미약 (보트·드라이브)', src: '한국' },
+    { id: 'tx6', t: 'Melatonin (시차 적응)', src: '한국' },
+    { id: 'tx7', t: '물집 밴드 (Compeed)', src: '한국' },
+    { id: 'tx8', t: '향수 (Le Labo Santal 33 등)', src: '✈️ 면세' },
+  ],
+  '📚 책 (3종이 + 2전자)': [
+    { id: 'bk1', t: '⭐ Civilization (Niall Ferguson) - 종이', src: '한국' },
+    { id: 'bk2', t: 'A Moveable Feast (Hemingway) - 종이', src: '한국' },
+    { id: 'bk3', t: 'Meditations (Marcus Aurelius) - 종이', src: '한국' },
+    { id: 'bk4', t: '⭐⭐ Shoe Dog (Phil Knight) - 종이 (7/7 Nike용!)', src: '🇰🇷 필수' },
+    { id: 'bk5', t: 'The Coming Wave (Suleyman) - Kindle', src: 'Kindle' },
+  ],
+};
+
+const PACKING_JUYEON = {
+  '👗 의류 핵심': [
+    { id: 'jw1', t: '⭐ 디너 원피스 블랙 또는 네이비 (미슐랭 4-5번 커버)', src: '🇰🇷 필수' },
+    { id: 'jw2', t: '데이 원피스 2장 (린넨/면)', src: '한국' },
+    { id: 'jw3', t: '⭐ 화이트 블라우스 (산토리니 사진용)', src: '한국' },
+    { id: 'jw4', t: '미디 스커트 1장 (피렌체/로마)', src: '한국 또는 🇮🇹' },
+    { id: 'jw5', t: '청바지 슬림 1장', src: '✓ 보유' },
+    { id: 'jw6', t: '린넨 팬츠 베이지', src: '한국' },
+    { id: 'jw7', t: '린넨 반바지 (포지타노/산토리니)', src: '한국' },
+    { id: 'jw8', t: '얇은 카디건 (런던/돌로미티 영하 대비)', src: '한국' },
+  ],
+  '👠 신발': [
+    { id: 'js1', t: '편안 워킹화 (시티 + 박물관)', src: '✓ 보유' },
+    { id: 'js2', t: '⭐ 디너용 힐 (낮은 굽 권장, 미슐랭)', src: '한국' },
+    { id: 'js3', t: '플랫 슈즈 (도시 산책)', src: '한국' },
+    { id: 'js4', t: '⭐ 비치 샌들 (보트·해변·산토리니)', src: '🇬🇷 또는 한국' },
+    { id: 'js5', t: '쪼리 슬리퍼 (호텔 풀 전용)', src: '✓ 보유' },
+  ],
+  '🩱 비치 / 수영': [
+    { id: 'jb1', t: '비키니 2-3장 (보트·풀 교체용)', src: '한국' },
+    { id: 'jb2', t: '원피스 수영복 1장', src: '한국' },
+    { id: 'jb3', t: '⭐ 비치 커버업 / 카프탄 (보트 점심)', src: '한국 또는 🇮🇹' },
+    { id: 'jb4', t: '⭐⭐ 화이트 드레스 (산토리니 Oia 일몰 ★)', src: '🇰🇷 필수' },
+  ],
+  '💄 메이크업 / 스킨케어': [
+    { id: 'jm1', t: '메이크업 파우치 풀세트', src: '✓ 보유' },
+    { id: 'jm2', t: '⭐ 자외선차단제 SPF50+ (한국 산 4-5개)', src: '🇰🇷 필수' },
+    { id: 'jm3', t: '미스트 (장시간 비행 + 사막)', src: '한국' },
+    { id: 'jm4', t: '⭐ 마스크팩 10-15장 (호텔 회복)', src: '🇰🇷' },
+    { id: 'jm5', t: '클렌징 폼 + 토너 + 세럼 풀라인', src: '한국' },
+    { id: 'jm6', t: '바디 로션 + 핸드크림', src: '한국' },
+    { id: 'jm7', t: '향수 트래블 사이즈 + 면세 신제품', src: '✈️ 면세' },
+    { id: 'jm8', t: '립밤 SPF + 컬러 립스틱 2개 (디너)', src: '한국' },
+  ],
+  '💍 액세서리 (Fancy 핵심)': [
+    { id: 'ja1', t: '⭐⭐ 결혼반지 + 약혼반지', src: '✅ 필수' },
+    { id: 'ja2', t: '귀걸이 2-3쌍 (심플 데이 + 디너용)', src: '한국' },
+    { id: 'ja3', t: '얇은 목걸이 (사진용)', src: '한국' },
+    { id: 'ja4', t: '⭐ 산토리니 햇 (큰 챙 모자)', src: '한국 또는 🇬🇷' },
+    { id: 'ja5', t: '선글라스 (도시용 + 비치용)', src: '✈️ 면세' },
+    { id: 'ja6', t: '⭐ 클러치 / 이브닝백 (디너 4-5번)', src: '한국 또는 🇮🇹' },
+    { id: 'ja7', t: '대형 토트백 (시티 워킹)', src: '✓ 보유' },
+    { id: 'ja8', t: '⭐ 두바이용 긴 스카프 (모스크 입장)', src: '🇰🇷 필수' },
+  ],
+  '🌂 기타 여성용': [
+    { id: 'jo1', t: '⭐⭐ 두바이 모스크용 긴팔 + 긴치마 (필수!)', src: '🇰🇷 필수' },
+    { id: 'jo2', t: '양산 (지중해 햇빛)', src: '한국' },
+    { id: 'jo3', t: '⭐ 생리용품 1주분 + 예비', src: '🇰🇷 필수' },
+    { id: 'jo4', t: '헤어 액세서리 (집게 + 고무줄)', src: '한국' },
+    { id: 'jo5', t: '컬링/스트레이트 아이언 (듀얼 220V 확인!)', src: '한국' },
+    { id: 'jo6', t: '여행용 매니큐어 키트', src: '한국' },
+  ],
+  '👜 가방': [
+    { id: 'jg1', t: '체크인 캐리어 (20kg 목표)', src: '✓ 보유' },
+    { id: 'jg2', t: '기내 캐리어 (귀중품 분리)', src: '✓ 보유' },
+    { id: 'jg3', t: '미니백 (포지타노 2박 + FCO + 산토리니)', src: '한국' },
+    { id: 'jg4', t: '데일리 크로스백', src: '✓ 보유' },
+  ],
+};
+
+const PACKING_COUPLE = {
+  '👫 매칭 / 사진용': [
+    { id: 'co1', t: '⭐⭐ 화이트 매칭 룩 (산토리니 Oia 일몰)', src: '🇰🇷 필수' },
+    { id: 'co2', t: '⭐ 베이지/뉴트럴 매칭 (피렌체 시티)', src: '한국' },
+    { id: 'co3', t: 'Navy 매칭 (디너용 선택)', src: '한국' },
+    { id: 'co4', t: '⭐ 폴라로이드 카메라 (Instax) + 필름 50장', src: '🇰🇷 필수' },
+    { id: 'co5', t: '여행 노트 1권 (둘이 공유 메모)', src: '🇰🇷' },
+    { id: 'co6', t: 'Reusable 사진 백 (인화 보관)', src: '한국' },
+  ],
+  '💍 필수 동반 서류': [
+    { id: 'cc1', t: '⭐ 결혼 증명서 사본 (호텔 업그레이드 어필)', src: '🇰🇷 필수' },
+    { id: 'cc2', t: '⭐⭐ 여권 + 비자 사본 (각자 + 클라우드 백업)', src: '🇰🇷 필수' },
+    { id: 'cc3', t: '비상연락처 카드 (영문 + 한글)', src: '한국' },
+    { id: 'cc4', t: '여행자보험 증서 사본', src: '한국' },
+    { id: 'cc5', t: '⭐ 국제운전면허증 (Tyler · 돌로미티 운전)', src: '🇰🇷 필수' },
+    { id: 'cc6', t: '예방접종 증명 (필요시)', src: '한국' },
+    { id: 'cc7', t: '신용카드 분실 신고 번호 (지갑 보관)', src: '한국' },
+  ],
+  '🛏️ 호텔 공용 어메니티': [
+    { id: 'ch1', t: '⭐ 어메니티 요청 카드 (허니문 5곳 사전 메일)', src: '🇰🇷' },
+    { id: 'ch2', t: '여행용 캔들/디퓨저 (호텔 무드)', src: '한국' },
+    { id: 'ch3', t: '블루투스 스피커 (소형)', src: '한국' },
+    { id: 'ch4', t: '게스트북 사인용 펜 (좋은 거)', src: '한국' },
+    { id: 'ch5', t: '여분 콘센트 멀티탭 (호텔 충전 부족 대비)', src: '한국' },
+  ],
+  '🎁 쇼핑 / 기념품 준비': [
+    { id: 'cg1', t: '⭐ 양가 부모님 선물 리스트 (4명, 사이즈 메모)', src: '🇰🇷' },
+    { id: 'cg2', t: '접이식 캐리어 1개 (귀국 쇼핑용)', src: '한국' },
+    { id: 'cg3', t: '와인병 보호 박스/패딩 (Chianti·Santorini)', src: '한국' },
+    { id: 'cg4', t: 'VAT 환급 폴더 (영수증 일자별 정리)', src: '🇮🇹/🇫🇷' },
+    { id: 'cg5', t: '면세 한도 메모 ($800/인, 한국 입국)', src: '한국' },
+  ],
+  '🆘 비상 / 안전': [
+    { id: 'cs1', t: '⭐ 응급약 키트 (지사·진통·해열·항히스타민)', src: '🇰🇷 필수' },
+    { id: 'cs2', t: '⭐ Compeed 물집 밴드 (도시 워킹 필수)', src: '🇰🇷' },
+    { id: 'cs3', t: '멀미약 (보트·드라이브·비행)', src: '한국' },
+    { id: 'cs4', t: 'Melatonin (시차 적응)', src: '한국' },
+    { id: 'cs5', t: '⭐ 처방약 30일분 + 영문 처방전', src: '🇰🇷 필수' },
+    { id: 'cs6', t: '소독 손소독제 + 마스크', src: '한국' },
+    { id: 'cs7', t: 'AirTag 2-3개 (캐리어 + 지갑)', src: '✓ 보유' },
+  ],
+};
+
+// Combined packing structure for 3-person view
+const PACKING_ALL = {
+  tyler: { label: '👤 태현', sections: PACKING },
+  juyeon: { label: '💕 주연', sections: PACKING_JUYEON },
+  couple: { label: '👫 공용', sections: PACKING_COUPLE },
+};
+
+const OUTPUTS = [
+  { id: 'o1', t: '여행 시작 선언문', day: 1, ch: 'p', desc: '비행기에서 둘이 사인. 이 여행에 부치는 약속.', star: 1 },
+  { id: 'o2', t: '취향 원칙 7개', day: 3, ch: 'paris', desc: '"내가 만들 시대정신은?" 답안 + 큐레이션 노트', star: 1 },
+  { id: 'o3', t: 'AI-Native Company Canvas', day: 7, ch: 'london', desc: '런던 챕터 결과물. 스케일 가설 1페이지.', star: 1 },
+  { id: 'o4', t: '⭐ Seceda 정상 1페이지', day: 10, ch: 'dol', desc: '"내가 풀려는 진짜 문제는?" 평생 보관용.', star: 3 },
+  { id: 'o5', t: 'Trust Ledger', day: 10, ch: 'dol', desc: '내가 직접 검증한 것 vs 들은 것', star: 1 },
+  { id: 'o6', t: 'Patron Portfolio (10명)', day: 12, ch: 'flo', desc: '다음 10년 후원할 사람·프로젝트 10명', star: 1 },
+  { id: 'o7', t: '내가 후원할 첫 미켈란젤로 1명', day: 12, ch: 'flo', desc: '구체적 한 명 + 어떻게 키울 것인가', star: 1 },
+  { id: 'o8', t: '⭐ Pantheon 1페이지 (내 헌법 7조)', day: 15, ch: 'rom', desc: '"내 시스템이 1000년 가려면?" + 100년 원칙 7개', star: 3 },
+  { id: 'o9', t: '휴식 선언문 + Stop/Continue/Start', day: 17, ch: 'pos', desc: '각 5개씩 → 다음 분기 "단 1개" 결정', star: 1 },
+  { id: 'o10', t: '⭐ 중간 결산 1차 (전반부 5챕터)', day: 17, ch: 'pos', desc: '보트 위에서 인사이트 5개 정리', star: 2 },
+  { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'tx', desc: '내일 비행을 망칠 위험 + 사전 차단 액션', star: 1 },
+  { id: 'o12', t: '⭐ 중간 결산 2차 + 후반부 의도', day: 20, ch: 'san', desc: '여행 절반 회고 + 기준점 정립', star: 2 },
+  { id: 'o13', t: 'Kill List (멈출 것 10개)', day: 21, ch: 'san', desc: '"끝내는 것이 두려운 이유" 탐구', star: 1 },
+  { id: 'o14', t: '⭐⭐ 나의 Nike 1페이지', day: 23, ch: 'ath', desc: 'Pnyx Hill에서. 시작·함께·멈출·1년 뒤. 평생 보관.', star: 3 },
+  { id: 'o15', t: '미래 질문 3개 (10·30·100년)', day: 25, ch: 'dxb', desc: '청사진 1장의 첫 입력값', star: 1 },
+  { id: 'o16', t: '⭐⭐ At.mosphere 다음 1년 결심 3가지', day: 25, ch: 'dxb', desc: 'Tyler 1 + Juyeon 1 + 둘 1 — 계약서 사인', star: 3 },
+  { id: 'o17', t: '⭐⭐ 28일 8챕터 핵심 1줄씩', day: 26, ch: 'dxb', desc: '중간결산 3차 (최종) + 다음 1년 결정 최종', star: 3 },
+  { id: 'o18', t: '⭐⭐ 2년 준비 로드맵 (2028.02)', day: 27, ch: 'ret', desc: '6개월 단위 4 마일스톤', star: 3 },
+  { id: 'o19', t: '⭐⭐⭐ "우리, 이제 시작이다" 봉인', day: 28, ch: 'ret', desc: '노트 봉투에 봉인 → 10주년에 개봉', star: 3 },
+];
+
+// =================== STORAGE ===================
+const storage = {
+  async get(key) {
+    try {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : null;
+    } catch (e) { return null; }
+  },
+  async set(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (e) {
+      if (e.name === 'QuotaExceededError') {
+        alert('저장 공간이 가득 찼습니다. 오래된 사진을 삭제하거나 브라우저 캐시를 정리해주세요.');
+      }
+      return false;
+    }
+  }
+};
+
+// =================== UTILS ===================
+const daysBetween = (a, b) => Math.ceil((b - a) / (1000 * 60 * 60 * 24));
+
+const getCurrentStatus = () => {
+  const now = new Date();
+  if (now < TRIP_START) {
+    return { phase: 'pre', dDay: daysBetween(now, TRIP_START), current: null };
+  }
+  if (now > TRIP_END) {
+    return { phase: 'post', dDay: daysBetween(TRIP_END, now), current: null };
+  }
+  const dayIdx = daysBetween(TRIP_START, now);
+  return { phase: 'during', dDay: 0, current: DAYS_DEFAULT[Math.min(dayIdx, 27)] };
+};
+
+// =================== APP ===================
+function App() {
+  const [view, setView] = useState('home');
+  const [checks, setChecks] = useState({});
+  const [notes, setNotes] = useState({});
+  const [outputs, setOutputs] = useState({});
+  const [packing, setPacking] = useState({});
+  const [packingCustom, setPackingCustom] = useState({ tyler: {}, juyeon: {}, couple: {} });
+  const [packingEdits, setPackingEdits] = useState({});
+  const [edits, setEdits] = useState({ day: {}, hotel: {}, flight: {} });
+  const [photos, setPhotos] = useState({});
+  const [loaded, setLoaded] = useState(false);
+  const [status] = useState(getCurrentStatus());
+
+  useEffect(() => {
+    (async () => {
+      const [c, n, o, p, e, ph, pc, pe] = await Promise.all([
+        storage.get('check'),
+        storage.get('notes'),
+        storage.get('outputs'),
+        storage.get('packing'),
+        storage.get('edits'),
+        storage.get('photos'),
+        storage.get('packing_custom'),
+        storage.get('packing_edits'),
+      ]);
+      setChecks(c || {});
+      setNotes(n || {});
+      setOutputs(o || {});
+      setPacking(p || {});
+      setEdits(e || { day: {}, hotel: {}, flight: {} });
+      setPhotos(ph || {});
+      setPackingCustom(pc || { tyler: {}, juyeon: {}, couple: {} });
+      setPackingEdits(pe || {});
+      setLoaded(true);
+    })();
+  }, []);
+
+  // Merged data getters
+  const getDay = (day) => ({ ...day, ...(edits.day?.[day.n] || {}) });
+  const getHotel = (h) => ({ ...h, ...(edits.hotel?.[h.n] || {}) });
+  const getFlight = (f, i) => ({ ...f, ...(edits.flight?.[i] || {}) });
+
+  const DAYS = DAYS_DEFAULT.map(getDay);
+  const HOTELS = HOTELS_DEFAULT.map(getHotel);
+  const FLIGHTS = FLIGHTS_DEFAULT.map(getFlight);
+
+  const toggleCheck = async (id) => {
+    const updated = { ...checks, [id]: !checks[id] };
+    setChecks(updated);
+    await storage.set('check', updated);
+  };
+
+  const togglePacking = async (id) => {
+    const updated = { ...packing, [id]: !packing[id] };
+    setPacking(updated);
+    await storage.set('packing', updated);
+  };
+
+  const saveNote = async (dayId, content) => {
+    const updated = { ...notes, [dayId]: { content, updated: new Date().toISOString() } };
+    setNotes(updated);
+    await storage.set('notes', updated);
+  };
+
+  const toggleOutput = async (id) => {
+    const cur = outputs[id] || {};
+    const updated = { ...outputs, [id]: { ...cur, done: !cur.done } };
+    setOutputs(updated);
+    await storage.set('outputs', updated);
+  };
+
+  const saveOutputContent = async (id, content) => {
+    const cur = outputs[id] || {};
+    const updated = { ...outputs, [id]: { ...cur, content } };
+    setOutputs(updated);
+    await storage.set('outputs', updated);
+  };
+
+  const saveEdit = async (category, id, field, value) => {
+    const updated = {
+      ...edits,
+      [category]: {
+        ...(edits[category] || {}),
+        [id]: {
+          ...((edits[category] || {})[id] || {}),
+          [field]: value
+        }
+      }
+    };
+    setEdits(updated);
+    await storage.set('edits', updated);
+  };
+
+  const resetEdit = async (category, id, field) => {
+    const newCategory = { ...(edits[category] || {}) };
+    if (newCategory[id]) {
+      const newItem = { ...newCategory[id] };
+      delete newItem[field];
+      if (Object.keys(newItem).length === 0) {
+        delete newCategory[id];
+      } else {
+        newCategory[id] = newItem;
+      }
+    }
+    const updated = { ...edits, [category]: newCategory };
+    setEdits(updated);
+    await storage.set('edits', updated);
+  };
+
+  const isEdited = (category, id, field) => {
+    return edits[category]?.[id]?.[field] !== undefined;
+  };
+
+  const savePhoto = async (dayId, base64) => {
+    const updated = { ...photos, [dayId]: { data: base64, savedAt: new Date().toISOString() } };
+    setPhotos(updated);
+    await storage.set('photos', updated);
+  };
+
+  const deletePhoto = async (dayId) => {
+    const updated = { ...photos };
+    delete updated[dayId];
+    setPhotos(updated);
+    await storage.set('photos', updated);
+  };
+
+  // Packing item edit (change text/source of any item)
+  const savePackingEdit = async (itemId, field, value) => {
+    const updated = {
+      ...packingEdits,
+      [itemId]: { ...(packingEdits[itemId] || {}), [field]: value }
+    };
+    setPackingEdits(updated);
+    await storage.set('packing_edits', updated);
+  };
+
+  // Packing item reset (back to default)
+  const resetPackingEdit = async (itemId, field) => {
+    const newEdits = { ...packingEdits };
+    if (newEdits[itemId]) {
+      const itemEdit = { ...newEdits[itemId] };
+      delete itemEdit[field];
+      if (Object.keys(itemEdit).length === 0) {
+        delete newEdits[itemId];
+      } else {
+        newEdits[itemId] = itemEdit;
+      }
+    }
+    setPackingEdits(newEdits);
+    await storage.set('packing_edits', newEdits);
+  };
+
+  // Add custom packing item
+  const addPackingItem = async (person, section, text) => {
+    if (!text.trim()) return;
+    const newId = `cu_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`;
+    const newItem = { id: newId, t: text.trim(), src: '➕ 직접 추가', custom: true };
+    const personData = { ...(packingCustom[person] || {}) };
+    personData[section] = [...(personData[section] || []), newItem];
+    const updated = { ...packingCustom, [person]: personData };
+    setPackingCustom(updated);
+    await storage.set('packing_custom', updated);
+  };
+
+  // Remove custom packing item
+  const removePackingItem = async (person, section, itemId) => {
+    const personData = { ...(packingCustom[person] || {}) };
+    personData[section] = (personData[section] || []).filter(i => i.id !== itemId);
+    const updated = { ...packingCustom, [person]: personData };
+    setPackingCustom(updated);
+    await storage.set('packing_custom', updated);
+    // Also clean up any check state
+    if (packing[itemId]) {
+      const newPacking = { ...packing };
+      delete newPacking[itemId];
+      setPacking(newPacking);
+      await storage.set('packing', newPacking);
+    }
+  };
+
+  // JSON Export
+  const exportData = async () => {
+    const data = {
+      version: '1.0',
+      exportedAt: new Date().toISOString(),
+      tyler: 'Taehyeon · Juyeon Grand Tour 2026',
+      check: checks,
+      notes: notes,
+      outputs: outputs,
+      packing: packing,
+      edits: edits,
+      photos: photos,
+      packing_custom: packingCustom,
+      packing_edits: packingEdits,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  // JSON Import
+  const importData = (file) => {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try {
+        const data = JSON.parse(e.target.result);
+        if (!confirm(`백업 데이터를 복원할까?\n현재 데이터가 모두 덮어쓰기 됩니다.\n(${data.exportedAt || '날짜 불명'})`)) return;
+
+        if (data.check) { setChecks(data.check); await storage.set('check', data.check); }
+        if (data.notes) { setNotes(data.notes); await storage.set('notes', data.notes); }
+        if (data.outputs) { setOutputs(data.outputs); await storage.set('outputs', data.outputs); }
+        if (data.packing) { setPacking(data.packing); await storage.set('packing', data.packing); }
+        if (data.edits) { setEdits(data.edits); await storage.set('edits', data.edits); }
+        if (data.photos) { setPhotos(data.photos); await storage.set('photos', data.photos); }
+        if (data.packing_custom) { setPackingCustom(data.packing_custom); await storage.set('packing_custom', data.packing_custom); }
+        if (data.packing_edits) { setPackingEdits(data.packing_edits); await storage.set('packing_edits', data.packing_edits); }
+        alert('복원 완료!');
+      } catch (err) {
+        alert('복원 실패: 파일 형식이 올바르지 않습니다.');
+        console.error(err);
+      }
+    };
+    reader.readAsText(file);
+  };
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#FAF6EF',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif',
+      color: '#1B2A4A',
+      paddingBottom: '80px'
+    }}>
+      <Header status={status} />
+      <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
+        {!loaded && <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>Loading...</div>}
+        {loaded && view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
+        {loaded && view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
+        {loaded && view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
+        {loaded && view === 'notes' && <Notes notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} />}
+        {loaded && view === 'output' && <Outputs outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+        {loaded && view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
+      </main>
+      <BottomNav view={view} setView={setView} />
+    </div>
+  );
+}
+
+// =================== HEADER ===================
+function Header({ status }) {
+  const dDayLabel = status.phase === 'pre' 
+    ? `D - ${status.dDay}` 
+    : status.phase === 'during' 
+      ? `DAY ${status.current?.n} / 28`
+      : `+${status.dDay} 일`;
+  
+  const dDaySubtitle = status.phase === 'pre'
+    ? '2026.06.15 출발'
+    : status.phase === 'during'
+      ? `${status.current?.d} · ${status.current?.city}`
+      : '"우리, 이제 시작이다"';
+
+  return (
+    <header>
+      {/* D-Day Banner - prominent at top */}
+      <div style={{
+        background: 'linear-gradient(135deg, #C9A961 0%, #B8954E 100%)',
+        color: '#1B2A4A',
+        padding: '14px 16px',
+        textAlign: 'center'
+      }}>
+        <div style={{
+          fontFamily: 'Georgia, serif',
+          fontSize: '28px',
+          fontWeight: 600,
+          letterSpacing: '2px',
+          lineHeight: 1
+        }}>
+          {dDayLabel}
+        </div>
+        <div style={{
+          fontSize: '11px',
+          letterSpacing: '2px',
+          marginTop: '6px',
+          opacity: 0.85,
+          fontWeight: 500
+        }}>
+          {dDaySubtitle}
+        </div>
+      </div>
+
+      {/* Title block */}
+      <div style={{
+        background: '#1B2A4A',
+        color: '#FAF6EF',
+        padding: '28px 16px 22px',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontSize: '10px', letterSpacing: '3px', opacity: 0.6, marginBottom: '6px' }}>
+          T H E &nbsp; E N T R E P R E N E U R ' S
+        </div>
+        <h1 style={{
+          fontFamily: 'Georgia, "Times New Roman", serif',
+          fontSize: '26px',
+          fontWeight: 400,
+          letterSpacing: '0.5px',
+          margin: '0 0 12px'
+        }}>
+          Grand Tour
+        </h1>
+        <div style={{ fontSize: '11px', opacity: 0.65, letterSpacing: '2px' }}>
+          TAEHYEON &nbsp;·&nbsp; JUYEON &nbsp;·&nbsp; 28 DAYS
+        </div>
+      </div>
+    </header>
+  );
+}
+
+// =================== PHOTO SLOT ===================
+function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
+  const fileInputRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const [viewFull, setViewFull] = useState(false);
+
+  const handleFile = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const base64 = await compressImage(file);
+      await savePhoto(dayId, base64);
+    } catch (err) {
+      console.error('Image processing error:', err);
+      alert('사진 처리 중 오류 발생');
+    }
+    setUploading(false);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  if (photo?.data) {
+    return (
+      <div style={{ marginBottom: '12px' }}>
+        <div
+          onClick={() => setViewFull(!viewFull)}
+          style={{
+            position: 'relative',
+            cursor: 'pointer',
+            borderRadius: '8px',
+            overflow: 'hidden',
+            border: '3px solid #FFF',
+            boxShadow: '0 2px 8px rgba(27,42,74,0.15)'
+          }}
+        >
+          <img
+            src={photo.data}
+            alt="Today's Frame"
+            style={{
+              width: '100%',
+              display: 'block',
+              maxHeight: viewFull ? 'none' : (compact ? '200px' : '300px'),
+              objectFit: viewFull ? 'contain' : 'cover'
+            }}
+          />
+          <div style={{
+            position: 'absolute',
+            bottom: '8px',
+            right: '8px',
+            background: 'rgba(255,255,255,0.9)',
+            padding: '4px 8px',
+            borderRadius: '4px',
+            fontSize: '10px',
+            color: '#666',
+            fontFamily: 'Georgia, serif',
+            fontStyle: 'italic'
+          }}>
+            📸 Today's Frame
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ fontSize: '10px', color: '#999' }}>
+            {photo.savedAt ? new Date(photo.savedAt).toLocaleDateString() : ''}
+          </span>
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                padding: '4px 10px',
+                fontSize: '11px',
+                background: '#FFF',
+                border: '1px solid #DDD',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              교체
+            </button>
+            <button
+              onClick={() => {
+                if (confirm('사진을 삭제할까?')) deletePhoto(dayId);
+              }}
+              style={{
+                padding: '4px 10px',
+                fontSize: '11px',
+                background: '#FFEBEE',
+                color: '#C00000',
+                border: '1px solid #FFCDD2',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >
+              삭제
+            </button>
+          </div>
+        </div>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleFile}
+          style={{ display: 'none' }}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginBottom: '12px' }}>
+      <button
+        onClick={() => fileInputRef.current?.click()}
+        disabled={uploading}
+        style={{
+          width: '100%',
+          padding: compact ? '24px 16px' : '32px 16px',
+          background: 'rgba(201,169,97,0.08)',
+          border: '2px dashed #C9A961',
+          borderRadius: '8px',
+          cursor: uploading ? 'wait' : 'pointer',
+          textAlign: 'center',
+          color: '#C9A961',
+          fontSize: '13px',
+          fontWeight: 500
+        }}
+      >
+        {uploading ? '⏳ 처리 중...' : '📸 오늘의 한 장 추가하기'}
+        <div style={{ fontSize: '10px', color: '#999', marginTop: '4px', fontWeight: 400 }}>
+          매일 1장 · 28장이 모이면 평생 회고록
+        </div>
+      </button>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        capture="environment"
+        onChange={handleFile}
+        style={{ display: 'none' }}
+      />
+    </div>
+  );
+}
+
+// =================== INLINE MAP ===================
+function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
+  if (!lat || !lng) return null;
+  const bbox = `${lng - zoom},${lat - zoom},${lng + zoom},${lat + zoom}`;
+  const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
+
+  return (
+    <div style={{
+      borderRadius: '10px',
+      overflow: 'hidden',
+      border: '1px solid #E8E2D5',
+      background: '#FFF',
+      marginBottom: '12px'
+    }}>
+      <iframe
+        src={src}
+        width="100%"
+        height={height}
+        style={{ border: 0, display: 'block' }}
+        title={`Map of ${label}`}
+        loading="lazy"
+      />
+      <div style={{
+        background: '#1B2A4A',
+        color: '#FFF',
+        padding: '8px 12px',
+        fontSize: '11px',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center'
+      }}>
+        <span>📍 {label}</span>
+        <a
+          href={mapsUrl(label)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{ color: '#C9A961', textDecoration: 'none', fontWeight: 500 }}
+        >
+          Google Maps →
+        </a>
+      </div>
+    </div>
+  );
+}
+
+// =================== RECOMMENDATIONS ===================
+function Recommendations({ chapterId, chapter }) {
+  const recs = RECOMMENDATIONS[chapterId];
+  const [openSection, setOpenSection] = useState('morning');
+  if (!recs) return null;
+
+  const sections = [
+    { key: 'morning', icon: '🌅', label: '아침' },
+    { key: 'afternoon', icon: '☀️', label: '오후' },
+    { key: 'evening', icon: '🌃', label: '저녁' },
+    { key: 'hidden', icon: '💎', label: '숨겨진 명소' },
+  ];
+
+  return (
+    <Card>
+      <SectionTitle>💡 {chapter.name} 추가 추천 활동</SectionTitle>
+      <div style={{ fontSize: '11px', color: '#888', marginBottom: '12px' }}>
+        현재 계획에 더해 시도하면 좋을 큐레이션 · 탭하여 Google Maps에서 보기
+      </div>
+
+      {/* Section tabs */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '12px', flexWrap: 'wrap' }}>
+        {sections.map(s => (
+          <button
+            key={s.key}
+            onClick={() => setOpenSection(s.key)}
+            style={{
+              padding: '6px 12px',
+              fontSize: '11px',
+              background: openSection === s.key ? chapter.accent : '#FFF',
+              color: openSection === s.key ? '#FFF' : '#666',
+              border: `1px solid ${openSection === s.key ? chapter.accent : '#E8E2D5'}`,
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontWeight: openSection === s.key ? 500 : 400
+            }}
+          >
+            {s.icon} {s.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Recommendations list */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {recs[openSection]?.map((item, i) => (
+          <a
+            key={i}
+            href={mapsUrl(`${item.t} ${chapter.country}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'block',
+              padding: '12px',
+              background: chapter.color,
+              borderRadius: '8px',
+              textDecoration: 'none',
+              color: 'inherit',
+              border: `1px solid ${chapter.color}`
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <span style={{ fontSize: '20px', flexShrink: 0 }}>{item.tag}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '13px', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
+                  {item.t}
+                </div>
+                <div style={{ fontSize: '11px', color: '#555', lineHeight: 1.5 }}>
+                  {item.why}
+                </div>
+                {item.tip && (
+                  <div style={{ fontSize: '10px', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
+                    💡 {item.tip}
+                  </div>
+                )}
+              </div>
+              <span style={{ fontSize: '10px', color: chapter.accent, alignSelf: 'center' }}>📍 →</span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
+// =================== EDITABLE FIELD ===================
+function EditableField({ value, onSave, onReset, edited, multiline = false, placeholder = '', textStyle = {}, inputStyle = {} }) {
+  const [editing, setEditing] = useState(false);
+  const [val, setVal] = useState(value || '');
+
+  useEffect(() => { setVal(value || ''); }, [value]);
+
+  const save = () => {
+    if (val.trim() !== (value || '').trim()) {
+      onSave(val);
+    }
+    setEditing(false);
+  };
+
+  const cancel = () => {
+    setVal(value || '');
+    setEditing(false);
+  };
+
+  const reset = () => {
+    if (onReset) onReset();
+    setEditing(false);
+  };
+
+  if (!editing) {
+    return (
+      <span style={{ display: 'inline-flex', alignItems: 'flex-start', gap: '6px', flexWrap: 'wrap' }}>
+        <span style={textStyle}>{value || placeholder}</span>
+        <button
+          onClick={() => setEditing(true)}
+          style={{
+            background: edited ? '#C9A961' : 'transparent',
+            border: edited ? '1px solid #C9A961' : '1px solid transparent',
+            color: edited ? '#FFF' : '#C9A961',
+            cursor: 'pointer',
+            fontSize: '10px',
+            padding: '2px 6px',
+            borderRadius: '3px',
+            lineHeight: 1,
+            flexShrink: 0,
+            marginTop: '2px'
+          }}
+          title={edited ? '편집됨 (탭하여 수정)' : '편집'}
+        >
+          ✎{edited && ' ●'}
+        </button>
+      </span>
+    );
+  }
+
+  const InputEl = multiline ? 'textarea' : 'input';
+
+  return (
+    <div style={{ marginTop: '4px' }}>
+      <InputEl
+        value={val}
+        onChange={(e) => setVal(e.target.value)}
+        autoFocus
+        style={{
+          width: '100%',
+          padding: '8px 10px',
+          fontSize: '13px',
+          lineHeight: 1.5,
+          border: '2px solid #C9A961',
+          borderRadius: '6px',
+          background: '#FFFEF9',
+          fontFamily: 'inherit',
+          color: '#1B2A4A',
+          ...(multiline && { minHeight: '70px', resize: 'vertical' }),
+          boxSizing: 'border-box',
+          ...inputStyle
+        }}
+      />
+      <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'flex-end' }}>
+        {edited && onReset && (
+          <button onClick={reset} style={{
+            padding: '4px 10px',
+            fontSize: '11px',
+            background: '#FFEBEE',
+            color: '#C00000',
+            border: '1px solid #FFCDD2',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}>원래대로</button>
+        )}
+        <button onClick={cancel} style={{
+          padding: '4px 10px',
+          fontSize: '11px',
+          background: '#FFF',
+          border: '1px solid #DDD',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}>취소</button>
+        <button onClick={save} style={{
+          padding: '4px 10px',
+          fontSize: '11px',
+          background: '#1B2A4A',
+          color: '#FFF',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}>저장</button>
+      </div>
+    </div>
+  );
+}
+
+// =================== HOME ===================
+function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, deletePhoto, exportData, importData }) {
+  const checkTotal = Object.values(CHECKLIST).flat().length;
+  const checkDone = Object.values(checks).filter(Boolean).length;
+  const outputDone = Object.values(outputs).filter(o => o.done).length;
+
+  const today = status.current ? DAYS.find(d => d.n === status.current.n) || DAYS[0] : DAYS[0];
+  const todayChapter = C(today.c);
+  const todayPhoto = photos[today.n];
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      {/* Trip Philosophy */}
+      <div style={{
+        background: '#FFF',
+        border: '1px solid #E8E2D5',
+        borderRadius: '12px',
+        padding: '24px',
+        marginBottom: '24px',
+        textAlign: 'center'
+      }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '15px', fontStyle: 'italic', lineHeight: 1.6, color: '#444' }}>
+          "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
+          앞으로 무엇을 할지 결정하기 위해 떠난다."
+        </div>
+      </div>
+
+      {/* Today's Card */}
+      {status.phase === 'during' && status.current && (
+        <Card>
+          <SectionTitle>오늘 · Day {today.n}</SectionTitle>
+          <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: '22px' }}>{todayChapter?.flag}</span>
+              <div style={{ fontSize: '12px', color: todayChapter?.accent, letterSpacing: '1px' }}>
+                {todayChapter?.theme.toUpperCase()}
+              </div>
+            </div>
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontStyle: 'italic', color: '#1B2A4A' }}>
+              "{todayChapter?.tag}"
+            </div>
+          </div>
+
+          {/* Today's Photo */}
+          <PhotoSlot dayId={today.n} photo={todayPhoto} savePhoto={savePhoto} deletePhoto={deletePhoto} compact />
+
+          {/* Inline Map */}
+          {todayChapter?.coords && (
+            <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} />
+          )}
+
+          <div style={{ fontSize: '14px', lineHeight: 1.7, marginBottom: '8px' }}>
+            <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
+          </div>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#555', marginBottom: '12px' }}>
+            <strong>오늘:</strong> {today.hl}
+          </div>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#555', marginBottom: '12px' }}>
+            <strong>식사:</strong> {today.food}
+          </div>
+          <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#999', marginBottom: '6px' }}>💭 오늘의 질문</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#1B2A4A' }}>{today.q}</div>
+          </div>
+          <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px' }}>
+            <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#9A3412', marginBottom: '6px' }}>💕 커플 모먼트</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#1B2A4A' }}>{today.mo}</div>
+          </div>
+        </Card>
+      )}
+
+      {/* Recommendations for current chapter (during trip) */}
+      {status.phase === 'during' && status.current && todayChapter?.id && RECOMMENDATIONS[todayChapter.id] && (
+        <Recommendations chapterId={todayChapter.id} chapter={todayChapter} />
+      )}
+
+      {/* Pre-trip card */}
+      {status.phase === 'pre' && (
+        <Card>
+          <SectionTitle>출발까지 D-{status.dDay}</SectionTitle>
+          <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#555', marginBottom: '16px' }}>
+            지금은 준비의 시간. 호텔 4건 + 레스토랑 6건 + 입장권 8건 예약을 차근차근 잡아두면 출발 시 마음이 가벼워.
+          </div>
+          <button onClick={() => setView('check')} style={btnStyle}>체크리스트 보기 →</button>
+        </Card>
+      )}
+
+      {/* Stats Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '24px 0' }}>
+        <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
+        <StatCard label="ASI 산물" value={`${outputDone}/19`} sub="평생 보관용 4개" onClick={() => setView('output')} />
+      </div>
+
+      {/* Chapter Quick Nav */}
+      <Card>
+        <SectionTitle>9 챕터 · 도시 = 인간 능력</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {CHAPTERS.filter(c => !['p', 'tx', 'ret'].includes(c.id)).map(ch => (
+            <a
+              key={ch.id}
+              href={ch.search ? mapsUrl(ch.search) : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                padding: '10px 12px',
+                background: ch.color,
+                borderRadius: '8px',
+                textDecoration: 'none',
+                color: 'inherit'
+              }}
+            >
+              <div style={{ fontSize: '22px', flexShrink: 0 }}>{ch.flag}</div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '14px', fontWeight: 500, color: ch.accent }}>
+                  {ch.icon} {ch.name}
+                </div>
+                <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
+                  {ch.theme} · {ch.country}
+                </div>
+              </div>
+              <div style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, opacity: 0.7 }}>
+                📍 →
+              </div>
+            </a>
+          ))}
+        </div>
+      </Card>
+
+      {/* Quick Links */}
+      <Card>
+        <SectionTitle>빠른 이동</SectionTitle>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <button onClick={() => setView('days')} style={btnLightStyle}>📅 28일 일정</button>
+          <button onClick={() => setView('logi')} style={btnLightStyle}>🗺️ 지도·예약</button>
+          <button onClick={() => setView('notes')} style={btnLightStyle}>📝 28일 메모</button>
+          <button onClick={() => setView('output')} style={btnLightStyle}>🎯 ASI 산물</button>
+        </div>
+      </Card>
+
+      {/* JSON Backup / Restore */}
+      <Card>
+        <SectionTitle>💾 백업 / 복원</SectionTitle>
+        <div style={{ fontSize: '11px', color: '#888', marginBottom: '12px', lineHeight: 1.5 }}>
+          모든 데이터 (체크 · 메모 · 사진 · 편집 · 산물) JSON 파일로 백업하거나 복원. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+          <button onClick={exportData} style={{
+            padding: '12px',
+            background: '#1B2A4A',
+            color: '#FFF',
+            border: 'none',
+            borderRadius: '8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 500
+          }}>
+            📦 백업 다운로드
+          </button>
+          <label style={{
+            padding: '12px',
+            background: '#FAF6EF',
+            color: '#1B2A4A',
+            border: '1px solid #E8E2D5',
+            borderRadius: '8px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontWeight: 500,
+            textAlign: 'center'
+          }}>
+            📂 백업 복원
+            <input
+              type="file"
+              accept=".json,application/json"
+              onChange={(e) => {
+                if (e.target.files?.[0]) importData(e.target.files[0]);
+                e.target.value = '';
+              }}
+              style={{ display: 'none' }}
+            />
+          </label>
+        </div>
+      </Card>
+    </div>
+  );
+}
+
+// =================== DAYS ===================
+function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
+  const [openDay, setOpenDay] = useState(null);
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>28일 일정</h2>
+      <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>
+        탭하여 상세 · 모든 필드 ✎ 편집 · 매일 사진 1장 · 도시 지도 + 추천
+      </div>
+      <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '20px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+        💡 편집된 항목은 골드 ● 표시 · "원래대로" 버튼으로 초기화 가능
+      </div>
+
+      {DAYS.map(day => {
+        const ch = C(day.c);
+        const isOpen = openDay === day.n;
+        const hasNote = notes[day.n]?.content;
+        const hasPhoto = !!photos[day.n]?.data;
+
+        return (
+          <div key={day.n} style={{
+            background: '#FFF',
+            border: '1px solid #E8E2D5',
+            borderRadius: '10px',
+            marginBottom: '8px',
+            overflow: 'hidden'
+          }}>
+            <button
+              onClick={() => setOpenDay(isOpen ? null : day.n)}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                background: 'transparent',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px'
+              }}
+            >
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '8px',
+                background: ch.color,
+                color: ch.accent,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                fontWeight: 600,
+                flexShrink: 0
+              }}>
+                {day.n}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: 500 }}>{day.d} ({day.w})</span>
+                  <span style={{ fontSize: '11px', color: ch.accent, fontWeight: 500 }}>{ch.flag} {ch.name}</span>
+                  {day.int === 'H' && <span style={{ fontSize: '10px', color: '#C00000' }}>●</span>}
+                  {day.int === 'L' && <span style={{ fontSize: '10px', color: '#008000' }}>●</span>}
+                </div>
+                <div style={{ fontSize: '13px', color: '#444', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {day.hl}
+                </div>
+              </div>
+              <div style={{ fontSize: '14px', color: '#999', display: 'flex', gap: '4px' }}>
+                {hasPhoto && '📸'}
+                {hasNote && '✏️'}
+                <span>{isOpen ? '▾' : '▸'}</span>
+              </div>
+            </button>
+
+            {isOpen && (
+              <div style={{ padding: '0 16px 16px', borderTop: '1px solid #F5F0E8' }}>
+                <div style={{ paddingTop: '12px' }}>
+                  {/* Photo Slot */}
+                  <PhotoSlot
+                    dayId={day.n}
+                    photo={photos[day.n]}
+                    savePhoto={savePhoto}
+                    deletePhoto={deletePhoto}
+                    compact
+                  />
+
+                  {/* Inline Map */}
+                  {ch.coords && (
+                    <InlineMap
+                      lat={ch.coords.lat}
+                      lng={ch.coords.lng}
+                      label={ch.search}
+                      height={200}
+                    />
+                  )}
+
+                  <EditableDayDetail
+                    day={day}
+                    chapter={ch}
+                    saveEdit={saveEdit}
+                    resetEdit={resetEdit}
+                    isEdited={isEdited}
+                  />
+                  <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} question={day.q} />
+
+                  {/* Recommendations for this chapter */}
+                  {RECOMMENDATIONS[ch.id] && (
+                    <div style={{ marginTop: '20px' }}>
+                      <Recommendations chapterId={ch.id} chapter={ch} />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
+  const editField = (field) => (val) => saveEdit('day', day.n, field, val);
+  const resetField = (field) => () => resetEdit('day', day.n, field);
+  const hotelSearch = day.hotel && !['기내', '집'].includes(day.hotel) && chapter.country
+    ? `${day.hotel} ${chapter.country}`
+    : chapter.search;
+
+  return (
+    <div>
+      {/* Maps Quick Link */}
+      {chapter.search && (
+        <a
+          href={mapsUrl(hotelSearch)}
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            padding: '6px 12px',
+            background: chapter.accent,
+            color: '#FFF',
+            borderRadius: '6px',
+            fontSize: '11px',
+            fontWeight: 500,
+            textDecoration: 'none',
+            marginBottom: '12px'
+          }}
+        >
+          🗺️ {chapter.flag} Google Maps →
+        </a>
+      )}
+      <div style={{ display: 'grid', gap: '10px', marginBottom: '12px' }}>
+        <EditRow label="📍 도시">
+          <EditableField
+            value={day.city}
+            onSave={editField('city')}
+            onReset={resetField('city')}
+            edited={isEdited('day', day.n, 'city')}
+            textStyle={{ fontSize: '12px', color: '#333' }}
+          />
+        </EditRow>
+        <EditRow label="🏨 호텔">
+          <EditableField
+            value={day.hotel}
+            onSave={editField('hotel')}
+            onReset={resetField('hotel')}
+            edited={isEdited('day', day.n, 'hotel')}
+            textStyle={{ fontSize: '12px', color: '#333' }}
+          />
+        </EditRow>
+        <EditRow label="🚐 이동">
+          <EditableField
+            value={day.moves}
+            onSave={editField('moves')}
+            onReset={resetField('moves')}
+            edited={isEdited('day', day.n, 'moves')}
+            multiline
+            textStyle={{ fontSize: '12px', color: '#333' }}
+          />
+        </EditRow>
+        <EditRow label="✨ 활동">
+          <EditableField
+            value={day.hl}
+            onSave={editField('hl')}
+            onReset={resetField('hl')}
+            edited={isEdited('day', day.n, 'hl')}
+            multiline
+            textStyle={{ fontSize: '12px', color: '#333' }}
+          />
+        </EditRow>
+        <EditRow label="🍽️ 식사">
+          <EditableField
+            value={day.food}
+            onSave={editField('food')}
+            onReset={resetField('food')}
+            edited={isEdited('day', day.n, 'food')}
+            textStyle={{ fontSize: '12px', color: '#333' }}
+          />
+        </EditRow>
+      </div>
+      <div style={{ background: chapter.color, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+        <div style={{ fontSize: '10px', color: chapter.accent, letterSpacing: '1px', marginBottom: '6px' }}>📋 ASI 산물</div>
+        <EditableField
+          value={day.asi}
+          onSave={editField('asi')}
+          onReset={resetField('asi')}
+          edited={isEdited('day', day.n, 'asi')}
+          multiline
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}
+        />
+      </div>
+      <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+        <div style={{ fontSize: '10px', color: '#999', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
+        <EditableField
+          value={day.q}
+          onSave={editField('q')}
+          onReset={resetField('q')}
+          edited={isEdited('day', day.n, 'q')}
+          multiline
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A', fontStyle: 'italic' }}
+        />
+      </div>
+      <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px', marginBottom: '14px' }}>
+        <div style={{ fontSize: '10px', color: '#9A3412', letterSpacing: '1px', marginBottom: '6px' }}>💕 커플 모먼트</div>
+        <EditableField
+          value={day.mo}
+          onSave={editField('mo')}
+          onReset={resetField('mo')}
+          edited={isEdited('day', day.n, 'mo')}
+          multiline
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A' }}
+        />
+      </div>
+    </div>
+  );
+}
+
+function EditRow({ label, children }) {
+  return (
+    <div style={{ fontSize: '12px', lineHeight: 1.5 }}>
+      <div style={{ color: '#999', marginBottom: '2px', fontSize: '11px' }}>{label}</div>
+      <div>{children}</div>
+    </div>
+  );
+}
+
+// =================== NOTE EDITOR ===================
+function NoteEditor({ dayId, note, save }) {
+  const [val, setVal] = useState(note?.content || '');
+  const [saving, setSaving] = useState(false);
+  const [savedAt, setSavedAt] = useState(null);
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    setVal(note?.content || '');
+  }, [note?.content]);
+
+  const handleChange = (e) => {
+    const newVal = e.target.value;
+    setVal(newVal);
+    setSaving(true);
+    if (timerRef.current) clearTimeout(timerRef.current);
+    timerRef.current = setTimeout(async () => {
+      await save(dayId, newVal);
+      setSaving(false);
+      setSavedAt(new Date());
+    }, 800);
+  };
+
+  return (
+    <div>
+      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', letterSpacing: '1px' }}>
+        📝 오늘의 1줄 인사이트
+      </div>
+      <textarea
+        value={val}
+        onChange={handleChange}
+        placeholder="오늘의 답을 1-2문단으로..."
+        style={{
+          width: '100%',
+          minHeight: '80px',
+          padding: '10px',
+          fontSize: '13px',
+          lineHeight: 1.6,
+          border: '1px solid #E8E2D5',
+          borderRadius: '6px',
+          background: '#FFFEF9',
+          color: '#1B2A4A',
+          fontFamily: 'inherit',
+          resize: 'vertical',
+          boxSizing: 'border-box'
+        }}
+      />
+      <div style={{ fontSize: '10px', color: '#999', marginTop: '4px', textAlign: 'right' }}>
+        {saving && '저장 중...'}
+        {!saving && savedAt && `저장됨 · ${savedAt.toLocaleTimeString()}`}
+        {!saving && !savedAt && note?.updated && `마지막 저장: ${new Date(note.updated).toLocaleDateString()}`}
+      </div>
+    </div>
+  );
+}
+
+// =================== CHECKLIST ===================
+function Checklist({ checks, toggleCheck, packing, togglePacking, packingCustom, packingEdits, savePackingEdit, resetPackingEdit, addPackingItem, removePackingItem }) {
+  const [tab, setTab] = useState('checklist');
+  const [packingPerson, setPackingPerson] = useState('tyler');
+
+  // Get combined sections (default + custom) for current person
+  const getCombinedSections = (person) => {
+    const defaultSections = PACKING_ALL[person].sections;
+    const custom = packingCustom[person] || {};
+    const combined = {};
+    Object.keys(defaultSections).forEach(section => {
+      combined[section] = [
+        ...defaultSections[section],
+        ...(custom[section] || [])
+      ];
+    });
+    // Add any custom-only sections (none currently but possible)
+    Object.keys(custom).forEach(section => {
+      if (!combined[section]) combined[section] = custom[section];
+    });
+    return combined;
+  };
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>{tab === 'checklist' ? '체크리스트' : '패킹 리스트'}</h2>
+
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <SubTab active={tab === 'checklist'} onClick={() => setTab('checklist')}>D-30 → D-3</SubTab>
+        <SubTab active={tab === 'packing'} onClick={() => setTab('packing')}>👔 패킹</SubTab>
+      </div>
+
+      {tab === 'checklist' && Object.entries(CHECKLIST).map(([section, items]) => (
+        <ChecklistSection
+          key={section}
+          title={section}
+          items={items}
+          checks={checks}
+          toggle={toggleCheck}
+        />
+      ))}
+
+      {tab === 'packing' && (
+        <div>
+          {/* Person sub-tabs */}
+          <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto' }}>
+            {Object.keys(PACKING_ALL).map(p => (
+              <button
+                key={p}
+                onClick={() => setPackingPerson(p)}
+                style={{
+                  padding: '10px 16px',
+                  fontSize: '13px',
+                  background: packingPerson === p ? '#1B2A4A' : '#FFF',
+                  color: packingPerson === p ? '#FFF' : '#666',
+                  border: '1px solid #E8E2D5',
+                  borderRadius: '20px',
+                  cursor: 'pointer',
+                  fontWeight: packingPerson === p ? 500 : 400,
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}
+              >
+                {PACKING_ALL[p].label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+            💡 ✎로 기존 항목 편집 · "+ 추가" 버튼으로 새 항목 · 직접 추가한 건 삭제 가능
+          </div>
+
+          {Object.entries(getCombinedSections(packingPerson)).map(([section, items]) => (
+            <PackingSection
+              key={section}
+              title={section}
+              items={items}
+              person={packingPerson}
+              packing={packing}
+              togglePacking={togglePacking}
+              packingEdits={packingEdits}
+              savePackingEdit={savePackingEdit}
+              resetPackingEdit={resetPackingEdit}
+              addPackingItem={addPackingItem}
+              removePackingItem={removePackingItem}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PackingSection({ title, items, person, packing, togglePacking, packingEdits, savePackingEdit, resetPackingEdit, addPackingItem, removePackingItem }) {
+  const [adding, setAdding] = useState(false);
+  const [newText, setNewText] = useState('');
+  const total = items.length;
+  const done = items.filter(i => packing[i.id]).length;
+
+  const handleAdd = () => {
+    if (newText.trim()) {
+      addPackingItem(person, title, newText);
+      setNewText('');
+      setAdding(false);
+    }
+  };
+
+  return (
+    <div style={{
+      background: '#FFF',
+      border: '1px solid #E8E2D5',
+      borderRadius: '12px',
+      marginBottom: '12px',
+      overflow: 'hidden'
+    }}>
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
+        <div style={{ fontSize: '11px', color: '#999' }}>{done}/{total}</div>
+      </div>
+      {items.map(item => {
+        const edited = packingEdits[item.id] || {};
+        const displayText = edited.t !== undefined ? edited.t : item.t;
+        const displaySrc = edited.src !== undefined ? edited.src : item.src;
+        const isEditedT = edited.t !== undefined;
+        const isEditedS = edited.src !== undefined;
+        const isUrgent = displayText.includes('⭐');
+        const checked = !!packing[item.id];
+
+        return (
+          <div key={item.id} style={{
+            padding: '12px 16px',
+            borderTop: '1px solid #F5F0E8',
+            display: 'flex',
+            alignItems: 'flex-start',
+            gap: '10px'
+          }}>
+            <button
+              onClick={() => togglePacking(item.id)}
+              style={{
+                width: '20px',
+                height: '20px',
+                borderRadius: '4px',
+                border: `2px solid ${checked ? '#1B2A4A' : '#CCC'}`,
+                background: checked ? '#1B2A4A' : 'transparent',
+                color: '#FFF',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '14px',
+                flexShrink: 0,
+                marginTop: '1px',
+                cursor: 'pointer'
+              }}
+            >
+              {checked && '✓'}
+            </button>
+            <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.5, minWidth: 0 }}>
+              <div style={{
+                color: checked ? '#999' : '#333',
+                textDecoration: checked ? 'line-through' : 'none'
+              }}>
+                {isUrgent && !checked && <span style={{ color: '#C00000', fontWeight: 600 }}>🔴 </span>}
+                <EditableField
+                  value={displayText}
+                  onSave={(v) => savePackingEdit(item.id, 't', v)}
+                  onReset={isEditedT ? () => resetPackingEdit(item.id, 't') : null}
+                  edited={isEditedT}
+                  multiline
+                  textStyle={{
+                    fontSize: '13px',
+                    color: checked ? '#999' : '#333',
+                    textDecoration: checked ? 'line-through' : 'none'
+                  }}
+                />
+                {item.custom && (
+                  <span style={{
+                    marginLeft: '6px',
+                    fontSize: '9px',
+                    background: '#FFE0B2',
+                    color: '#9A3412',
+                    padding: '2px 6px',
+                    borderRadius: '3px'
+                  }}>직접 추가</span>
+                )}
+              </div>
+              <div style={{ fontSize: '11px', color: '#888', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <EditableField
+                  value={displaySrc}
+                  onSave={(v) => savePackingEdit(item.id, 'src', v)}
+                  onReset={isEditedS ? () => resetPackingEdit(item.id, 'src') : null}
+                  edited={isEditedS}
+                  textStyle={{ fontSize: '11px', color: '#888' }}
+                />
+                {item.custom && (
+                  <button
+                    onClick={() => {
+                      if (confirm('이 항목을 삭제할까?')) removePackingItem(person, title, item.id);
+                    }}
+                    style={{
+                      fontSize: '10px',
+                      background: '#FFEBEE',
+                      color: '#C00000',
+                      border: '1px solid #FFCDD2',
+                      borderRadius: '3px',
+                      padding: '2px 6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    삭제
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      })}
+
+      {/* Add new item */}
+      {adding ? (
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #F5F0E8', background: '#FAF6EF' }}>
+          <input
+            value={newText}
+            onChange={(e) => setNewText(e.target.value)}
+            placeholder="새 항목 입력 (예: 명함 케이스)"
+            autoFocus
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') handleAdd();
+              if (e.key === 'Escape') { setAdding(false); setNewText(''); }
+            }}
+            style={{
+              width: '100%',
+              padding: '8px 10px',
+              fontSize: '13px',
+              border: '2px solid #C9A961',
+              borderRadius: '6px',
+              background: '#FFFEF9',
+              fontFamily: 'inherit',
+              boxSizing: 'border-box',
+              marginBottom: '8px'
+            }}
+          />
+          <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
+            <button
+              onClick={() => { setAdding(false); setNewText(''); }}
+              style={{
+                padding: '6px 12px',
+                fontSize: '11px',
+                background: '#FFF',
+                border: '1px solid #DDD',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >취소</button>
+            <button
+              onClick={handleAdd}
+              style={{
+                padding: '6px 12px',
+                fontSize: '11px',
+                background: '#1B2A4A',
+                color: '#FFF',
+                border: 'none',
+                borderRadius: '4px',
+                cursor: 'pointer'
+              }}
+            >추가</button>
+          </div>
+        </div>
+      ) : (
+        <button
+          onClick={() => setAdding(true)}
+          style={{
+            width: '100%',
+            padding: '12px',
+            background: 'transparent',
+            border: 'none',
+            borderTop: '1px solid #F5F0E8',
+            cursor: 'pointer',
+            color: '#C9A961',
+            fontSize: '12px',
+            fontWeight: 500
+          }}
+        >
+          + 항목 추가
+        </button>
+      )}
+    </div>
+  );
+}
+
+function ChecklistSection({ title, items, checks, toggle, showSource }) {
+  const total = items.length;
+  const done = items.filter(i => checks[i.id]).length;
+
+  return (
+    <div style={{
+      background: '#FFF',
+      border: '1px solid #E8E2D5',
+      borderRadius: '12px',
+      marginBottom: '12px',
+      overflow: 'hidden'
+    }}>
+      <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
+        <div style={{ fontSize: '11px', color: '#999' }}>{done}/{total}</div>
+      </div>
+      {items.map(item => {
+        const checked = !!checks[item.id];
+        return (
+          <button
+            key={item.id}
+            onClick={() => toggle(item.id)}
+            style={{
+              width: '100%',
+              padding: '12px 16px',
+              background: 'transparent',
+              border: 'none',
+              borderTop: '1px solid #F5F0E8',
+              textAlign: 'left',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'flex-start',
+              gap: '12px'
+            }}
+          >
+            <div style={{
+              width: '20px',
+              height: '20px',
+              borderRadius: '4px',
+              border: `2px solid ${checked ? '#1B2A4A' : '#CCC'}`,
+              background: checked ? '#1B2A4A' : 'transparent',
+              color: '#FFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '14px',
+              flexShrink: 0,
+              marginTop: '1px'
+            }}>
+              {checked && '✓'}
+            </div>
+            <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.5 }}>
+              <div style={{
+                color: checked ? '#999' : '#333',
+                textDecoration: checked ? 'line-through' : 'none'
+              }}>
+                {item.urgent && !checked && <span style={{ color: '#C00000', fontWeight: 600 }}>🔴 </span>}
+                {item.t}
+              </div>
+              {showSource && item.src && (
+                <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>{item.src}</div>
+              )}
+            </div>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// =================== NOTES OVERVIEW ===================
+function Notes({ notes, saveNote, DAYS }) {
+  const written = Object.keys(notes).filter(k => notes[k]?.content).length;
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>28일 메모</h2>
+      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px' }}>
+        매일 저녁 15분 · 작성한 메모: {written}/28
+      </div>
+
+      {DAYS.map(day => {
+        const ch = C(day.c);
+        const noteContent = notes[day.n]?.content;
+        return (
+          <details key={day.n} style={{
+            background: '#FFF',
+            border: '1px solid #E8E2D5',
+            borderRadius: '10px',
+            marginBottom: '8px',
+            padding: '14px 16px'
+          }}>
+            <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                background: ch.color,
+                color: ch.accent,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 600,
+                flexShrink: 0
+              }}>
+                {day.n}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: '#999' }}>{day.d} · {ch.name}</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
+                  💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
+                </div>
+              </div>
+              <div style={{ fontSize: '14px' }}>
+                {noteContent ? '✏️' : '○'}
+              </div>
+            </summary>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
+              <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>💭 질문</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+              </div>
+              <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#9A3412', marginBottom: '4px' }}>💕 커플 모먼트</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', lineHeight: 1.6 }}>{day.mo}</div>
+              </div>
+              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
+            </div>
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
+// =================== OUTPUTS ===================
+function Outputs({ outputs, toggleOutput, saveOutputContent }) {
+  const done = Object.values(outputs).filter(o => o.done).length;
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>ASI 산물 트래커</h2>
+      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px' }}>
+        28일 동안 만들어내는 산물 · {done}/19 완료
+      </div>
+
+      <div style={{ background: '#FFF3E0', padding: '14px', borderRadius: '10px', marginBottom: '20px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 500, color: '#9A3412', marginBottom: '6px' }}>
+          ⭐⭐⭐ 평생 보관 산물 4개
+        </div>
+        <div style={{ fontSize: '11px', color: '#666', lineHeight: 1.6 }}>
+          Seceda 정상 1페이지 · Pantheon 1페이지 · Nike 1페이지 · "우리, 이제 시작이다" 봉인
+        </div>
+      </div>
+
+      {OUTPUTS.map(o => {
+        const ch = C(o.ch);
+        const state = outputs[o.id] || {};
+        const stars = '⭐'.repeat(o.star || 0);
+        return (
+          <div key={o.id} style={{
+            background: '#FFF',
+            border: `1px solid ${state.done ? '#C9A961' : '#E8E2D5'}`,
+            borderRadius: '10px',
+            marginBottom: '10px',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <button
+                  onClick={() => toggleOutput(o.id)}
+                  style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '4px',
+                    border: `2px solid ${state.done ? '#1B2A4A' : '#CCC'}`,
+                    background: state.done ? '#1B2A4A' : 'transparent',
+                    color: '#FFF',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                    marginTop: '1px'
+                  }}>
+                  {state.done && '✓'}
+                </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, letterSpacing: '0.5px' }}>
+                      Day {o.day} · {ch.name}
+                    </span>
+                    {stars && <span style={{ fontSize: '10px' }}>{stars}</span>}
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#999' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
+                    {o.t}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.5, marginTop: '4px' }}>
+                    {o.desc}
+                  </div>
+                </div>
+              </div>
+              <textarea
+                placeholder="여기 산물 내용을 적거나 사진을 찍어 메모하세요..."
+                defaultValue={state.content || ''}
+                onBlur={(e) => saveOutputContent(o.id, e.target.value)}
+                style={{
+                  width: '100%',
+                  minHeight: '60px',
+                  marginTop: '12px',
+                  padding: '8px 10px',
+                  fontSize: '12px',
+                  lineHeight: 1.6,
+                  border: '1px solid #E8E2D5',
+                  borderRadius: '6px',
+                  background: '#FFFEF9',
+                  color: '#1B2A4A',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// =================== LOGISTICS ===================
+function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
+  const [subTab, setSubTab] = useState('map');
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>위치 · 예약</h2>
+      <div style={{ fontSize: '12px', color: '#888', marginBottom: '16px' }}>
+        지도 · 호텔 · 항공 · 비용 통합
+      </div>
+
+      {/* Sub-tab nav */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '20px', overflowX: 'auto', paddingBottom: '4px' }}>
+        <SubTab active={subTab === 'map'} onClick={() => setSubTab('map')}>🗺️ 지도</SubTab>
+        <SubTab active={subTab === 'hotels'} onClick={() => setSubTab('hotels')}>🏨 호텔</SubTab>
+        <SubTab active={subTab === 'flights'} onClick={() => setSubTab('flights')}>✈️ 항공</SubTab>
+        <SubTab active={subTab === 'costs'} onClick={() => setSubTab('costs')}>💰 비용</SubTab>
+      </div>
+
+      {subTab === 'map' && <MapView />}
+      {subTab === 'hotels' && <HotelsList HOTELS={HOTELS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
+      {subTab === 'flights' && <FlightsList FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
+      {subTab === 'costs' && <CostsSummary />}
+    </div>
+  );
+}
+
+// =================== MAP VIEW ===================
+function MapView() {
+  const [selectedId, setSelectedId] = useState('paris');
+
+  // Project lat/lng to SVG coords
+  const project = (lat, lng) => ({
+    x: ((lng - (-10)) / 70) * 800,
+    y: ((55 - lat) / 33) * 500
+  });
+
+  const order = ['paris', 'london', 'dol', 'flo', 'rom', 'pos', 'san', 'ath', 'dxb'];
+  const points = order
+    .map(id => CHAPTERS.find(c => c.id === id))
+    .filter(c => c && c.coords)
+    .map((c, i) => ({ ...c, ...project(c.coords.lat, c.coords.lng), order: i + 1 }));
+
+  const selected = CHAPTERS.find(c => c.id === selectedId);
+
+  return (
+    <div>
+      <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px', textAlign: 'center' }}>
+        9개 도시 · 4개 국가 · 약 11,000km
+      </div>
+
+      {/* SVG Journey Overview */}
+      <div style={{ background: '#FFF', border: '1px solid #E8E2D5', borderRadius: '12px', padding: '12px', marginBottom: '20px', overflow: 'hidden' }}>
+        <svg viewBox="0 0 800 500" style={{ width: '100%', height: 'auto', display: 'block' }}>
+          <rect width="800" height="500" fill="#E8F2F7" />
+          <g opacity="0.5">
+            <path d="M -20 -20 L 820 -20 L 820 140 Q 750 160, 700 155 Q 650 170, 580 165 Q 510 180, 450 175 Q 380 195, 320 200 Q 280 175, 240 195 Q 180 210, 130 195 Q 80 215, 30 200 L -20 215 Z" fill="#E8DCC4" />
+            <path d="M 240 195 Q 250 220, 260 245 Q 265 265, 275 255 Q 285 270, 290 255 Q 295 270, 285 240 Q 280 210, 270 195 Z" fill="#E8DCC4" />
+            <ellipse cx="395" cy="290" rx="35" ry="20" fill="#E8DCC4" />
+            <ellipse cx="385" cy="265" rx="25" ry="15" fill="#E8DCC4" />
+            <path d="M -20 380 Q 100 360, 200 380 Q 300 400, 400 380 Q 500 400, 600 380 Q 700 400, 820 380 L 820 520 L -20 520 Z" fill="#E8DCC4" />
+            <path d="M 600 270 Q 660 290, 700 340 Q 740 380, 770 430 Q 790 460, 820 480 L 820 280 L 700 270 Z" fill="#E8DCC4" />
+          </g>
+          <g stroke="#D5C8A8" strokeWidth="0.3" opacity="0.3">
+            <line x1="0" y1="125" x2="800" y2="125" />
+            <line x1="0" y1="250" x2="800" y2="250" />
+            <line x1="0" y1="375" x2="800" y2="375" />
+            <line x1="200" y1="0" x2="200" y2="500" />
+            <line x1="400" y1="0" x2="400" y2="500" />
+            <line x1="600" y1="0" x2="600" y2="500" />
+          </g>
+          {points.slice(0, -1).map((p, i) => (
+            <line
+              key={i}
+              x1={p.x} y1={p.y}
+              x2={points[i+1].x} y2={points[i+1].y}
+              stroke="#C9A961"
+              strokeWidth="2.5"
+              strokeDasharray="5 4"
+              opacity="0.7"
+            />
+          ))}
+          {points.map(p => (
+            <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => setSelectedId(p.id)}>
+              <circle
+                cx={p.x} cy={p.y}
+                r={selectedId === p.id ? 22 : 18}
+                fill="#FFF"
+                stroke={p.accent}
+                strokeWidth={selectedId === p.id ? 4 : 3}
+              />
+              <text x={p.x} y={p.y + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill={p.accent}>
+                {p.order}
+              </text>
+              <text x={p.x} y={p.y - 26} textAnchor="middle" fontSize="18">
+                {p.flag}
+              </text>
+              <text x={p.x} y={p.y + 36} textAnchor="middle" fontSize="11" fontWeight="600" fill="#1B2A4A">
+                {p.name}
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+
+      {/* Chapter selector tabs */}
+      <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', overflowX: 'auto', paddingBottom: '4px' }}>
+        {points.map(p => (
+          <button
+            key={p.id}
+            onClick={() => setSelectedId(p.id)}
+            style={{
+              padding: '8px 14px',
+              fontSize: '12px',
+              background: selectedId === p.id ? p.accent : '#FFF',
+              color: selectedId === p.id ? '#FFF' : '#666',
+              border: `1px solid ${selectedId === p.id ? p.accent : '#E8E2D5'}`,
+              borderRadius: '20px',
+              cursor: 'pointer',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              flexShrink: 0
+            }}
+          >
+            {p.flag} {p.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Selected city detail with inline map */}
+      {selected && selected.coords && (
+        <Card>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+            <span style={{ fontSize: '28px' }}>{selected.flag}</span>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: selected.accent }}>
+                {selected.icon} {selected.name}
+              </div>
+              <div style={{ fontSize: '11px', color: '#888' }}>
+                {selected.country} · {selected.dates} · {selected.theme}
+              </div>
+            </div>
+          </div>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: '#555', marginBottom: '14px', lineHeight: 1.5 }}>
+            "{selected.tag}"
+          </div>
+          <InlineMap
+            lat={selected.coords.lat}
+            lng={selected.coords.lng}
+            label={selected.search}
+            height={280}
+          />
+        </Card>
+      )}
+
+      {/* Recommendations for selected city */}
+      {selected && RECOMMENDATIONS[selectedId] && (
+        <Recommendations chapterId={selectedId} chapter={selected} />
+      )}
+
+      {/* Map legend */}
+      <div style={{ fontSize: '11px', color: '#999', marginTop: '16px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: '6px', lineHeight: 1.7 }}>
+        🗺️ <strong>여행 순서</strong>: 위 SVG의 핀이나 챕터 탭을 누르면 해당 도시의 인라인 지도 + 추천 활동 표시
+      </div>
+    </div>
+  );
+}
+
+// =================== HOTELS LIST ===================
+function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
+  return (
+    <div>
+      <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+        💡 호텔명·예약번호 편집 가능 (✎) · 상태 라벨 탭하여 🔴→🟡→✅ 순환
+      </div>
+      <Card>
+        <SectionTitle>호텔 13건 · 25박</SectionTitle>
+        {HOTELS.map(h => {
+          const statusColor = h.status === 'urgent' ? '#C00000' : h.status === 'pending' ? '#FF6F00' : '#008000';
+          const statusBg = h.status === 'urgent' ? '#FFEBEE' : h.status === 'pending' ? '#FFF3E0' : '#E8F5E9';
+          const statusLabel = h.status === 'urgent' ? '🔴 예약필요' : h.status === 'pending' ? '🟡 미예약' : '✅ 확정';
+          const hotelMapQuery = `${h.hotel.split('(')[0].trim()} ${h.city}`;
+          return (
+            <div key={h.n} style={{
+              padding: '12px',
+              borderTop: '1px solid #F5F0E8'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }}>
+                <button
+                  onClick={() => {
+                    const nextStatus = h.status === 'urgent' ? 'pending' : h.status === 'pending' ? 'ok' : 'urgent';
+                    saveEdit('hotel', h.n, 'status', nextStatus);
+                  }}
+                  style={{
+                    background: statusBg,
+                    color: statusColor,
+                    fontSize: '10px',
+                    padding: '4px 8px',
+                    borderRadius: '4px',
+                    border: 'none',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                    fontWeight: 500
+                  }}
+                  title="탭하여 상태 변경"
+                >
+                  {statusLabel}
+                </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}>
+                    <EditableField
+                      value={h.hotel}
+                      onSave={(v) => saveEdit('hotel', h.n, 'hotel', v)}
+                      onReset={() => resetEdit('hotel', h.n, 'hotel')}
+                      edited={isEdited('hotel', h.n, 'hotel')}
+                      textStyle={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <span>📍 {h.city} · {h.ci}~{h.co} ({h.nights}박)</span>
+                <a
+                  href={mapsUrl(hotelMapQuery)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    fontSize: '10px',
+                    color: '#C9A961',
+                    textDecoration: 'none',
+                    fontWeight: 500,
+                    padding: '2px 6px',
+                    background: 'rgba(201,169,97,0.1)',
+                    borderRadius: '4px'
+                  }}
+                >
+                  🗺️ Maps
+                </a>
+              </div>
+              <div style={{ fontSize: '10px', color: '#999', marginTop: '6px', marginLeft: '4px' }}>
+                <span style={{ marginRight: '4px' }}>📋 Conf:</span>
+                <EditableField
+                  value={h.conf}
+                  onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
+                  onReset={() => resetEdit('hotel', h.n, 'conf')}
+                  edited={isEdited('hotel', h.n, 'conf')}
+                  textStyle={{ fontSize: '10px', color: '#999' }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </Card>
+    </div>
+  );
+}
+
+// =================== FLIGHTS LIST ===================
+function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
+  return (
+    <Card>
+      <SectionTitle>항공 · 기차 8편</SectionTitle>
+      {FLIGHTS.map((f, i) => (
+        <div key={i} style={{
+          padding: '12px',
+          borderTop: '1px solid #F5F0E8'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}>{f.route}</div>
+            <div style={{ fontSize: '11px', color: '#999' }}>{f.d}</div>
+          </div>
+          <div style={{ fontSize: '11px', color: '#666', marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
+            <EditableField
+              value={f.no}
+              onSave={(v) => saveEdit('flight', i, 'no', v)}
+              onReset={() => resetEdit('flight', i, 'no')}
+              edited={isEdited('flight', i, 'no')}
+              textStyle={{ fontSize: '11px', color: '#666' }}
+            />
+            <span style={{ color: '#CCC' }}>·</span>
+            <EditableField
+              value={f.t}
+              onSave={(v) => saveEdit('flight', i, 't', v)}
+              onReset={() => resetEdit('flight', i, 't')}
+              edited={isEdited('flight', i, 't')}
+              textStyle={{ fontSize: '11px', color: '#666' }}
+            />
+          </div>
+          <div style={{ fontSize: '10px', color: '#888', marginTop: '4px' }}>
+            <EditableField
+              value={f.note}
+              onSave={(v) => saveEdit('flight', i, 'note', v)}
+              onReset={() => resetEdit('flight', i, 'note')}
+              edited={isEdited('flight', i, 'note')}
+              textStyle={{ fontSize: '10px', color: '#888' }}
+            />
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
+// =================== COSTS SUMMARY ===================
+function CostsSummary() {
+  return (
+    <Card>
+      <SectionTitle>💰 비용 요약</SectionTitle>
+      <div style={{ fontSize: '12px', lineHeight: 2, color: '#444' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>숙박 (25박)</span><span>~1,000만</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>이동·트랜스퍼</span><span>~300만</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>식비 (28일)</span><span>~600만</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>관광·티켓</span><span>~180만</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span>예비비</span><span>~300만</span>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8E2D5', marginTop: '8px', paddingTop: '8px', fontWeight: 500, color: '#1B2A4A' }}>
+          <span>합계 (항공 별도)</span><span>~2,400만</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// =================== UI COMPONENTS ===================
+function Card({ children }) {
+  return (
+    <div style={{
+      background: '#FFF',
+      border: '1px solid #E8E2D5',
+      borderRadius: '12px',
+      padding: '20px',
+      marginBottom: '16px'
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function SectionTitle({ children }) {
+  return (
+    <div style={{
+      fontSize: '11px',
+      letterSpacing: '2px',
+      color: '#999',
+      marginBottom: '14px',
+      textTransform: 'uppercase'
+    }}>
+      {children}
+    </div>
+  );
+}
+
+function StatCard({ label, value, sub, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      background: '#FFF',
+      border: '1px solid #E8E2D5',
+      borderRadius: '12px',
+      padding: '16px',
+      textAlign: 'left',
+      cursor: 'pointer',
+      width: '100%'
+    }}>
+      <div style={{ fontSize: '11px', color: '#999', letterSpacing: '1px' }}>{label}</div>
+      <div style={{ fontFamily: 'Georgia, serif', fontSize: '24px', color: '#1B2A4A', marginTop: '6px', fontWeight: 500 }}>{value}</div>
+      <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>{sub}</div>
+    </button>
+  );
+}
+
+function SubTab({ active, onClick, children }) {
+  return (
+    <button onClick={onClick} style={{
+      padding: '8px 14px',
+      fontSize: '12px',
+      background: active ? '#1B2A4A' : '#FFF',
+      color: active ? '#FFF' : '#666',
+      border: '1px solid #E8E2D5',
+      borderRadius: '20px',
+      cursor: 'pointer',
+      fontWeight: active ? 500 : 400
+    }}>
+      {children}
+    </button>
+  );
+}
+
+const btnStyle = {
+  width: '100%',
+  padding: '12px',
+  background: '#1B2A4A',
+  color: '#FFF',
+  border: 'none',
+  borderRadius: '8px',
+  fontSize: '13px',
+  fontWeight: 500,
+  cursor: 'pointer'
+};
+
+const btnLightStyle = {
+  padding: '12px',
+  background: '#FAF6EF',
+  color: '#1B2A4A',
+  border: '1px solid #E8E2D5',
+  borderRadius: '8px',
+  fontSize: '12px',
+  cursor: 'pointer',
+  fontWeight: 500
+};
+
+const pageTitleStyle = {
+  fontFamily: 'Georgia, serif',
+  fontSize: '24px',
+  fontWeight: 400,
+  color: '#1B2A4A',
+  marginBottom: '4px'
+};
+
+// =================== BOTTOM NAV ===================
+function BottomNav({ view, setView }) {
+  const tabs = [
+    { id: 'home', label: '홈', icon: '🏠' },
+    { id: 'days', label: '일정', icon: '📅' },
+    { id: 'check', label: '체크', icon: '✓' },
+    { id: 'notes', label: '메모', icon: '📝' },
+    { id: 'output', label: '산물', icon: '🎯' },
+    { id: 'logi', label: '지도', icon: '🗺️' },
+  ];
+
+  return (
+    <nav style={{
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      background: '#FFF',
+      borderTop: '1px solid #E8E2D5',
+      display: 'flex',
+      justifyContent: 'space-around',
+      padding: '8px 0 16px',
+      boxShadow: '0 -2px 8px rgba(0,0,0,0.04)',
+      zIndex: 100
+    }}>
+      {tabs.map(t => (
+        <button
+          key={t.id}
+          onClick={() => setView(t.id)}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            padding: '6px 4px',
+            cursor: 'pointer',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '2px',
+            flex: 1
+          }}
+        >
+          <div style={{ fontSize: '18px', opacity: view === t.id ? 1 : 0.4 }}>{t.icon}</div>
+          <div style={{
+            fontSize: '10px',
+            color: view === t.id ? '#1B2A4A' : '#999',
+            fontWeight: view === t.id ? 500 : 400
+          }}>
+            {t.label}
+          </div>
+        </button>
+      ))}
+    </nav>
+  );
+}
+
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
