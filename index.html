@@ -8,6 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Grand Tour">
   <title>Grand Tour 2026 · Taehyeon × Juyeon</title>
+  <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✈️</text></svg>">
   <style>
     * { -webkit-tap-highlight-color: transparent; }
@@ -38,16 +39,15 @@ const TRIP_END = new Date('2026-07-12T23:59:59');
 
 const CHAPTERS = [
   { id: 'p', name: '서막', flag: '✈️', icon: '🌏', country: '', theme: 'Prologue', tag: '시작의 의식', color: '#F5F5F4', accent: '#57534E', coords: null },
-  { id: 'paris', name: '파리', flag: '🇫🇷', icon: '🗼', country: 'France', theme: 'Taste · 취향', tag: '정보가 무료인 시대, 무엇이 희소한가', color: '#FCE7F3', accent: '#BE185D', coords: { lat: 48.8566, lng: 2.3522 }, search: 'Paris, France', dates: '6/15~17' },
-  { id: 'london', name: '런던', flag: '🇬🇧', icon: '🌉', country: 'United Kingdom', theme: 'Scale · 스케일', tag: '스케일이라는 발명품', color: '#E0E7FF', accent: '#3730A3', coords: { lat: 51.5074, lng: -0.1278 }, search: 'London, United Kingdom', dates: '6/17~21' },
-  { id: 'dol', name: '돌로미티', flag: '🇮🇹', icon: '⛰️', country: 'Italy', theme: 'Silence · 침묵', tag: 'AI가 닿을 수 없는 침묵', color: '#D1FAE5', accent: '#065F46', coords: { lat: 46.5762, lng: 11.6726 }, search: 'Ortisei, Dolomites, Italy', dates: '6/21~24' },
-  { id: 'flo', name: '피렌체', flag: '🇮🇹', icon: '🎨', country: 'Italy', theme: 'Patronage · 후원', tag: '후원자가 되는 일의 위대함', color: '#FED7AA', accent: '#9A3412', coords: { lat: 43.7696, lng: 11.2558 }, search: 'Florence, Italy', dates: '6/24~26' },
-  { id: 'rom', name: '로마', flag: '🇮🇹', icon: '🏛️', country: 'Italy', theme: 'System · 시스템', tag: '1000년을 버티는 시스템', color: '#FEF3C7', accent: '#854D0E', coords: { lat: 41.9028, lng: 12.4964 }, search: 'Rome, Italy', dates: '6/26~29' },
-  { id: 'pos', name: '포지타노', flag: '🇮🇹', icon: '🌊', country: 'Italy', theme: 'Rest · 휴식', tag: '절대적 휴식이 만드는 명료함', color: '#BAE6FD', accent: '#075985', coords: { lat: 40.6280, lng: 14.4842 }, search: 'Positano, Amalfi Coast, Italy', dates: '6/29~7/1' },
-  { id: 'tx', name: '완충', flag: '🚐', icon: '🚐', country: 'Italy', theme: 'Risk · 완충', tag: '리스크 줄이는 것도 전략', color: '#F5F5F4', accent: '#57534E', coords: { lat: 41.7995, lng: 12.2462 }, search: 'Rome Fiumicino Airport, Italy', dates: '7/1~2' },
-  { id: 'san', name: '산토리니', flag: '🇬🇷', icon: '🏝️', country: 'Greece', theme: 'Rebirth · 재탄생', tag: '파괴된 위에 다시 짓는다', color: '#CFFAFE', accent: '#155E75', coords: { lat: 36.3932, lng: 25.4615 }, search: 'Santorini, Greece', dates: '7/2~5' },
-  { id: 'ath', name: '아테네', flag: '🇬🇷', icon: '🦉', country: 'Greece', theme: 'Mission · 미션', tag: '나의 Nike를 발견하는 날', color: '#F5F5F4', accent: '#44403C', coords: { lat: 37.9838, lng: 23.7275 }, search: 'Athens, Greece', dates: '7/5~7' },
-  { id: 'dxb', name: '두바이·아부다비', flag: '🇦🇪', icon: '🌆', country: 'UAE', theme: 'Frontier · 미래', tag: '사막 위에 세운 청사진', color: '#FDE68A', accent: '#92400E', coords: { lat: 25.2048, lng: 55.2708 }, search: 'Dubai, United Arab Emirates', dates: '7/7~10' },
+  { id: 'paris', name: '파리', flag: '🇫🇷', icon: '🗼', country: 'France', theme: 'Taste · 취향', tag: '정보가 무료인 시대, 무엇이 희소한가', color: '#FCE7F3', accent: '#BE185D', coords: { lat: 48.8566, lng: 2.3522 }, search: 'Paris, France', dates: '6/15~18' },
+  { id: 'london', name: '런던', flag: '🇬🇧', icon: '🌉', country: 'United Kingdom', theme: 'Scale · 스케일', tag: '스케일이라는 발명품', color: '#E0E7FF', accent: '#3730A3', coords: { lat: 51.5074, lng: -0.1278 }, search: 'London, United Kingdom', dates: '6/18~22' },
+  { id: 'dol', name: '돌로미티', flag: '🇮🇹', icon: '⛰️', country: 'Italy', theme: 'Silence · 침묵', tag: 'AI가 닿을 수 없는 침묵', color: '#D1FAE5', accent: '#065F46', coords: { lat: 46.5762, lng: 11.6726 }, search: 'Ortisei, Dolomites, Italy', dates: '6/22~25' },
+  { id: 'flo', name: '피렌체', flag: '🇮🇹', icon: '🎨', country: 'Italy', theme: 'Patronage · 후원', tag: '후원자가 되는 일의 위대함', color: '#FED7AA', accent: '#9A3412', coords: { lat: 43.7696, lng: 11.2558 }, search: 'Florence, Italy', dates: '6/25~27' },
+  { id: 'rom', name: '로마', flag: '🇮🇹', icon: '🏛️', country: 'Italy', theme: 'System · 시스템', tag: '1000년을 버티는 시스템', color: '#FEF3C7', accent: '#854D0E', coords: { lat: 41.9028, lng: 12.4964 }, search: 'Rome, Italy', dates: '6/27~30' },
+  { id: 'pos', name: '포지타노', flag: '🇮🇹', icon: '🌊', country: 'Italy', theme: 'Rest · 휴식', tag: '절대적 휴식이 만드는 명료함', color: '#BAE6FD', accent: '#075985', coords: { lat: 40.6280, lng: 14.4842 }, search: 'Positano, Amalfi Coast, Italy', dates: '6/30~7/3' },
+  { id: 'san', name: '산토리니', flag: '🇬🇷', icon: '🏝️', country: 'Greece', theme: 'Rebirth · 재탄생', tag: '파괴된 위에 다시 짓는다', color: '#CFFAFE', accent: '#155E75', coords: { lat: 36.3932, lng: 25.4615 }, search: 'Santorini, Greece', dates: '7/3~6' },
+  { id: 'ath', name: '아테네', flag: '🇬🇷', icon: '🦉', country: 'Greece', theme: 'Mission · 미션', tag: '나의 Nike를 발견하는 날', color: '#F5F5F4', accent: '#44403C', coords: { lat: 37.9838, lng: 23.7275 }, search: 'Athens, Greece', dates: '7/6~8' },
+  { id: 'dxb', name: '두바이·아부다비', flag: '🇦🇪', icon: '🌆', country: 'UAE', theme: 'Frontier · 미래', tag: '사막 위에 세운 청사진', color: '#FDE68A', accent: '#92400E', coords: { lat: 25.2048, lng: 55.2708 }, search: 'Dubai, United Arab Emirates', dates: '7/8~10' },
   { id: 'ret', name: '귀국', flag: '🇰🇷', icon: '🏠', country: 'Korea', theme: 'Return · 귀환', tag: '우리, 이제 시작이다', color: '#F5F5F4', accent: '#262626', coords: null, dates: '7/10~12' },
 ];
 
@@ -138,7 +138,7 @@ const RECOMMENDATIONS = {
       { t: 'Alpe di Siusi', why: '유럽 최대 고원 · 자전거 가능', tag: '🚲' },
     ],
     evening: [
-      { t: 'Hotel Digon 디너 (하프보드)', why: '5코스 티롤·이태리 퓨전', tag: '🍷' },
+      { t: 'X ALP 디너 (티롤 정통)', why: '산악 와인 + 알프스 정찬', tag: '🍷' },
       { t: 'Sella Pass 드라이브', why: '4개 봉우리 도는 산악도로 (007 모먼트)', tag: '🚗' },
       { t: '별 보기', why: '광공해 거의 없음 · 정원 라운저', tag: '⭐' },
     ],
@@ -194,7 +194,7 @@ const RECOMMENDATIONS = {
   },
   pos: {
     morning: [
-      { t: '호텔 발코니 조식', why: 'Villa Gabrisa 절벽 뷰 · 1시간 천천히', tag: '🛏️' },
+      { t: '호텔 발코니 조식', why: 'Palazzo Talamo 절벽 뷰 · 1시간 천천히', tag: '🛏️' },
       { t: 'Praiano 도보', why: '이웃 마을 (Sentiero degli Dei 시작점)', tag: '🚶' },
       { t: 'Spiaggia Grande 아침', why: '관광객 도착 전 09:00 전', tag: '🏖️' },
     ],
@@ -283,73 +283,70 @@ const RECOMMENDATIONS = {
 };
 
 const DAYS_DEFAULT = [
-  { n: 1, d: '6/15', w: '일', c: 'p', city: 'ICN→HKG→CDG', hotel: '기내', moves: '✈️ ICN 야간 출발', hl: '출국·기내 수면', food: '라운지 + 기내식', asi: 'MFA 100% + 복구코드 백업 + 여행 시작 선언문 1페이지', q: '나는 이번 여행에서 무엇을 비우고 채울 것인가?', mo: '비행기에서 손잡고 선언문 함께 작성', int: 'H' },
-  { n: 2, d: '6/16', w: '월', c: 'paris', city: '파리', hotel: 'Hotel Indigo Opera', moves: 'CDG 07:00 → RER B + Metro', hl: '도착·짐 보관·시차 적응 산책', food: '🥐 비스트로 + 카페', asi: '도시 디자인 관찰 메모', q: '파리의 첫 공기는 어떤 색인가?', mo: '센강 다리에서 첫 사진 (둘이서)', int: 'M' },
-  { n: 3, d: '6/17', w: '화', c: 'paris', city: '파리', hotel: 'Hotel Indigo Opera', moves: '도보 + Metro', hl: '루브르·판테온·Café de Flore', food: '🌟 Le Jules Verne (예약!)', asi: '취향 원칙 7개 초안 · "시대정신 한 단어"', q: '정보가 무료가 될수록 무엇이 희소해지는가?', mo: '에펠탑 라이트쇼 보며 클링크 "우리의 다음 페이지"', int: 'M' },
-  { n: 4, d: '6/18', w: '수', c: 'london', city: '파리→런던', hotel: 'Park Hyatt River Thames', moves: '🚄 Eurostar 09:00 → 10:30', hl: '체크인 + Sky Garden 일몰', food: 'Dishoom 또는 호텔', asi: '"이 도시가 표준화한 것" 첫 관찰', q: '국경을 넘는다는 것의 의미는?', mo: 'Sky Garden 일몰 둘이서 와인', int: 'M' },
-  { n: 5, d: '6/19', w: '목', c: 'london', city: '런던', hotel: 'Park Hyatt River Thames', moves: '도보·지하철', hl: 'British Museum + The City + Connaught Bar', food: '🌟 Connaught Bar 마티니', asi: 'British Museum 비즈니스 모델 · 동인도회사→빅테크', q: '제국이 모은 것이 디지털 시대에 어떻게 환생하는가?', mo: '같은 유물 앞 각자 1줄 → 교환', int: 'M+' },
-  { n: 6, d: '6/20', w: '금', c: 'london', city: '런던 (호텔 이동)', hotel: 'InterCon Park Lane', moves: '우버 30분', hl: 'Speaker\'s Corner + Hyde Park + Dishoom', food: 'Dishoom Covent Garden', asi: 'Speaker\'s Corner 1분 연설 녹화', q: '광장은 어떻게 혁명을 만드는가?', mo: 'Speaker\'s Corner 1분 연설 (녹화)', int: 'M' },
-  { n: 7, d: '6/21', w: '토', c: 'london', city: '런던 (옵션 Bath)', hotel: 'InterCon Park Lane', moves: '데이트레인 또는 시내', hl: 'Bath 데이트립 또는 V&A · Tower Bridge 일몰', food: '펍 + 와인', asi: '런던 챕터 마무리 1페이지', q: '내가 만들 인프라가 2000년 가려면?', mo: 'Tower Bridge 앞 1분 침묵 → 1줄', int: 'M' },
-  { n: 8, d: '6/22', w: '일', c: 'dol', city: '런던→베니스→Ortisei', hotel: 'Hotel Digon (Heaven)', moves: '🚕 5:00 호텔 ✈️ BA600 08:50→12:05 🚗 3h', hl: '베이스 정착 + 풀·사우나 (강행군 후 회복)', food: '하프보드 디너', asi: 'Trust Ledger 시작', q: '문명 밖에서 내 OS는 어떻게 리셋되는가?', mo: '풀에서 스파클링 + 별 보기', int: 'H' },
-  { n: 9, d: '6/23', w: '월', c: 'dol', city: 'Alpe di Siusi', hotel: 'Hotel Digon', moves: '🚠 케이블카 + 🚗', hl: 'Alpe di Siusi 트레킹 (3h) + Sella Pass 드라이브', food: '산장 점심 + 하프보드', asi: '"기술이 못 만들 가치 5개" 검증', q: '높은 곳에 오르면 무엇이 단순해지는가?', mo: '초원 누워 구름 보기 (폰 OFF 30분)', int: 'M' },
-  { n: 10, d: '6/24', w: '화', c: 'dol', city: '⭐ Seceda 일출', hotel: 'Hotel Digon', moves: '🌅 05:30 출발 → 케이블카', hl: '⭐ Seceda 정상 일출 + 1원칙 재정의 · 저녁 Anna Stuben', food: '🌟 Anna Stuben 미슐랭', asi: '⭐ "내가 풀려는 진짜 문제" 1페이지 (평생 보관)', q: '내가 풀려는 문제는 정확히 무엇인가? 핵심 변수는?', mo: '⭐ 일출 보며 둘이 무릎 꿇고 결심 1줄', int: 'H' },
-  { n: 11, d: '6/25', w: '수', c: 'flo', city: 'Ortisei→피렌체', hotel: 'FH55 Mediterraneo', moves: '🚗 09:00 → 14:30 (3.5h)', hl: '도착 + Piazzale Michelangelo 일몰', food: '와인+치즈 (피아짤레)', asi: '"내가 후원할 다음 시대" 메모', q: '예술과 자본은 어떻게 만나는가?', mo: '피아짤레 일몰 와인 + 둘만의 30분', int: 'M' },
-  { n: 12, d: '6/26', w: '목', c: 'flo', city: '피렌체', hotel: 'FH55 Mediterraneo', moves: '도보', hl: 'Uffizi (09:00) + Duomo 돔 등반 + All\'Antico Vinaio', food: '🌟 La Ménagère 또는 Trattoria Sostanza', asi: '메디치 후원 포트폴리오 분석 → 내 LP 기준', q: '나의 보티첼리는 어디에 있는가?', mo: '돔 꼭대기에서 다음 도시 베팅', int: 'M' },
-  { n: 13, d: '6/27', w: '금', c: 'rom', city: '피렌체→로마', hotel: 'Hyatt Regency Rome', moves: '🚆 Frecciarossa 1h30m', hl: '도착·체크인 · 자정 트레비 분수', food: 'Da Enzo (Trastevere)', asi: '"1000년 시스템 = 내 비즈니스" 가설', q: '왜 모든 길은 로마로 통하는가?', mo: '트레비 동전 → 10년 후 약속', int: 'L' },
-  { n: 14, d: '6/28', w: '토', c: 'rom', city: 'Colosseum 풀데이', hotel: 'Hyatt Regency Rome', moves: '도보', hl: 'Colosseum 07:00 + Forum + Palatine + Pantheon', food: '🌟 La Pergola 3⭐ 또는 Roscioli', asi: '"Colosseum 운영 시스템" → 현대 스포츠 비즈니스', q: '권력은 어떻게 시스템으로 전환되는가?', mo: '아레나에서 검투사 자세 5분', int: 'H' },
-  { n: 15, d: '6/29', w: '일', c: 'rom', city: '⭐ Vatican + Pantheon', hotel: 'Hyatt Regency Rome', moves: '도보', hl: '⭐ Vatican 06:30 가이드 + Cupola + Pantheon (광선)', food: 'Trastevere 산책', asi: '⭐ Pantheon 1페이지: "내 시스템이 1000년 가려면"', q: '내가 만들 회사가 100년 후에도 남으려면 지금 무엇을 결정해야 하나?', mo: '오쿨루스 아래 나란히 사진', int: 'H' },
-  { n: 16, d: '6/30', w: '월', c: 'pos', city: '로마→포지타노', hotel: 'Villa Gabrisa 허니문스위트', moves: '🚐 프라이빗 트랜스퍼 4h', hl: '⭐ 도착 + ⭐ La Sponda 캔들 400개 디너', food: '🌟 La Sponda (Le Sirenuse)', asi: '메모 잠시 쉼 — 오늘은 1줄만', q: '진짜 휴식은 어떤 결정을 가능하게 하는가?', mo: '⭐ 허니문스위트 자쿠지 + 프로세코', int: 'M' },
-  { n: 17, d: '7/1', w: '화', c: 'pos', city: '⭐ 프라이빗 보트', hotel: 'Villa Gabrisa', moves: '⛵ 보트 9-13시', hl: '카프리 보트 + Da Adolfo 점심 + 자쿠지', food: 'Da Adolfo (보트로만) + Da Gabrisa', asi: '⭐ 중간 결산 1차: 전반부 5챕터 인사이트 5개', q: '바다 위에서 본 절벽은 절벽 위 바다와 어떻게 다른가?', mo: '⭐ 보트 위 5챕터 베스트 1순간 1개씩 교환', int: 'L' },
-  { n: 18, d: '7/2', w: '수', c: 'tx', city: '포지타노→FCO 인근', hotel: 'Hilton Rome Airport', moves: '🚐 17:00 출발 → 21:00 도착', hl: '체크아웃 + 마지막 점심 + 안전 이동', food: '호텔 가벼운 룸서비스', asi: '"새벽 비행 = 호텔 직결" 결정의 가치', q: '리스크를 줄이는 것도 전략인가?', mo: '내일 새벽 출발 시간 둘이 같이 확인', int: 'M' },
-  { n: 19, d: '7/3', w: '목', c: 'san', city: 'FCO→ATH→JTR', hotel: 'NOŪS Santorini', moves: '✈️ 09:30→12:30 환승 ✈️ 15:05→15:55', hl: '도착 + NOŪS 발코니 일몰', food: 'NOŪS 다이닝 ($200 크레딧)', asi: 'ATH 환승 라운지 90분 깊은 메모', q: '왜 어떤 연결은 순조롭고 어떤 것은 어그러지는가?', mo: 'ATH 라운지 둘이만의 90분 회고', int: 'H' },
-  { n: 20, d: '7/4', w: '금', c: 'san', city: '⭐ 의도적 휴식일', hotel: 'NOŪS Santorini', moves: '호텔만', hl: '⭐ 아무것도 안 하기 + Oia 일몰', food: '🌟 Selene (Pyrgos, 미슐랭)', asi: '⭐ 중간 결산 2차: 절반 회고 + 후반부 의도', q: '내 인생의 다음 일몰은 어디일까?', mo: '⭐ Oia 일몰 폰 OFF — 끝까지 보기', int: 'L' },
-  { n: 21, d: '7/5', w: '토', c: 'san', city: 'Akrotiri + 보트', hotel: 'NOŪS Santorini', moves: '🚖 + ⛵', hl: 'Akrotiri 유적 (08:00) + 칼데라 보트 투어', food: 'Lucky\'s Souvlakis', asi: '"파괴 후 다시 짓는다면?" 1페이지', q: '나는 무엇을 부숴야 하는가?', mo: '온천에서 "우리가 부술 것 1개씩"', int: 'M' },
-  { n: 22, d: '7/6', w: '일', c: 'ath', city: 'Santorini→Athens', hotel: 'Athenaeum InterCon', moves: '✈️ A3357 12:30→13:20', hl: 'GB Roof Garden 디너 (Acropolis 야경)', food: '🌟 GB Roof Garden', asi: 'Acropolis 보며 \'Nike\' 키워드 5개', q: '문명의 원형은 무엇을 남겼는가?', mo: '아크로폴리스 야간 조명 보며 클링크', int: 'L' },
-  { n: 23, d: '7/7', w: '월', c: 'ath', city: '⭐ Acropolis + Pnyx', hotel: 'Athenaeum InterCon', moves: '도보 + 지하철', hl: '⭐ Acropolis 08:00 + Agora + ⭐ Pnyx Hill Nike 작성', food: 'Mani Mani', asi: '⭐⭐ "나의 Nike 1페이지" (평생 보관)', q: '내 인생의 승리는 어떤 모습인가? 시작할 1가지는?', mo: '⭐⭐ Pnyx Hill 각자의 Nike 1페이지 발표 (사진 10주년용)', int: 'M' },
-  { n: 24, d: '7/8', w: '화', c: 'dxb', city: 'Athens→Dubai', hotel: 'Andaz Dubai The Palm', moves: '✈️ A3958 08:05→13:50', hl: '도착 + Andaz 비치 (휴식 우선)', food: 'Andaz 비치 다이닝', asi: '"인공섬 Palm = 21세기 메디치급 베팅"', q: '인류는 2500년 만에 사막에 도시를 세웠다. 다음 2500년은?', mo: '비치 첫 모래 찍기 + 칵테일', int: 'H' },
-  { n: 25, d: '7/9', w: '수', c: 'dxb', city: '⭐ Burj Khalifa + At.mosphere', hotel: 'Grand Hyatt Dubai', moves: '🚖 호텔 이동 + 도보', hl: 'Museum of Future + Burj Khalifa 일몰 + ⭐ At.mosphere 디너', food: '🌟 At.mosphere (122층)', asi: '⭐⭐ 다음 1년 결심 3가지 (둘이 사인)', q: '내가 만들 미래도시의 청사진은 무엇인가?', mo: '⭐⭐ At.mosphere 결심 3가지 계약서 사인', int: 'M' },
-  { n: 26, d: '7/10', w: '목', c: 'dxb', city: 'Dubai→Abu Dhabi', hotel: 'Park Hyatt Abu Dhabi', moves: '🚖 1.5h', hl: 'Sheikh Zayed Mosque + Park Hyatt 비치', food: 'Park Hyatt 비치 다이닝', asi: '⭐⭐⭐ 중간결산 3차 (최종): 28일 8챕터 1줄씩 + 다음 1년 핵심', q: '나는 어떻게 변했는가? 변하지 않은 근본은?', mo: '⭐⭐ 비치에서 28일 베스트 5순간 발표', int: 'M' },
-  { n: 27, d: '7/11', w: '금', c: 'ret', city: 'DXB→HKG (귀국 시작)', hotel: '기내', moves: '✈️ 시간 미정', hl: '면세 + 라운지 + 비행 회고', food: '라운지 + 기내식', asi: '2년 준비 로드맵 (2028.02 목표) — 6개월 4 마일스톤', q: '이 여행에서 단 하나 실행한다면?', mo: '비행기에서 손 잡고 "우리, 시작이다"', int: 'M' },
-  { n: 28, d: '7/12', w: '토', c: 'ret', city: 'HKG→ICN (도착)', hotel: '집', moves: '✈️ + 🚖', hl: '⭐⭐⭐ 인천 도착 → "우리, 이제 시작이다"', food: '🍙 편의점 김밥 (해방감!)', asi: '⭐⭐⭐ 노트 봉투에 봉인 — 10주년에 개봉', q: '오늘부터 첫 1주일, 이 여행을 어떻게 살아내는가?', mo: '⭐⭐⭐ 인천 공항 손잡고 → 사진 (10주년용)', int: 'L' },
+  { n: 1, d: '6/15', w: '월', c: 'p', city: 'ICN→HKG→CDG', hotel: '기내', moves: '✈️ ICN 야간 출발', hl: '출국·기내 수면', food: '라운지 + 기내식', asi: 'MFA 100% + 복구코드 백업 + 여행 시작 선언문 1페이지', q: '나는 이번 여행에서 무엇을 비우고 채울 것인가?', mo: '비행기에서 손잡고 선언문 함께 작성', int: 'H' },
+  { n: 2, d: '6/16', w: '화', c: 'paris', city: '파리', hotel: 'Hotel Indigo Paris-Opera', moves: 'CDG 07:00 → RER B + Metro', hl: '도착·짐 보관·시차 적응 산책', food: '🥐 비스트로 + 카페', asi: '도시 디자인 관찰 메모', q: '파리의 첫 공기는 어떤 색인가?', mo: '센강 다리에서 첫 사진 (둘이서)', int: 'M' },
+  { n: 3, d: '6/17', w: '수', c: 'paris', city: '파리', hotel: 'Hotel Indigo Paris-Opera', moves: '도보 + Metro', hl: '루브르·판테온·Café de Flore', food: '🌟 Le Jules Verne (예약!)', asi: '취향 원칙 7개 초안 · "시대정신 한 단어"', q: '정보가 무료가 될수록 무엇이 희소해지는가?', mo: '에펠탑 라이트쇼 보며 클링크', int: 'M' },
+  { n: 4, d: '6/18', w: '목', c: 'london', city: '파리→런던', hotel: 'Park Hyatt River Thames', moves: '🚄 Eurostar 09:00 → 10:30', hl: '체크인 + Sky Garden 일몰', food: 'Dishoom 또는 호텔', asi: '"이 도시가 표준화한 것" 첫 관찰', q: '국경을 넘는다는 것의 의미는?', mo: 'Sky Garden 일몰 둘이서 와인', int: 'M' },
+  { n: 5, d: '6/19', w: '금', c: 'london', city: '런던', hotel: 'Park Hyatt River Thames', moves: '도보·지하철', hl: 'British Museum + The City + Connaught Bar', food: '🌟 Connaught Bar 마티니', asi: 'British Museum 비즈니스 모델 · 동인도회사→빅테크', q: '제국이 모은 것이 디지털 시대에 어떻게 환생하는가?', mo: '같은 유물 앞 각자 1줄 → 교환', int: 'M+' },
+  { n: 6, d: '6/20', w: '토', c: 'london', city: '런던 (호텔 이동)', hotel: 'InterCon Park Lane', moves: '우버 30분', hl: "Speaker's Corner + Hyde Park + Dishoom", food: 'Dishoom Covent Garden', asi: "Speaker's Corner 1분 연설 녹화", q: '광장은 어떻게 혁명을 만드는가?', mo: "Speaker's Corner 1분 연설 (녹화)", int: 'M' },
+  { n: 7, d: '6/21', w: '일', c: 'london', city: '런던 (옵션 Bath)', hotel: 'InterCon Park Lane', moves: '데이트레인 또는 시내', hl: 'Bath 데이트립 또는 V&A · Tower Bridge 일몰', food: '펍 + 와인', asi: '런던 챕터 마무리 1페이지', q: '내가 만들 인프라가 2000년 가려면?', mo: 'Tower Bridge 앞 1분 침묵 → 1줄', int: 'M' },
+  { n: 8, d: '6/22', w: '월', c: 'dol', city: '런던→베니스→Ortisei', hotel: 'X ALP', moves: '🚕 5:00 호텔 ✈️ BA600 08:50→12:05 🚗 3h', hl: '베이스 정착 + 풀·사우나 (강행군 후 회복)', food: 'X ALP 디너', asi: 'Trust Ledger 시작', q: '문명 밖에서 내 OS는 어떻게 리셋되는가?', mo: '풀에서 스파클링 + 별 보기', int: 'H' },
+  { n: 9, d: '6/23', w: '화', c: 'dol', city: 'Alpe di Siusi', hotel: 'X ALP', moves: '🚠 케이블카 + 🚗', hl: 'Alpe di Siusi 트레킹 (3h) + Sella Pass 드라이브', food: '산장 점심 + 호텔 디너', asi: '"기술이 못 만들 가치 5개" 검증', q: '높은 곳에 오르면 무엇이 단순해지는가?', mo: '초원 누워 구름 보기 (폰 OFF 30분)', int: 'M' },
+  { n: 10, d: '6/24', w: '수', c: 'dol', city: '⭐ Seceda 일출', hotel: 'X ALP', moves: '🌅 05:30 출발 → 케이블카', hl: '⭐ Seceda 정상 일출 + 1원칙 재정의 · 저녁 미슐랭', food: '🌟 Anna Stuben 미슐랭', asi: '⭐ "내가 풀려는 진짜 문제" 1페이지 (평생 보관)', q: '내가 풀려는 문제는 정확히 무엇인가? 핵심 변수는?', mo: '⭐ 일출 보며 둘이 무릎 꿇고 결심 1줄', int: 'H' },
+  { n: 11, d: '6/25', w: '목', c: 'flo', city: 'Ortisei→피렌체', hotel: 'FH55 Mediterraneo', moves: '🚗 09:00 → 14:30 (3.5h)', hl: '도착 + Piazzale Michelangelo 일몰', food: '와인+치즈 (피아짤레)', asi: '"내가 후원할 다음 시대" 메모', q: '예술과 자본은 어떻게 만나는가?', mo: '피아짤레 일몰 와인 + 둘만의 30분', int: 'M' },
+  { n: 12, d: '6/26', w: '금', c: 'flo', city: '피렌체', hotel: 'FH55 Mediterraneo', moves: '도보', hl: "Uffizi (09:00) + Duomo 돔 등반 + All'Antico Vinaio", food: '🌟 La Ménagère 또는 Trattoria Sostanza', asi: '메디치 후원 포트폴리오 분석 → 내 LP 기준', q: '나의 보티첼리는 어디에 있는가?', mo: '돔 꼭대기에서 다음 도시 베팅', int: 'M' },
+  { n: 13, d: '6/27', w: '토', c: 'rom', city: '피렌체→로마', hotel: 'Rome Cavalieri Waldorf', moves: '🚆 Frecciarossa 1h30m', hl: '도착·체크인 · 자정 트레비 분수', food: 'Da Enzo (Trastevere)', asi: '"1000년 시스템 = 내 비즈니스" 가설', q: '왜 모든 길은 로마로 통하는가?', mo: '트레비 동전 → 10년 후 약속', int: 'L' },
+  { n: 14, d: '6/28', w: '일', c: 'rom', city: 'Colosseum 풀데이', hotel: 'Rome Cavalieri Waldorf', moves: '도보', hl: 'Colosseum 07:00 + Forum + Palatine + Pantheon', food: '🌟 La Pergola 3⭐ 또는 Roscioli', asi: '"Colosseum 운영 시스템" → 현대 스포츠 비즈니스', q: '권력은 어떻게 시스템으로 전환되는가?', mo: '아레나에서 검투사 자세 5분', int: 'H' },
+  { n: 15, d: '6/29', w: '월', c: 'rom', city: '⭐ Vatican + Pantheon', hotel: 'Rome Cavalieri Waldorf', moves: '도보', hl: '⭐ Vatican 06:30 가이드 + Cupola + Pantheon (광선)', food: 'Trastevere 산책', asi: '⭐ Pantheon 1페이지: "내 시스템이 1000년 가려면"', q: '내가 만들 회사가 100년 후에도 남으려면 지금 무엇을 결정해야 하나?', mo: '오쿨루스 아래 나란히 사진', int: 'H' },
+  { n: 16, d: '6/30', w: '화', c: 'pos', city: '로마→포지타노', hotel: 'Palazzo Talamo', moves: '🚐 프라이빗 트랜스퍼 4h', hl: '⭐ 도착 + ⭐ La Sponda 캔들 400개 디너', food: '🌟 La Sponda (Le Sirenuse)', asi: '메모 잠시 쉼 — 오늘은 1줄만', q: '진짜 휴식은 어떤 결정을 가능하게 하는가?', mo: '⭐ Palazzo Talamo 발코니 + 프로세코', int: 'M' },
+  { n: 17, d: '7/1', w: '수', c: 'pos', city: '⭐ 프라이빗 보트', hotel: 'Palazzo Talamo', moves: '⛵ 보트 9-13시', hl: '카프리 보트 + Da Adolfo 점심 + 자쿠지', food: 'Da Adolfo (보트만) + 호텔 디너', asi: '⭐ 중간 결산 1차: 전반부 5챕터 인사이트 5개', q: '바다 위에서 본 절벽은 절벽 위 바다와 어떻게 다른가?', mo: '⭐ 보트 위 5챕터 베스트 1순간 1개씩 교환', int: 'L' },
+  { n: 18, d: '7/2', w: '목', c: 'pos', city: '⭐ 포지타노 휴식일', hotel: 'Palazzo Talamo', moves: '호텔 + 산책', hl: '⭐ 신들의 길 일부 또는 완전 휴식 · Le Sirenuse Champagne Bar', food: '🍷 Champagne Bar 칵테일 + 가벼운 디너', asi: '"3박 휴식이 가능하게 한 결정" 메모 + 내일 새벽 준비', q: '느린 시간이 가져다준 명료함은 무엇인가?', mo: '⭐ 발코니 마지막 일몰 + 다음 일정 계획', int: 'L' },
+  { n: 19, d: '7/3', w: '금', c: 'san', city: '포지타노→FCO→ATH→JTR', hotel: 'NOŪS Santorini', moves: '🚐 04:00 출발 ✈️ 09:30→12:30 환승 ✈️ 15:05→15:55', hl: '⭐ 새벽 출발 + 산토리니 도착 + NOŪS 발코니 일몰', food: 'NOŪS 다이닝 ($200 F&B 크레딧)', asi: 'ATH 환승 라운지 90분 깊은 메모', q: '왜 어떤 연결은 순조롭고 어떤 것은 어그러지는가?', mo: 'NOŪS 발코니 일몰 클링크', int: 'H' },
+  { n: 20, d: '7/4', w: '토', c: 'san', city: '⭐ 의도적 휴식일', hotel: 'NOŪS Santorini', moves: '호텔만', hl: '⭐ 아무것도 안 하기 + Oia 일몰', food: '🌟 Selene (Pyrgos, 미슐랭)', asi: '⭐ 중간 결산 2차: 절반 회고 + 후반부 의도', q: '내 인생의 다음 일몰은 어디일까?', mo: '⭐ Oia 일몰 폰 OFF — 끝까지 보기', int: 'L' },
+  { n: 21, d: '7/5', w: '일', c: 'san', city: 'Akrotiri + 보트', hotel: 'NOŪS Santorini', moves: '🚖 + ⛵', hl: 'Akrotiri 유적 (08:00) + 칼데라 보트 투어', food: "Lucky's Souvlakis", asi: '"파괴 후 다시 짓는다면?" 1페이지', q: '나는 무엇을 부숴야 하는가?', mo: '온천에서 "우리가 부술 것 1개씩"', int: 'M' },
+  { n: 22, d: '7/6', w: '월', c: 'ath', city: 'Santorini→Athens', hotel: 'Athenaeum InterCon', moves: '✈️ A3357 12:30→13:20', hl: 'GB Roof Garden 디너 (Acropolis 야경)', food: '🌟 GB Roof Garden', asi: "Acropolis 보며 'Nike' 키워드 5개", q: '문명의 원형은 무엇을 남겼는가?', mo: '아크로폴리스 야간 조명 보며 클링크', int: 'L' },
+  { n: 23, d: '7/7', w: '화', c: 'ath', city: '⭐ Acropolis + Pnyx', hotel: 'Athenaeum InterCon', moves: '도보 + 지하철', hl: '⭐ Acropolis 08:00 + Agora + ⭐ Pnyx Hill Nike 작성', food: 'Mani Mani', asi: '⭐⭐ "나의 Nike 1페이지" (평생 보관)', q: '내 인생의 승리는 어떤 모습인가? 시작할 1가지는?', mo: '⭐⭐ Pnyx Hill 각자의 Nike 1페이지 발표', int: 'M' },
+  { n: 24, d: '7/8', w: '수', c: 'dxb', city: 'Athens→Abu Dhabi', hotel: 'Park Hyatt Abu Dhabi', moves: '✈️ A3958 08:05→13:50 · 🚖 1.5h', hl: '도착 + Park Hyatt Saadiyat 비치 (휴식)', food: 'Park Hyatt 비치 다이닝', asi: '"인공섬 + 사막 도시" 첫 인상 메모', q: '인류는 2500년 만에 사막에 도시를 세웠다. 다음 2500년은?', mo: '비치 첫 모래 찍기 + 칵테일', int: 'H' },
+  { n: 25, d: '7/9', w: '목', c: 'dxb', city: '⭐ Dubai 데이트립', hotel: 'Park Hyatt Abu Dhabi', moves: '🚖 Dubai 왕복 1.5h × 2', hl: 'Museum of Future + Burj Khalifa 일몰 + ⭐ At.mosphere 디너', food: '🌟 At.mosphere (122층)', asi: '⭐⭐ 다음 1년 결심 3가지 (둘이 사인)', q: '내가 만들 미래도시의 청사진은 무엇인가?', mo: '⭐⭐ At.mosphere 결심 3가지 계약서 사인', int: 'M' },
+  { n: 26, d: '7/10', w: '금', c: 'dxb', city: 'Abu Dhabi → DXB (귀국 시작)', hotel: '기내', moves: '🕌 모스크 → 🚖 → ✈️ 저녁 비행', hl: 'Sheikh Zayed Mosque + 마지막 비치 + ⭐⭐⭐ 28일 최종 결산', food: 'Park Hyatt 마지막 점심 + 라운지', asi: '⭐⭐⭐ 중간결산 3차 (최종): 28일 8챕터 1줄씩 + 다음 1년 핵심', q: '나는 어떻게 변했는가? 변하지 않은 근본은?', mo: '⭐⭐ 모스크 손잡고 침묵 1분 + 비치 마지막 사진', int: 'M' },
+  { n: 27, d: '7/11', w: '토', c: 'ret', city: 'DXB→HKG (기내)', hotel: '기내', moves: '✈️ 비행 중', hl: '2년 준비 로드맵 작성', food: '라운지 + 기내식', asi: '⭐⭐ 2년 준비 로드맵 (2028.02 목표) — 6개월 4 마일스톤', q: '이 여행에서 단 하나 실행한다면?', mo: '비행기에서 손잡고 "우리, 시작이다"', int: 'M' },
+  { n: 28, d: '7/12', w: '일', c: 'ret', city: 'HKG→ICN (도착)', hotel: '집', moves: '✈️ + 🚖', hl: '⭐⭐⭐ 인천 도착 → "우리, 이제 시작이다"', food: '🍙 편의점 김밥 (해방감!)', asi: '⭐⭐⭐ 노트 봉투에 봉인 — 10주년에 개봉', q: '오늘부터 첫 1주일, 이 여행을 어떻게 살아내는가?', mo: '⭐⭐⭐ 인천 공항 손잡고 → 사진 (10주년용)', int: 'L' },
 ];
 
 const HOTELS_DEFAULT = [
-  { n: 1, ci: '6/15', co: '6/17', nights: 2, city: '파리', hotel: 'Hotel Indigo Paris-Opera', conf: 'IHG 포인트 2박', status: 'ok' },
-  { n: 2, ci: '6/17', co: '6/19', nights: 2, city: '런던', hotel: 'Park Hyatt London River Thames', conf: 'Hyatt · 39266341', status: 'ok' },
-  { n: 3, ci: '6/19', co: '6/21', nights: 2, city: '런던', hotel: 'InterContinental London Park Lane', conf: 'IHG · 83867534', status: 'ok' },
-  { n: 4, ci: '6/21', co: '6/24', nights: 3, city: 'Ortisei', hotel: 'Hotel Digon (Heaven Room)', conf: 'hoteldigon.com 직접예약', status: 'pending' },
-  { n: 5, ci: '6/24', co: '6/26', nights: 2, city: '피렌체', hotel: 'FH55 Grand Hotel Mediterraneo', conf: '49316SF000909', status: 'ok' },
-  { n: 6, ci: '6/26', co: '6/29', nights: 3, city: '로마', hotel: 'Hyatt Regency Rome / Cavalieri', conf: 'Hyatt 포인트', status: 'ok' },
-  { n: 7, ci: '6/29', co: '7/1', nights: 2, city: '포지타노', hotel: 'Villa Gabrisa (허니문 · ★중앙 발코니)', conf: 'villagabrisa.it 직접예약', status: 'pending' },
-  { n: 8, ci: '7/1', co: '7/2', nights: 1, city: 'FCO 인근', hotel: 'Hilton Rome Airport', conf: '⚠️ 즉시 예약 필요', status: 'urgent' },
-  { n: 9, ci: '7/2', co: '7/5', nights: 3, city: '산토리니', hotel: 'NOŪS Santorini', conf: '37172SF013416 · $200 F&B', status: 'ok' },
-  { n: 10, ci: '7/5', co: '7/7', nights: 2, city: '아테네', hotel: 'Athenaeum InterContinental', conf: '69841666 · $100 크레딧', status: 'ok' },
-  { n: 11, ci: '7/7', co: '7/8', nights: 1, city: '두바이 (Palm)', hotel: 'Andaz Dubai The Palm', conf: '150618RA009699', status: 'ok' },
-  { n: 12, ci: '7/8', co: '7/9', nights: 1, city: '두바이 (Downtown)', hotel: 'Grand Hyatt Dubai', conf: 'Hyatt · 54481384', status: 'ok' },
-  { n: 13, ci: '7/9', co: '7/10', nights: 1, city: '아부다비', hotel: 'Park Hyatt Abu Dhabi', conf: 'Hyatt · 60672934', status: 'ok' },
+  { n: 1, ci: '6/16', co: '6/18', nights: 2, city: '파리', hotel: 'Hotel Indigo Paris-Opera', conf: 'IHG 포인트 2박 · 확정', status: 'ok' },
+  { n: 2, ci: '6/18', co: '6/20', nights: 2, city: '런던', hotel: 'Park Hyatt London River Thames', conf: 'Hyatt · 39266341 · 확정', status: 'ok' },
+  { n: 3, ci: '6/20', co: '6/22', nights: 2, city: '런던', hotel: 'InterContinental London Park Lane', conf: 'IHG · 83867534 · 확정', status: 'ok' },
+  { n: 4, ci: '6/22', co: '6/25', nights: 3, city: 'Ortisei', hotel: 'X ALP', conf: '확정 ✓', status: 'ok' },
+  { n: 5, ci: '6/25', co: '6/27', nights: 2, city: '피렌체', hotel: 'FH55 Grand Hotel Mediterraneo', conf: '49316SF000909 · 확정', status: 'ok' },
+  { n: 6, ci: '6/27', co: '6/30', nights: 3, city: '로마', hotel: 'Rome Cavalieri, Waldorf Astoria', conf: 'Hyatt 포인트 · 확정', status: 'ok' },
+  { n: 7, ci: '6/30', co: '7/3', nights: 3, city: '포지타노', hotel: 'Palazzo Talamo', conf: '확정 ✓ (3박)', status: 'ok' },
+  { n: 8, ci: '7/3', co: '7/6', nights: 3, city: '산토리니', hotel: 'NOŪS Santorini', conf: '37172SF013416 · $200 F&B · 확정', status: 'ok' },
+  { n: 9, ci: '7/6', co: '7/8', nights: 2, city: '아테네', hotel: 'Athenaeum InterContinental', conf: '69841666 · $100 크레딧 · 확정', status: 'ok' },
+  { n: 10, ci: '7/8', co: '7/10', nights: 2, city: '아부다비', hotel: 'Park Hyatt Abu Dhabi', conf: 'Hyatt · 60672934 · 확정 (2박)', status: 'ok' },
 ];
 
 const FLIGHTS_DEFAULT = [
   { d: '6/15', route: 'ICN → HKG → CDG', no: 'Cathay (시간 미정)', t: '야간', note: '기내 수면 우선' },
-  { d: '6/17', route: 'Paris → London', no: 'Eurostar 9035', t: '09:00 → 10:30', note: 'Gare du Nord → St Pancras' },
-  { d: '6/21', route: 'LHR → VCE', no: 'BA600', t: '08:50 → 12:05', note: 'T5 출발 · Hertz 픽업' },
-  { d: '7/2', route: 'FCO → ATH', no: 'Aegean A3651', t: '09:30 → 12:30', note: '환승 2h35m' },
-  { d: '7/2', route: 'ATH → JTR', no: 'Aegean A3368', t: '15:05 → 15:55', note: '산토리니 도착' },
-  { d: '7/5', route: 'JTR → ATH', no: 'Aegean A3357', t: '12:30 → 13:20', note: '아테네 진입' },
-  { d: '7/7', route: 'ATH → DXB', no: 'Emirates A3958', t: '08:05 → 13:50', note: '두바이 직항' },
-  { d: '7/10', route: 'DXB → HKG → ICN', no: '귀국편 (시간 미정)', t: 'TBD', note: 'D-21 확정' },
+  { d: '6/18', route: 'Paris → London', no: 'Eurostar 9035', t: '09:00 → 10:30', note: 'Gare du Nord → St Pancras' },
+  { d: '6/22', route: 'LHR → VCE', no: 'BA600', t: '08:50 → 12:05', note: 'T5 출발 · Hertz 픽업' },
+  { d: '7/3', route: 'FCO → ATH', no: 'Aegean A3651', t: '09:30 → 12:30', note: '환승 2h35m · 새벽 4시 출발' },
+  { d: '7/3', route: 'ATH → JTR', no: 'Aegean A3368', t: '15:05 → 15:55', note: '산토리니 도착' },
+  { d: '7/6', route: 'JTR → ATH', no: 'Aegean A3357', t: '12:30 → 13:20', note: '아테네 진입' },
+  { d: '7/8', route: 'ATH → DXB', no: 'Emirates A3958', t: '08:05 → 13:50', note: '두바이 직항' },
+  { d: '7/10', route: 'DXB → HKG → ICN', no: '귀국편 (시간 미정)', t: 'TBD', note: '저녁 비행' },
 ];
 
 const CHECKLIST = {
   'D-30 · 즉시 처리': [
-    { id: 'c1', t: 'Hotel Digon 예약 확정 (6/22~24, Heaven Room, 하프보드)', urgent: true },
-    { id: 'c2', t: 'Villa Gabrisa 허니문스위트 예약 (6/30~7/1, ★중앙 발코니)', urgent: true },
-    { id: 'c3', t: 'Hilton Rome Airport 7/2 1박 예약 (FCO 도보권)', urgent: true },
-    { id: 'c4', t: 'Movi · Palazzo Talamo 환불 가능 여부 확인', urgent: false },
-    { id: 'c5', t: 'X Alp · La Maliosa FORA 취소 요청 (6/15 전 무료)', urgent: false },
-    { id: 'c6', t: '귀국편 DXB→HKG→ICN 시간 확정', urgent: false },
-    { id: 'c7', t: 'MFA 100% 활성화 (금융+메일+클라우드)', urgent: true },
-    { id: 'c8', t: '복구코드 백업 USB · 양가 공유', urgent: false },
+    { id: 'c1', t: '✅ 호텔 10건 전부 확정 (X ALP, Palazzo Talamo, Cavalieri, Park Hyatt AD 등)', urgent: false },
+    { id: 'c2', t: '귀국편 DXB→HKG→ICN 시간 확정 (Cathay)', urgent: true },
+    { id: 'c3', t: '포지타노→FCO 새벽 4시 프라이빗 트랜스퍼 예약', urgent: true },
+    { id: 'c4', t: '돌로미티 운전 IDP 발급 (Tyler)', urgent: true },
+    { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', urgent: false },
+    { id: 'c6', t: 'MFA 100% 활성화 (금융+메일+클라우드)', urgent: true },
+    { id: 'c7', t: '복구코드 백업 USB · 양가 공유', urgent: false },
+    { id: 'c8', t: '여행자보험 가입 (28일 분량)', urgent: true },
   ],
   'D-30 · 레스토랑 예약': [
     { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너 (4주 전)', urgent: true },
@@ -394,7 +391,7 @@ const CHECKLIST = {
     { id: 's2', t: '비상연락처 시트 양가 부모님 공유', urgent: true },
     { id: 's3', t: '호텔 13개 예약번호·체크인 시각 재확인', urgent: false },
     { id: 's4', t: '항공 7편 시간·터미널·라운지 확인', urgent: false },
-    { id: 's5', t: '허니문 어메니티 요청 (Digon · Villa Gabrisa 등)', urgent: false },
+    { id: 's5', t: '허니문 어메니티 요청 (X ALP · Cavalieri · Palazzo Talamo · NOŪS · Park Hyatt)', urgent: false },
     { id: 's6', t: '사진·메모 클라우드 자동백업 설정', urgent: false },
     { id: 's7', t: 'Pre-mortem 5개 작성 (내일 비행 망칠 리스크)', urgent: false },
   ],
@@ -649,6 +646,40 @@ const getCurrentStatus = () => {
   return { phase: 'during', dDay: 0, current: DAYS_DEFAULT[Math.min(dayIdx, 27)] };
 };
 
+// =================== ERROR BOUNDARY ===================
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { error };
+  }
+  componentDidCatch(error, info) {
+    console.error('App render error:', error, info);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ minHeight: '100vh', background: '#FAF6EF', color: '#1B2A4A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif' }}>
+          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🧭</div>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '10px' }}>잠시 길을 잃었어요</div>
+          <div style={{ fontSize: '13px', color: '#6B6760', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
+            화면을 그리는 중 문제가 생겼어요. 저장된 데이터(메모·사진·체크리스트)는 그대로 있으니 안심하세요. 새로고침하면 대부분 해결됩니다.
+          </div>
+          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: '#1B2A4A', color: '#FFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+            새로고침
+          </button>
+          <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '20px', wordBreak: 'break-word', maxWidth: '320px' }}>
+            {String((this.state.error && this.state.error.message) || this.state.error)}
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 // =================== APP ===================
 function App() {
   const [view, setView] = useState('home');
@@ -885,16 +916,15 @@ function App() {
       background: '#FAF6EF',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif',
       color: '#1B2A4A',
-      paddingBottom: '80px'
+      paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
     }}>
       <Header status={status} />
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
-        {!loaded && <div style={{ padding: '40px 0', textAlign: 'center', color: '#999' }}>Loading...</div>}
+        {!loaded && <div style={{ padding: '40px 0', textAlign: 'center', color: '#A8A39A' }}>Loading...</div>}
         {loaded && view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
         {loaded && view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
         {loaded && view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
-        {loaded && view === 'notes' && <Notes notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} />}
-        {loaded && view === 'output' && <Outputs outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+        {loaded && view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
         {loaded && view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       </main>
       <BottomNav view={view} setView={setView} />
@@ -905,10 +935,10 @@ function App() {
 // =================== HEADER ===================
 function Header({ status }) {
   const dDayLabel = status.phase === 'pre' 
-    ? `D - ${status.dDay}` 
+    ? `D-${status.dDay}` 
     : status.phase === 'during' 
-      ? `DAY ${status.current?.n} / 28`
-      : `+${status.dDay} 일`;
+      ? `Day ${status.current?.n}/28`
+      : `+${status.dDay}일`;
   
   const dDaySubtitle = status.phase === 'pre'
     ? '2026.06.15 출발'
@@ -917,55 +947,41 @@ function Header({ status }) {
       : '"우리, 이제 시작이다"';
 
   return (
-    <header>
-      {/* D-Day Banner - prominent at top */}
-      <div style={{
-        background: 'linear-gradient(135deg, #C9A961 0%, #B8954E 100%)',
-        color: '#1B2A4A',
-        padding: '14px 16px',
-        textAlign: 'center'
-      }}>
-        <div style={{
-          fontFamily: 'Georgia, serif',
-          fontSize: '28px',
-          fontWeight: 600,
-          letterSpacing: '2px',
-          lineHeight: 1
-        }}>
-          {dDayLabel}
+    <header style={{
+      background: '#1B2A4A',
+      color: '#FAF6EF',
+      padding: 'calc(16px + env(safe-area-inset-top)) 16px 14px',
+      borderBottom: '1px solid rgba(201,169,97,0.3)'
+    }}>
+      <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
+        <div>
+          <div style={{
+            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontSize: '18px',
+            fontWeight: 400,
+            letterSpacing: '0.5px',
+            lineHeight: 1
+          }}>
+            Grand Tour
+          </div>
+          <div style={{ fontSize: '10px', opacity: 0.6, letterSpacing: '1.5px', marginTop: '4px' }}>
+            TAEHYEON · JUYEON
+          </div>
         </div>
-        <div style={{
-          fontSize: '11px',
-          letterSpacing: '2px',
-          marginTop: '6px',
-          opacity: 0.85,
-          fontWeight: 500
-        }}>
-          {dDaySubtitle}
-        </div>
-      </div>
-
-      {/* Title block */}
-      <div style={{
-        background: '#1B2A4A',
-        color: '#FAF6EF',
-        padding: '28px 16px 22px',
-        textAlign: 'center'
-      }}>
-        <div style={{ fontSize: '10px', letterSpacing: '3px', opacity: 0.6, marginBottom: '6px' }}>
-          T H E &nbsp; E N T R E P R E N E U R ' S
-        </div>
-        <h1 style={{
-          fontFamily: 'Georgia, "Times New Roman", serif',
-          fontSize: '26px',
-          fontWeight: 400,
-          letterSpacing: '0.5px',
-          margin: '0 0 12px'
-        }}>
-          Grand Tour
-        </h1>
-        <div style={{ fontSize: '11px', opacity: 0.65, letterSpacing: '2px' }}>
-          TAEHYEON &nbsp;·&nbsp; JUYEON &nbsp;·&nbsp; 28 DAYS
+        <div style={{ textAlign: 'right' }}>
+          <div style={{
+            fontFamily: 'Georgia, serif',
+            fontSize: '20px',
+            fontWeight: 600,
+            color: '#C9A961',
+            lineHeight: 1,
+            letterSpacing: '1px'
+          }}>
+            {dDayLabel}
+          </div>
+          <div style={{ fontSize: '10px', opacity: 0.55, marginTop: '4px', letterSpacing: '0.5px' }}>
+            {dDaySubtitle}
+          </div>
         </div>
       </div>
     </header>
@@ -1025,7 +1041,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
             padding: '4px 8px',
             borderRadius: '4px',
             fontSize: '10px',
-            color: '#666',
+            color: '#6B6760',
             fontFamily: 'Georgia, serif',
             fontStyle: 'italic'
           }}>
@@ -1033,7 +1049,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '10px', color: '#999' }}>
+          <span style={{ fontSize: '10px', color: '#A8A39A' }}>
             {photo.savedAt ? new Date(photo.savedAt).toLocaleDateString() : ''}
           </span>
           <div style={{ display: 'flex', gap: '6px' }}>
@@ -1043,7 +1059,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
                 padding: '4px 10px',
                 fontSize: '11px',
                 background: '#FFF',
-                border: '1px solid #DDD',
+                border: '1px solid #E8E2D5',
                 borderRadius: '4px',
                 cursor: 'pointer'
               }}
@@ -1099,7 +1115,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
         }}
       >
         {uploading ? '⏳ 처리 중...' : '📸 오늘의 한 장 추가하기'}
-        <div style={{ fontSize: '10px', color: '#999', marginTop: '4px', fontWeight: 400 }}>
+        <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px', fontWeight: 400 }}>
           매일 1장 · 28장이 모이면 평생 회고록
         </div>
       </button>
@@ -1176,7 +1192,7 @@ function Recommendations({ chapterId, chapter }) {
   return (
     <Card>
       <SectionTitle>💡 {chapter.name} 추가 추천 활동</SectionTitle>
-      <div style={{ fontSize: '11px', color: '#888', marginBottom: '12px' }}>
+      <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px' }}>
         현재 계획에 더해 시도하면 좋을 큐레이션 · 탭하여 Google Maps에서 보기
       </div>
 
@@ -1226,7 +1242,7 @@ function Recommendations({ chapterId, chapter }) {
                 <div style={{ fontSize: '13px', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
                   {item.t}
                 </div>
-                <div style={{ fontSize: '11px', color: '#555', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>
                   {item.why}
                 </div>
                 {item.tip && (
@@ -1241,6 +1257,398 @@ function Recommendations({ chapterId, chapter }) {
         ))}
       </div>
     </Card>
+  );
+}
+
+// =================== PRIVATE (PIN-locked Notes + Outputs) ===================
+function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOutputContent }) {
+  const [unlocked, setUnlocked] = useState(false);
+  const [savedPin, setSavedPin] = useState(null);
+  const [pinChecked, setPinChecked] = useState(false);
+  const [view, setView] = useState('notes'); // 'notes' or 'outputs'
+  const [pinInput, setPinInput] = useState('');
+  const [setupStep, setSetupStep] = useState(1); // 1: first entry, 2: confirm
+  const [tempPin, setTempPin] = useState('');
+  const [error, setError] = useState('');
+  const [shake, setShake] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const stored = await storage.get('pin');
+      setSavedPin(stored || null);
+      setPinChecked(true);
+    })();
+  }, []);
+
+  const handleDigit = (d) => {
+    if (pinInput.length < 4) {
+      const newPin = pinInput + d;
+      setPinInput(newPin);
+      setError('');
+      if (newPin.length === 4) {
+        setTimeout(() => processPinComplete(newPin), 100);
+      }
+    }
+  };
+
+  const handleDelete = () => {
+    setPinInput(pinInput.slice(0, -1));
+    setError('');
+  };
+
+  const processPinComplete = async (pin) => {
+    if (savedPin) {
+      // Verify mode
+      if (pin === savedPin) {
+        setUnlocked(true);
+        setPinInput('');
+      } else {
+        setError('비밀번호가 틀렸어요');
+        setShake(true);
+        setTimeout(() => { setPinInput(''); setShake(false); }, 600);
+      }
+    } else {
+      // Setup mode
+      if (setupStep === 1) {
+        setTempPin(pin);
+        setSetupStep(2);
+        setPinInput('');
+      } else {
+        if (pin === tempPin) {
+          await storage.set('pin', tempPin);
+          setSavedPin(tempPin);
+          setUnlocked(true);
+          setPinInput('');
+        } else {
+          setError('일치하지 않아요. 처음부터 다시');
+          setShake(true);
+          setTimeout(() => {
+            setPinInput('');
+            setTempPin('');
+            setSetupStep(1);
+            setShake(false);
+          }, 800);
+        }
+      }
+    }
+  };
+
+  if (!pinChecked) {
+    return <div style={{ padding: '40px 0', textAlign: 'center', color: '#A8A39A', fontSize: '13px' }}>...</div>;
+  }
+
+  // Lock screen
+  if (!unlocked) {
+    const title = !savedPin
+      ? (setupStep === 1 ? '4자리 비밀번호 설정' : '한 번 더 입력')
+      : '비밀번호 입력';
+    const subtitle = !savedPin
+      ? '메모와 산물을 잠글 비밀번호 (Tyler 전용)'
+      : '메모와 산물을 보려면';
+
+    return (
+      <div style={{ padding: '40px 0 24px', maxWidth: '320px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.85 }}>🔒</div>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: '#1B2A4A', marginBottom: '6px' }}>
+          {title}
+        </div>
+        <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '32px' }}>
+          {subtitle}
+        </div>
+
+        {/* PIN dots */}
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: '14px',
+            marginBottom: '20px',
+            animation: shake ? 'shake 0.4s' : 'none'
+          }}
+        >
+          {[0, 1, 2, 3].map(i => (
+            <div
+              key={i}
+              style={{
+                width: '14px',
+                height: '14px',
+                borderRadius: '50%',
+                background: i < pinInput.length ? '#1B2A4A' : 'transparent',
+                border: '2px solid #1B2A4A',
+                transition: 'background 0.15s'
+              }}
+            />
+          ))}
+        </div>
+
+        {error && (
+          <div style={{ fontSize: '11px', color: '#C00000', marginBottom: '16px', minHeight: '14px' }}>
+            {error}
+          </div>
+        )}
+
+        {/* Numeric keypad */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '10px',
+          marginTop: '20px',
+          maxWidth: '280px',
+          margin: '20px auto 0'
+        }}>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
+            <button
+              key={d}
+              onClick={() => handleDigit(d.toString())}
+              style={{
+                padding: '18px',
+                fontSize: '20px',
+                background: '#FFF',
+                border: '1px solid #E8E2D5',
+                borderRadius: '50%',
+                width: '60px',
+                height: '60px',
+                margin: '0 auto',
+                cursor: 'pointer',
+                fontFamily: 'Georgia, serif',
+                color: '#1B2A4A',
+                fontWeight: 400
+              }}
+            >
+              {d}
+            </button>
+          ))}
+          <div></div>
+          <button
+            onClick={() => handleDigit('0')}
+            style={{
+              padding: '18px',
+              fontSize: '20px',
+              background: '#FFF',
+              border: '1px solid #E8E2D5',
+              borderRadius: '50%',
+              width: '60px',
+              height: '60px',
+              margin: '0 auto',
+              cursor: 'pointer',
+              fontFamily: 'Georgia, serif',
+              color: '#1B2A4A',
+              fontWeight: 400
+            }}
+          >0</button>
+          <button
+            onClick={handleDelete}
+            disabled={pinInput.length === 0}
+            style={{
+              padding: '18px',
+              fontSize: '16px',
+              background: 'transparent',
+              border: 'none',
+              cursor: pinInput.length ? 'pointer' : 'default',
+              color: pinInput.length ? '#A8A39A' : '#E8E2D5',
+              margin: '0 auto'
+            }}
+          >⌫</button>
+        </div>
+
+        {savedPin && (
+          <button
+            onClick={async () => {
+              if (confirm('비밀번호를 초기화할까? 모든 메모 + 산물은 그대로 유지됨.')) {
+                await storage.set('pin', null);
+                setSavedPin(null);
+                setSetupStep(1);
+                setPinInput('');
+              }
+            }}
+            style={{
+              marginTop: '24px',
+              fontSize: '11px',
+              color: '#A8A39A',
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              textDecoration: 'underline'
+            }}
+          >
+            비밀번호 초기화
+          </button>
+        )}
+
+        <style>{`@keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}`}</style>
+      </div>
+    );
+  }
+
+  // Unlocked content
+  const writtenCount = Object.keys(notes).filter(k => notes[k]?.content).length;
+  const outputDone = Object.values(outputs).filter(o => o.done).length;
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+        <h2 style={pageTitleStyle}>🔓 Tyler</h2>
+        <button
+          onClick={() => setUnlocked(false)}
+          style={{
+            fontSize: '11px',
+            color: '#A8A39A',
+            background: 'transparent',
+            border: '1px solid #E8E2D5',
+            borderRadius: '6px',
+            padding: '6px 10px',
+            cursor: 'pointer'
+          }}
+        >🔒 잠그기</button>
+      </div>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
+        메모 {writtenCount}/28 · 산물 {outputDone}/19
+      </div>
+
+      {/* Sub-tabs */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+        <SubTab active={view === 'notes'} onClick={() => setView('notes')}>📝 메모</SubTab>
+        <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 산물</SubTab>
+      </div>
+
+      {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} DAYS={DAYS} />}
+      {view === 'outputs' && <OutputsInner outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+    </div>
+  );
+}
+
+// Inner Notes (without the page header)
+function NotesInner({ notes, saveNote, DAYS }) {
+  return (
+    <div>
+      {DAYS.map(day => {
+        const ch = C(day.c);
+        const noteContent = notes[day.n]?.content;
+        return (
+          <details key={day.n} style={{
+            background: '#FFF',
+            border: '1px solid #E8E2D5',
+            borderRadius: '10px',
+            marginBottom: '8px',
+            padding: '14px 16px'
+          }}>
+            <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                background: ch.color,
+                color: ch.accent,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 600,
+                flexShrink: 0
+              }}>{day.n}</div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: '#A8A39A' }}>{day.d} · {ch.flag} {ch.name}</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
+                  💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
+                </div>
+              </div>
+              <div style={{ fontSize: '14px' }}>{noteContent ? '✏️' : '○'}</div>
+            </summary>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
+              <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '4px' }}>💭 질문</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+              </div>
+              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
+            </div>
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
+// Inner Outputs (without the page header)
+function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
+  return (
+    <div>
+      <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 500, color: '#9A3412', marginBottom: '4px' }}>
+          ⭐⭐⭐ 평생 보관 산물 4개
+        </div>
+        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>
+          Seceda 정상 · Pantheon · Nike · "우리, 이제 시작이다" 봉인
+        </div>
+      </div>
+
+      {OUTPUTS.map(o => {
+        const ch = C(o.ch);
+        const state = outputs[o.id] || {};
+        const stars = '⭐'.repeat(o.star || 0);
+        return (
+          <div key={o.id} style={{
+            background: '#FFF',
+            border: `1px solid ${state.done ? '#C9A961' : '#E8E2D5'}`,
+            borderRadius: '10px',
+            marginBottom: '10px',
+            padding: '14px 16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+              <button
+                onClick={() => toggleOutput(o.id)}
+                style={{
+                  width: '22px',
+                  height: '22px',
+                  borderRadius: '4px',
+                  border: `2px solid ${state.done ? '#1B2A4A' : '#CCC'}`,
+                  background: state.done ? '#1B2A4A' : 'transparent',
+                  color: '#FFF',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  flexShrink: 0,
+                  marginTop: '1px'
+                }}>
+                {state.done && '✓'}
+              </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                  <span style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, letterSpacing: '0.5px' }}>
+                    Day {o.day} · {ch.flag} {ch.name}
+                  </span>
+                  {stars && <span style={{ fontSize: '10px' }}>{stars}</span>}
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#A8A39A' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
+                  {o.t}
+                </div>
+                <div style={{ fontSize: '12px', color: '#6B6760', lineHeight: 1.5, marginTop: '4px' }}>
+                  {o.desc}
+                </div>
+              </div>
+            </div>
+            <textarea
+              placeholder="여기 산물 내용을 적거나 사진을 찍어 메모하세요..."
+              defaultValue={state.content || ''}
+              onBlur={(e) => saveOutputContent(o.id, e.target.value)}
+              style={{
+                width: '100%',
+                minHeight: '60px',
+                marginTop: '12px',
+                padding: '8px 10px',
+                fontSize: '12px',
+                lineHeight: 1.6,
+                border: '1px solid #E8E2D5',
+                borderRadius: '6px',
+                background: '#FFFEF9',
+                color: '#1B2A4A',
+                fontFamily: 'inherit',
+                resize: 'vertical',
+                boxSizing: 'border-box'
+              }}
+            />
+          </div>
+        );
+      })}
+    </div>
   );
 }
 
@@ -1333,7 +1741,7 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
           padding: '4px 10px',
           fontSize: '11px',
           background: '#FFF',
-          border: '1px solid #DDD',
+          border: '1px solid #E8E2D5',
           borderRadius: '4px',
           cursor: 'pointer'
         }}>취소</button>
@@ -1372,7 +1780,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
         marginBottom: '24px',
         textAlign: 'center'
       }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '15px', fontStyle: 'italic', lineHeight: 1.6, color: '#444' }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '15px', fontStyle: 'italic', lineHeight: 1.6, color: '#6B6760' }}>
           "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
           앞으로 무엇을 할지 결정하기 위해 떠난다."
         </div>
@@ -1405,14 +1813,14 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
           <div style={{ fontSize: '14px', lineHeight: 1.7, marginBottom: '8px' }}>
             <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
           </div>
-          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#555', marginBottom: '12px' }}>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#6B6760', marginBottom: '12px' }}>
             <strong>오늘:</strong> {today.hl}
           </div>
-          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#555', marginBottom: '12px' }}>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#6B6760', marginBottom: '12px' }}>
             <strong>식사:</strong> {today.food}
           </div>
           <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#999', marginBottom: '6px' }}>💭 오늘의 질문</div>
+            <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#A8A39A', marginBottom: '6px' }}>💭 오늘의 질문</div>
             <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#1B2A4A' }}>{today.q}</div>
           </div>
           <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px' }}>
@@ -1431,7 +1839,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       {status.phase === 'pre' && (
         <Card>
           <SectionTitle>출발까지 D-{status.dDay}</SectionTitle>
-          <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#555', marginBottom: '16px' }}>
+          <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#6B6760', marginBottom: '16px' }}>
             지금은 준비의 시간. 호텔 4건 + 레스토랑 6건 + 입장권 8건 예약을 차근차근 잡아두면 출발 시 마음이 가벼워.
           </div>
           <button onClick={() => setView('check')} style={btnStyle}>체크리스트 보기 →</button>
@@ -1441,7 +1849,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       {/* Stats Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '24px 0' }}>
         <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
-        <StatCard label="ASI 산물" value={`${outputDone}/19`} sub="평생 보관용 4개" onClick={() => setView('output')} />
+        <StatCard label="여행까지" value={status.dDay > 0 ? `D-${status.dDay}` : (status.phase === 'during' ? `Day ${status.current?.n || ''}` : '여행 후')} sub={status.phase === 'pre' ? '준비 단계' : (status.phase === 'during' ? '여행 중' : '귀국')} onClick={() => setView('days')} />
       </div>
 
       {/* Chapter Quick Nav */}
@@ -1470,7 +1878,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
                 <div style={{ fontSize: '14px', fontWeight: 500, color: ch.accent }}>
                   {ch.icon} {ch.name}
                 </div>
-                <div style={{ fontSize: '11px', color: '#666', marginTop: '2px' }}>
+                <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '2px' }}>
                   {ch.theme} · {ch.country}
                 </div>
               </div>
@@ -1482,21 +1890,21 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
         </div>
       </Card>
 
-      {/* Quick Links */}
+      {/* Quick Links — public only */}
       <Card>
         <SectionTitle>빠른 이동</SectionTitle>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button onClick={() => setView('days')} style={btnLightStyle}>📅 28일 일정</button>
           <button onClick={() => setView('logi')} style={btnLightStyle}>🗺️ 지도·예약</button>
-          <button onClick={() => setView('notes')} style={btnLightStyle}>📝 28일 메모</button>
-          <button onClick={() => setView('output')} style={btnLightStyle}>🎯 ASI 산물</button>
+          <button onClick={() => setView('check')} style={btnLightStyle}>✓ 체크리스트</button>
+          <button onClick={() => setView('check')} style={btnLightStyle}>👔 패킹 리스트</button>
         </div>
       </Card>
 
       {/* JSON Backup / Restore */}
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
-        <div style={{ fontSize: '11px', color: '#888', marginBottom: '12px', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px', lineHeight: 1.5 }}>
           모든 데이터 (체크 · 메모 · 사진 · 편집 · 산물) JSON 파일로 백업하거나 복원. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
@@ -1547,7 +1955,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>28일 일정</h2>
-      <div style={{ fontSize: '12px', color: '#888', marginBottom: '8px' }}>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '8px' }}>
         탭하여 상세 · 모든 필드 ✎ 편집 · 매일 사진 1장 · 도시 지도 + 추천
       </div>
       <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '20px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
@@ -1604,11 +2012,11 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                   {day.int === 'H' && <span style={{ fontSize: '10px', color: '#C00000' }}>●</span>}
                   {day.int === 'L' && <span style={{ fontSize: '10px', color: '#008000' }}>●</span>}
                 </div>
-                <div style={{ fontSize: '13px', color: '#444', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '13px', color: '#6B6760', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {day.hl}
                 </div>
               </div>
-              <div style={{ fontSize: '14px', color: '#999', display: 'flex', gap: '4px' }}>
+              <div style={{ fontSize: '14px', color: '#A8A39A', display: 'flex', gap: '4px' }}>
                 {hasPhoto && '📸'}
                 {hasNote && '✏️'}
                 <span>{isOpen ? '▾' : '▸'}</span>
@@ -1644,7 +2052,6 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                     resetEdit={resetEdit}
                     isEdited={isEdited}
                   />
-                  <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} question={day.q} />
 
                   {/* Recommendations for this chapter */}
                   {RECOMMENDATIONS[ch.id] && (
@@ -1701,7 +2108,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('city')}
             onReset={resetField('city')}
             edited={isEdited('day', day.n, 'city')}
-            textStyle={{ fontSize: '12px', color: '#333' }}
+            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
           />
         </EditRow>
         <EditRow label="🏨 호텔">
@@ -1710,7 +2117,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('hotel')}
             onReset={resetField('hotel')}
             edited={isEdited('day', day.n, 'hotel')}
-            textStyle={{ fontSize: '12px', color: '#333' }}
+            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
           />
         </EditRow>
         <EditRow label="🚐 이동">
@@ -1720,7 +2127,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onReset={resetField('moves')}
             edited={isEdited('day', day.n, 'moves')}
             multiline
-            textStyle={{ fontSize: '12px', color: '#333' }}
+            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
           />
         </EditRow>
         <EditRow label="✨ 활동">
@@ -1730,7 +2137,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onReset={resetField('hl')}
             edited={isEdited('day', day.n, 'hl')}
             multiline
-            textStyle={{ fontSize: '12px', color: '#333' }}
+            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
           />
         </EditRow>
         <EditRow label="🍽️ 식사">
@@ -1739,7 +2146,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('food')}
             onReset={resetField('food')}
             edited={isEdited('day', day.n, 'food')}
-            textStyle={{ fontSize: '12px', color: '#333' }}
+            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
           />
         </EditRow>
       </div>
@@ -1751,11 +2158,11 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           onReset={resetField('asi')}
           edited={isEdited('day', day.n, 'asi')}
           multiline
-          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#333' }}
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A' }}
         />
       </div>
       <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
-        <div style={{ fontSize: '10px', color: '#999', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
+        <div style={{ fontSize: '10px', color: '#A8A39A', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
         <EditableField
           value={day.q}
           onSave={editField('q')}
@@ -1783,7 +2190,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
 function EditRow({ label, children }) {
   return (
     <div style={{ fontSize: '12px', lineHeight: 1.5 }}>
-      <div style={{ color: '#999', marginBottom: '2px', fontSize: '11px' }}>{label}</div>
+      <div style={{ color: '#A8A39A', marginBottom: '2px', fontSize: '11px' }}>{label}</div>
       <div>{children}</div>
     </div>
   );
@@ -1814,7 +2221,7 @@ function NoteEditor({ dayId, note, save }) {
 
   return (
     <div>
-      <div style={{ fontSize: '11px', color: '#666', marginBottom: '6px', letterSpacing: '1px' }}>
+      <div style={{ fontSize: '11px', color: '#6B6760', marginBottom: '6px', letterSpacing: '1px' }}>
         📝 오늘의 1줄 인사이트
       </div>
       <textarea
@@ -1836,7 +2243,7 @@ function NoteEditor({ dayId, note, save }) {
           boxSizing: 'border-box'
         }}
       />
-      <div style={{ fontSize: '10px', color: '#999', marginTop: '4px', textAlign: 'right' }}>
+      <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px', textAlign: 'right' }}>
         {saving && '저장 중...'}
         {!saving && savedAt && `저장됨 · ${savedAt.toLocaleTimeString()}`}
         {!saving && !savedAt && note?.updated && `마지막 저장: ${new Date(note.updated).toLocaleDateString()}`}
@@ -1962,7 +2369,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
     }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
-        <div style={{ fontSize: '11px', color: '#999' }}>{done}/{total}</div>
+        <div style={{ fontSize: '11px', color: '#A8A39A' }}>{done}/{total}</div>
       </div>
       {items.map(item => {
         const edited = packingEdits[item.id] || {};
@@ -2030,13 +2437,13 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
                   }}>직접 추가</span>
                 )}
               </div>
-              <div style={{ fontSize: '11px', color: '#888', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                 <EditableField
                   value={displaySrc}
                   onSave={(v) => savePackingEdit(item.id, 'src', v)}
                   onReset={isEditedS ? () => resetPackingEdit(item.id, 'src') : null}
                   edited={isEditedS}
-                  textStyle={{ fontSize: '11px', color: '#888' }}
+                  textStyle={{ fontSize: '11px', color: '#A8A39A' }}
                 />
                 {item.custom && (
                   <button
@@ -2093,7 +2500,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
                 padding: '6px 12px',
                 fontSize: '11px',
                 background: '#FFF',
-                border: '1px solid #DDD',
+                border: '1px solid #E8E2D5',
                 borderRadius: '4px',
                 cursor: 'pointer'
               }}
@@ -2148,7 +2555,7 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
     }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
-        <div style={{ fontSize: '11px', color: '#999' }}>{done}/{total}</div>
+        <div style={{ fontSize: '11px', color: '#A8A39A' }}>{done}/{total}</div>
       </div>
       {items.map(item => {
         const checked = !!checks[item.id];
@@ -2194,7 +2601,7 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
                 {item.t}
               </div>
               {showSource && item.src && (
-                <div style={{ fontSize: '11px', color: '#888', marginTop: '4px' }}>{item.src}</div>
+                <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px' }}>{item.src}</div>
               )}
             </div>
           </button>
@@ -2210,7 +2617,7 @@ function Notes({ notes, saveNote, DAYS }) {
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>28일 메모</h2>
-      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px' }}>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
         매일 저녁 15분 · 작성한 메모: {written}/28
       </div>
 
@@ -2242,7 +2649,7 @@ function Notes({ notes, saveNote, DAYS }) {
                 {day.n}
               </div>
               <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '12px', color: '#999' }}>{day.d} · {ch.name}</div>
+                <div style={{ fontSize: '12px', color: '#A8A39A' }}>{day.d} · {ch.name}</div>
                 <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
                   💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
                 </div>
@@ -2253,7 +2660,7 @@ function Notes({ notes, saveNote, DAYS }) {
             </summary>
             <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
               <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
-                <div style={{ fontSize: '11px', color: '#999', marginBottom: '4px' }}>💭 질문</div>
+                <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '4px' }}>💭 질문</div>
                 <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
               </div>
               <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
@@ -2276,7 +2683,7 @@ function Outputs({ outputs, toggleOutput, saveOutputContent }) {
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>ASI 산물 트래커</h2>
-      <div style={{ fontSize: '12px', color: '#888', marginBottom: '20px' }}>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
         28일 동안 만들어내는 산물 · {done}/19 완료
       </div>
 
@@ -2284,7 +2691,7 @@ function Outputs({ outputs, toggleOutput, saveOutputContent }) {
         <div style={{ fontSize: '12px', fontWeight: 500, color: '#9A3412', marginBottom: '6px' }}>
           ⭐⭐⭐ 평생 보관 산물 4개
         </div>
-        <div style={{ fontSize: '11px', color: '#666', lineHeight: 1.6 }}>
+        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.6 }}>
           Seceda 정상 1페이지 · Pantheon 1페이지 · Nike 1페이지 · "우리, 이제 시작이다" 봉인
         </div>
       </div>
@@ -2329,7 +2736,7 @@ function Outputs({ outputs, toggleOutput, saveOutputContent }) {
                   <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#999' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
                     {o.t}
                   </div>
-                  <div style={{ fontSize: '12px', color: '#666', lineHeight: 1.5, marginTop: '4px' }}>
+                  <div style={{ fontSize: '12px', color: '#6B6760', lineHeight: 1.5, marginTop: '4px' }}>
                     {o.desc}
                   </div>
                 </div>
@@ -2369,8 +2776,8 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>위치 · 예약</h2>
-      <div style={{ fontSize: '12px', color: '#888', marginBottom: '16px' }}>
-        지도 · 호텔 · 항공 · 비용 통합
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '16px' }}>
+        지도 · 호텔 · 항공 · 환율 · 비용 통합
       </div>
 
       {/* Sub-tab nav */}
@@ -2378,12 +2785,14 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
         <SubTab active={subTab === 'map'} onClick={() => setSubTab('map')}>🗺️ 지도</SubTab>
         <SubTab active={subTab === 'hotels'} onClick={() => setSubTab('hotels')}>🏨 호텔</SubTab>
         <SubTab active={subTab === 'flights'} onClick={() => setSubTab('flights')}>✈️ 항공</SubTab>
+        <SubTab active={subTab === 'fx'} onClick={() => setSubTab('fx')}>💱 환율</SubTab>
         <SubTab active={subTab === 'costs'} onClick={() => setSubTab('costs')}>💰 비용</SubTab>
       </div>
 
       {subTab === 'map' && <MapView />}
       {subTab === 'hotels' && <HotelsList HOTELS={HOTELS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       {subTab === 'flights' && <FlightsList FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
+      {subTab === 'fx' && <ExchangeRates />}
       {subTab === 'costs' && <CostsSummary />}
     </div>
   );
@@ -2409,7 +2818,7 @@ function MapView() {
 
   return (
     <div>
-      <div style={{ fontSize: '12px', color: '#666', marginBottom: '12px', textAlign: 'center' }}>
+      <div style={{ fontSize: '12px', color: '#6B6760', marginBottom: '12px', textAlign: 'center' }}>
         9개 도시 · 4개 국가 · 약 11,000km
       </div>
 
@@ -2500,12 +2909,12 @@ function MapView() {
               <div style={{ fontSize: '18px', fontWeight: 600, color: selected.accent }}>
                 {selected.icon} {selected.name}
               </div>
-              <div style={{ fontSize: '11px', color: '#888' }}>
+              <div style={{ fontSize: '11px', color: '#A8A39A' }}>
                 {selected.country} · {selected.dates} · {selected.theme}
               </div>
             </div>
           </div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: '#555', marginBottom: '14px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: '#6B6760', marginBottom: '14px', lineHeight: 1.5 }}>
             "{selected.tag}"
           </div>
           <InlineMap
@@ -2523,7 +2932,7 @@ function MapView() {
       )}
 
       {/* Map legend */}
-      <div style={{ fontSize: '11px', color: '#999', marginTop: '16px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: '6px', lineHeight: 1.7 }}>
+      <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '16px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: '6px', lineHeight: 1.7 }}>
         🗺️ <strong>여행 순서</strong>: 위 SVG의 핀이나 챕터 탭을 누르면 해당 도시의 인라인 지도 + 추천 활동 표시
       </div>
     </div>
@@ -2583,7 +2992,7 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: '11px', color: '#666', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span>📍 {h.city} · {h.ci}~{h.co} ({h.nights}박)</span>
                 <a
                   href={mapsUrl(hotelMapQuery)}
@@ -2602,14 +3011,14 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   🗺️ Maps
                 </a>
               </div>
-              <div style={{ fontSize: '10px', color: '#999', marginTop: '6px', marginLeft: '4px' }}>
+              <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '6px', marginLeft: '4px' }}>
                 <span style={{ marginRight: '4px' }}>📋 Conf:</span>
                 <EditableField
                   value={h.conf}
                   onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
                   onReset={() => resetEdit('hotel', h.n, 'conf')}
                   edited={isEdited('hotel', h.n, 'conf')}
-                  textStyle={{ fontSize: '10px', color: '#999' }}
+                  textStyle={{ fontSize: '10px', color: '#A8A39A' }}
                 />
               </div>
             </div>
@@ -2632,15 +3041,15 @@ function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
             <div style={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}>{f.route}</div>
-            <div style={{ fontSize: '11px', color: '#999' }}>{f.d}</div>
+            <div style={{ fontSize: '11px', color: '#A8A39A' }}>{f.d}</div>
           </div>
-          <div style={{ fontSize: '11px', color: '#666', marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
             <EditableField
               value={f.no}
               onSave={(v) => saveEdit('flight', i, 'no', v)}
               onReset={() => resetEdit('flight', i, 'no')}
               edited={isEdited('flight', i, 'no')}
-              textStyle={{ fontSize: '11px', color: '#666' }}
+              textStyle={{ fontSize: '11px', color: '#6B6760' }}
             />
             <span style={{ color: '#CCC' }}>·</span>
             <EditableField
@@ -2648,20 +3057,134 @@ function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
               onSave={(v) => saveEdit('flight', i, 't', v)}
               onReset={() => resetEdit('flight', i, 't')}
               edited={isEdited('flight', i, 't')}
-              textStyle={{ fontSize: '11px', color: '#666' }}
+              textStyle={{ fontSize: '11px', color: '#6B6760' }}
             />
           </div>
-          <div style={{ fontSize: '10px', color: '#888', marginTop: '4px' }}>
+          <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px' }}>
             <EditableField
               value={f.note}
               onSave={(v) => saveEdit('flight', i, 'note', v)}
               onReset={() => resetEdit('flight', i, 'note')}
               edited={isEdited('flight', i, 'note')}
-              textStyle={{ fontSize: '10px', color: '#888' }}
+              textStyle={{ fontSize: '10px', color: '#A8A39A' }}
             />
           </div>
         </div>
       ))}
+    </Card>
+  );
+}
+
+// =================== EXCHANGE RATES ===================
+const FX_CURRENCIES = [
+  { code: 'EUR', label: '유로', flag: '🇪🇺', unit: 1 },
+  { code: 'CHF', label: '스위스 프랑', flag: '🇨🇭', unit: 1 },
+  { code: 'AED', label: 'UAE 디르함', flag: '🇦🇪', unit: 1 },
+  { code: 'JPY', label: '일본 엔', flag: '🇯🇵', unit: 100 },
+];
+
+function ExchangeRates() {
+  const [rates, setRates] = useState(null);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [stale, setStale] = useState(false);
+
+  const load = async (force) => {
+    setLoading(true);
+    const cache = await storage.get('fx_cache');
+    const fresh = cache && cache.savedAt && (Date.now() - cache.savedAt < 3600000);
+    if (cache && cache.rates && fresh && !force) {
+      setRates(cache.rates);
+      setUpdatedAt(cache.savedAt);
+      setStale(false);
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = await fetch('https://open.er-api.com/v6/latest/KRW');
+      const json = await res.json();
+      if (json && json.result === 'success' && json.rates) {
+        setRates(json.rates);
+        setUpdatedAt(Date.now());
+        setStale(false);
+        await storage.set('fx_cache', { rates: json.rates, savedAt: Date.now() });
+      } else {
+        throw new Error('bad response');
+      }
+    } catch (e) {
+      if (cache && cache.rates) {
+        setRates(cache.rates);
+        setUpdatedAt(cache.savedAt);
+        setStale(true);
+      }
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(false); }, []);
+
+  const toKRW = (code, unit) => {
+    if (!rates || !rates[code]) return null;
+    return Math.round(unit / rates[code]);
+  };
+
+  return (
+    <Card>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <SectionTitle>💱 실시간 환율</SectionTitle>
+        <button
+          onClick={() => load(true)}
+          disabled={loading}
+          style={{
+            background: '#FAF6EF',
+            border: '1px solid #E8E2D5',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            fontSize: '12px',
+            color: '#1B2A4A',
+            cursor: loading ? 'default' : 'pointer',
+            opacity: loading ? 0.5 : 1
+          }}
+        >
+          {loading ? '…' : '↻ 새로고침'}
+        </button>
+      </div>
+
+      {!rates && loading && (
+        <div style={{ fontSize: '12px', color: '#A8A39A', padding: '12px 0' }}>환율 불러오는 중…</div>
+      )}
+
+      {rates && (
+        <div>
+          {FX_CURRENCIES.map((c) => {
+            const v = toKRW(c.code, c.unit);
+            return (
+              <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #F0EBE0' }}>
+                <span style={{ fontSize: '13px', color: '#1B2A4A' }}>
+                  <span style={{ marginRight: '8px' }}>{c.flag}</span>
+                  {c.unit > 1 ? c.unit + ' ' : '1 '}{c.code}
+                  <span style={{ color: '#A8A39A', marginLeft: '6px', fontSize: '11px' }}>{c.label}</span>
+                </span>
+                <span style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: '#1B2A4A', fontWeight: 500 }}>
+                  {v != null ? v.toLocaleString() + '원' : '—'}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {!rates && !loading && (
+        <div style={{ fontSize: '12px', color: '#A8A39A', padding: '12px 0' }}>
+          환율을 불러오지 못했습니다. 네트워크 확인 후 ↻ 새로고침을 눌러주세요.
+        </div>
+      )}
+
+      <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '14px', lineHeight: 1.6 }}>
+        {updatedAt ? new Date(updatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 기준' : ''}
+        {stale ? ' · 오프라인 캐시' : ''}
+        <br />KRW 기준 · open.er-api.com (1시간 캐시)
+      </div>
     </Card>
   );
 }
@@ -2671,7 +3194,7 @@ function CostsSummary() {
   return (
     <Card>
       <SectionTitle>💰 비용 요약</SectionTitle>
-      <div style={{ fontSize: '12px', lineHeight: 2, color: '#444' }}>
+      <div style={{ fontSize: '12px', lineHeight: 2, color: '#6B6760' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>숙박 (25박)</span><span>~1,000만</span>
         </div>
@@ -2715,7 +3238,7 @@ function SectionTitle({ children }) {
     <div style={{
       fontSize: '11px',
       letterSpacing: '2px',
-      color: '#999',
+      color: '#A8A39A',
       marginBottom: '14px',
       textTransform: 'uppercase'
     }}>
@@ -2735,9 +3258,9 @@ function StatCard({ label, value, sub, onClick }) {
       cursor: 'pointer',
       width: '100%'
     }}>
-      <div style={{ fontSize: '11px', color: '#999', letterSpacing: '1px' }}>{label}</div>
+      <div style={{ fontSize: '11px', color: '#A8A39A', letterSpacing: '1px' }}>{label}</div>
       <div style={{ fontFamily: 'Georgia, serif', fontSize: '24px', color: '#1B2A4A', marginTop: '6px', fontWeight: 500 }}>{value}</div>
-      <div style={{ fontSize: '11px', color: '#888', marginTop: '2px' }}>{sub}</div>
+      <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '2px' }}>{sub}</div>
     </button>
   );
 }
@@ -2796,9 +3319,8 @@ function BottomNav({ view, setView }) {
     { id: 'home', label: '홈', icon: '🏠' },
     { id: 'days', label: '일정', icon: '📅' },
     { id: 'check', label: '체크', icon: '✓' },
-    { id: 'notes', label: '메모', icon: '📝' },
-    { id: 'output', label: '산물', icon: '🎯' },
     { id: 'logi', label: '지도', icon: '🗺️' },
+    { id: 'private', label: '🔒', icon: '🔒' },
   ];
 
   return (
@@ -2811,7 +3333,8 @@ function BottomNav({ view, setView }) {
       borderTop: '1px solid #E8E2D5',
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '8px 0 16px',
+      padding: '8px 0 0',
+      paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
       boxShadow: '0 -2px 8px rgba(0,0,0,0.04)',
       zIndex: 100
     }}>
@@ -2846,7 +3369,16 @@ function BottomNav({ view, setView }) {
 }
 
 
-ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <ErrorBoundary><App /></ErrorBoundary>
+);
+  </script>
+  <script>
+    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
+      window.addEventListener('load', function () {
+        navigator.serviceWorker.register('/sw.js').catch(function () {});
+      });
+    }
   </script>
 </body>
 </html>
