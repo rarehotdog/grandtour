@@ -599,7 +599,7 @@ const OUTPUTS = [
   { id: 'o8', t: '⭐ Pantheon 1페이지 (내 헌법 7조)', day: 15, ch: 'rom', desc: '"내 시스템이 1000년 가려면?" + 100년 원칙 7개', star: 3 },
   { id: 'o9', t: '휴식 선언문 + Stop/Continue/Start', day: 17, ch: 'pos', desc: '각 5개씩 → 다음 분기 "단 1개" 결정', star: 1 },
   { id: 'o10', t: '⭐ 중간 결산 1차 (전반부 5챕터)', day: 17, ch: 'pos', desc: '보트 위에서 인사이트 5개 정리', star: 2 },
-  { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'tx', desc: '내일 비행을 망칠 위험 + 사전 차단 액션', star: 1 },
+  { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'pos', desc: '내일 비행을 망칠 위험 + 사전 차단 액션', star: 1 },
   { id: 'o12', t: '⭐ 중간 결산 2차 + 후반부 의도', day: 20, ch: 'san', desc: '여행 절반 회고 + 기준점 정립', star: 2 },
   { id: 'o13', t: 'Kill List (멈출 것 10개)', day: 21, ch: 'san', desc: '"끝내는 것이 두려운 이유" 탐구', star: 1 },
   { id: 'o14', t: '⭐⭐ 나의 Nike 1페이지', day: 23, ch: 'ath', desc: 'Pnyx Hill에서. 시작·함께·멈출·1년 뒤. 평생 보관.', star: 3 },
@@ -692,7 +692,18 @@ function App() {
   const [edits, setEdits] = useState({ day: {}, hotel: {}, flight: {} });
   const [photos, setPhotos] = useState({});
   const [loaded, setLoaded] = useState(false);
-  const [status] = useState(getCurrentStatus());
+  const [status, setStatus] = useState(getCurrentStatus());
+
+  useEffect(() => {
+    const update = () => setStatus(getCurrentStatus());
+    const interval = setInterval(update, 60000);
+    const onVis = () => { if (!document.hidden) update(); };
+    document.addEventListener('visibilitychange', onVis);
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener('visibilitychange', onVis);
+    };
+  }, []);
 
   useEffect(() => {
     (async () => {
@@ -1856,7 +1867,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       <Card>
         <SectionTitle>9 챕터 · 도시 = 인간 능력</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {CHAPTERS.filter(c => !['p', 'tx', 'ret'].includes(c.id)).map(ch => (
+          {CHAPTERS.filter(c => !['p', 'ret'].includes(c.id)).map(ch => (
             <a
               key={ch.id}
               href={ch.search ? mapsUrl(ch.search) : '#'}
@@ -3101,7 +3112,10 @@ function ExchangeRates() {
       return;
     }
     try {
-      const res = await fetch('https://open.er-api.com/v6/latest/KRW');
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
+      const res = await fetch('https://open.er-api.com/v6/latest/KRW', { signal: ctrl.signal });
+      clearTimeout(timer);
       const json = await res.json();
       if (json && json.result === 'success' && json.rates) {
         setRates(json.rates);
