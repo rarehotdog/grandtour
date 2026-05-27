@@ -1,4 +1,3 @@
-[README.md](https://github.com/user-attachments/files/28300472/README.md)
 # Grand Tour 2026 — Taehyeon × Juyeon
 
 Honeymoon Companion App · 2026.06.15 → 07.12 · 28 days · 9 cities
