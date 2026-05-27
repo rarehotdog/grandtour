@@ -1,0 +1,17 @@
+# macOS
+.DS_Store
+
+# Editor / tooling state
+.omc/
+*.bak
+*.tmp
+*.log
+
+# Backups (kept locally only)
+grandtour-old/
+
+# Unrelated nested projects
+grand-tour-app/
+
+# Node (in case future tools are added)
+node_modules/

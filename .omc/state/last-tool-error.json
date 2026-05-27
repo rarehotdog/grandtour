@@ -1,7 +1,0 @@
-{
-  "tool_name": "Bash",
-  "tool_input_preview": "{\"command\":\"grep -c \\\"^function Notes\\\\b\\\\|^function Outputs\\\\b\\\" /Users/tyler.th/Desktop/grandtour/index.html && grep -n \\\"includePhotos\\\\|_meta\\\" /Users/tyler.th/Desktop/grandtour/index.html | head ...",
-  "error": "Exit code 1\n0",
-  "timestamp": "2026-05-27T13:22:11.681Z",
-  "retry_count": 1
-}
