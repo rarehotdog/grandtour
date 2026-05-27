@@ -1,172 +1,4 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#1B2A4A">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="apple-mobile-web-app-title" content="Grand Tour">
-  <title>Grand Tour 2026 · Taehyeon × Juyeon</title>
-  <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✈️</text></svg>">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
-  <style>
-    /* ===== Design Tokens (CSS Vars) ===== */
-    :root {
-      --navy: #1B2A4A;
-      --navy-soft: #2A3A5C;
-      --gold: #C9A961;
-      --gold-soft: #D4B670;
-      --cream: #FAF6EF;
-      --card: #FFFFFF;
-      --line: #E8E2D5;
-      --line-soft: #F5F0E8;
-      --text-1: #1B2A4A;
-      --text-2: #6B6760;
-      --text-3: #A8A39A;
-      --danger: #C00000;
-      --shadow-sm: 0 1px 3px rgba(27,42,74,0.06), 0 1px 2px rgba(27,42,74,0.04);
-      --shadow-md: 0 4px 14px rgba(27,42,74,0.08), 0 2px 4px rgba(27,42,74,0.04);
-      --shadow-lg: 0 14px 32px rgba(27,42,74,0.12), 0 4px 10px rgba(27,42,74,0.06);
-      --ease: cubic-bezier(0.4, 0, 0.2, 1);
-      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
-    }
-
-    /* ===== Resets ===== */
-    * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--cream); overscroll-behavior-y: contain; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
-      color: var(--text-1);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-    }
-    #root { min-height: 100vh; }
-    button { font-family: inherit; }
-    main { -webkit-overflow-scrolling: touch; }
-    main > div > div { scrollbar-width: thin; }
-
-    /* ===== Premium Micro-Interactions ===== */
-    button {
-      transition: transform 0.12s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease), opacity 0.18s var(--ease);
-    }
-    button:active:not(:disabled) {
-      transform: scale(0.97);
-    }
-    button:disabled { opacity: 0.5; cursor: not-allowed !important; }
-
-    /* Card with lift on hover (desktop) */
-    .gt-card {
-      transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out);
-      box-shadow: var(--shadow-sm);
-    }
-    @media (hover: hover) {
-      .gt-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-    }
-
-    /* Smooth view transition */
-    .gt-view {
-      animation: gtFadeIn 0.35s var(--ease-out);
-    }
-    @keyframes gtFadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* Skeleton shimmer */
-    .gt-skel {
-      background: linear-gradient(90deg, #EFEAE0 25%, #F5F0E8 50%, #EFEAE0 75%);
-      background-size: 200% 100%;
-      animation: gtShimmer 1.6s linear infinite;
-      border-radius: 8px;
-    }
-    @keyframes gtShimmer {
-      from { background-position: 200% 0; }
-      to   { background-position: -200% 0; }
-    }
-
-    /* Initial loading splash */
-    .loading {
-      padding: 80px 24px;
-      text-align: center;
-      color: var(--text-3);
-      font-size: 13px;
-      letter-spacing: 0.5px;
-      animation: gtFadeIn 0.4s ease-out;
-    }
-    .loading .logo {
-      font-family: var(--serif);
-      font-style: italic;
-      font-size: 32px;
-      color: var(--navy);
-      margin-bottom: 8px;
-      letter-spacing: 1px;
-    }
-    .loading .dot { display: inline-block; animation: gtPulse 1.4s ease-in-out infinite; }
-    .loading .dot:nth-child(2) { animation-delay: 0.2s; }
-    .loading .dot:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes gtPulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
-
-    /* Bottom nav active indicator */
-    .gt-tab { position: relative; }
-    .gt-tab .gt-tab-bar {
-      position: absolute;
-      top: -1px;
-      left: 50%;
-      width: 28px;
-      height: 2px;
-      background: var(--gold);
-      border-radius: 2px;
-      transform: translateX(-50%) scaleX(0);
-      transform-origin: center;
-      transition: transform 0.3s var(--ease-out);
-    }
-    .gt-tab.active .gt-tab-bar { transform: translateX(-50%) scaleX(1); }
-    .gt-tab .gt-tab-icon { transition: transform 0.25s var(--ease-out), opacity 0.25s; }
-    .gt-tab.active .gt-tab-icon { transform: scale(1.08); }
-
-    /* Glass header */
-    .gt-header {
-      position: sticky;
-      top: 0;
-      z-index: 50;
-      background: rgba(27,42,74,0.92);
-      -webkit-backdrop-filter: saturate(180%) blur(14px);
-      backdrop-filter: saturate(180%) blur(14px);
-      box-shadow: 0 1px 0 rgba(201,169,97,0.18), 0 6px 18px rgba(27,42,74,0.18);
-    }
-
-    /* Luxury serif utility */
-    .gt-serif { font-family: var(--serif); }
-
-    /* Subtle scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-thumb { background: rgba(27,42,74,0.15); border-radius: 4px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-
-    /* Reduce motion respect */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
-    }
-  </style>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
-</head>
-<body>
-  <div id="root">
-    <div class="loading">
-      <div class="logo">Grand Tour</div>
-      <div style="font-size: 10px; letter-spacing: 2.5px; color: #A8A39A; margin-bottom: 28px;">TAEHYEON · JUYEON · 2026</div>
-      <div><span class="dot">●</span> <span class="dot">●</span> <span class="dot">●</span></div>
-    </div>
-  </div>
-  <script type="text/babel" data-presets="react">
-const { useState, useEffect, useRef } = React;
+import React, { useState, useEffect, useRef } from 'react';
 
 // =================== TRIP DATA ===================
 const TRIP_START = new Date('2026-06-15T00:00:00');
@@ -447,38 +279,6 @@ const DAYS_DEFAULT = [
   { n: 27, d: '7/11', w: '토', c: 'ret', city: 'DXB→HKG (기내)', hotel: '기내', moves: '✈️ 비행 중', hl: '2년 준비 로드맵 작성', food: '라운지 + 기내식', asi: '⭐⭐ 2년 준비 로드맵 (2028.02 목표) — 6개월 4 마일스톤', q: '이 여행에서 단 하나 실행한다면?', mo: '비행기에서 손잡고 "우리, 시작이다"', int: 'M' },
   { n: 28, d: '7/12', w: '일', c: 'ret', city: 'HKG→ICN (도착)', hotel: '집', moves: '✈️ + 🚖', hl: '⭐⭐⭐ 인천 도착 → "우리, 이제 시작이다"', food: '🍙 편의점 김밥 (해방감!)', asi: '⭐⭐⭐ 노트 봉투에 봉인 — 10주년에 개봉', q: '오늘부터 첫 1주일, 이 여행을 어떻게 살아내는가?', mo: '⭐⭐⭐ 인천 공항 손잡고 → 사진 (10주년용)', int: 'L' },
 ];
-
-// Theme images per day (Unsplash direct links — ChapterFallback auto-kicks if broken)
-const THEME_IMAGES = {
-  1:  { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '비행기 창문과 구름' },
-  2:  { themeImg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=400&fit=crop&q=80', themeAlt: '파리 에펠탑' },
-  3:  { themeImg: 'https://images.unsplash.com/photo-1499856374874-3f4e79af58b5?w=800&h=400&fit=crop&q=80', themeAlt: '파리 야경' },
-  4:  { themeImg: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=400&fit=crop&q=80', themeAlt: '런던 스카이라인' },
-  5:  { themeImg: 'https://images.unsplash.com/photo-1520986606214-8b456906c813?w=800&h=400&fit=crop&q=80', themeAlt: '런던 빅벤' },
-  6:  { themeImg: 'https://images.unsplash.com/photo-1548345680-f5475ea5df84?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Hyde Park' },
-  7:  { themeImg: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Tower Bridge' },
-  8:  { themeImg: 'https://images.unsplash.com/photo-1504870712357-65ea720c1af0?w=800&h=400&fit=crop&q=80', themeAlt: '돌로미테 산 전경' },
-  9:  { themeImg: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=800&h=400&fit=crop&q=80', themeAlt: 'Alpe di Siusi 초원' },
-  10: { themeImg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=400&fit=crop&q=80', themeAlt: '알프스 일출' },
-  11: { themeImg: 'https://images.unsplash.com/photo-1534445538923-ab38f4978a0d?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 파노라마' },
-  12: { themeImg: 'https://images.unsplash.com/photo-1568797629192-789acf8e4df3?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 두오모' },
-  13: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 트레비 분수' },
-  14: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 콜로세움' },
-  15: { themeImg: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=400&fit=crop&q=80', themeAlt: '로마 판테온' },
-  16: { themeImg: 'https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=800&h=400&fit=crop&q=80', themeAlt: '포지타노 해안' },
-  17: { themeImg: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 보트' },
-  18: { themeImg: 'https://images.unsplash.com/photo-1501426026826-31c667bdf23d?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 일몰' },
-  19: { themeImg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 일몰' },
-  20: { themeImg: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&h=400&fit=crop&q=80', themeAlt: 'Oia 파란 돔' },
-  21: { themeImg: 'https://images.unsplash.com/photo-1601804551895-c75e4a8c7d31?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 칼데라' },
-  22: { themeImg: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 아크로폴리스 야경' },
-  23: { themeImg: 'https://images.unsplash.com/photo-1503152394-c571994fd383?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 파르테논 신전' },
-  24: { themeImg: 'https://images.unsplash.com/photo-1578894381226-a9cce3a5be1a?w=800&h=400&fit=crop&q=80', themeAlt: '아부다비 해변' },
-  25: { themeImg: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=400&fit=crop&q=80', themeAlt: '두바이 부르즈 할리파' },
-  26: { themeImg: 'https://images.unsplash.com/photo-1548532928-b34e3be62fc6?w=800&h=400&fit=crop&q=80', themeAlt: 'Sheikh Zayed Mosque' },
-  27: { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '귀국 기내 창문' },
-  28: { themeImg: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&h=400&fit=crop&q=80', themeAlt: '인천 도착' },
-};
 
 const HOTELS_DEFAULT = [
   { n: 1, ci: '6/16', co: '6/18', nights: 2, city: '파리', hotel: 'Hotel Indigo Paris-Opera', conf: 'IHG 포인트 2박 · 확정', status: 'ok' },
@@ -766,7 +566,7 @@ const OUTPUTS = [
   { id: 'o8', t: '⭐ Pantheon 1페이지 (내 헌법 7조)', day: 15, ch: 'rom', desc: '"내 시스템이 1000년 가려면?" + 100년 원칙 7개', star: 3 },
   { id: 'o9', t: '휴식 선언문 + Stop/Continue/Start', day: 17, ch: 'pos', desc: '각 5개씩 → 다음 분기 "단 1개" 결정', star: 1 },
   { id: 'o10', t: '⭐ 중간 결산 1차 (전반부 5챕터)', day: 17, ch: 'pos', desc: '보트 위에서 인사이트 5개 정리', star: 2 },
-  { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'pos', desc: '내일 비행을 망칠 위험 + 사전 차단 액션', star: 1 },
+  { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'tx', desc: '내일 비행을 망칠 위험 + 사전 차단 액션', star: 1 },
   { id: 'o12', t: '⭐ 중간 결산 2차 + 후반부 의도', day: 20, ch: 'san', desc: '여행 절반 회고 + 기준점 정립', star: 2 },
   { id: 'o13', t: 'Kill List (멈출 것 10개)', day: 21, ch: 'san', desc: '"끝내는 것이 두려운 이유" 탐구', star: 1 },
   { id: 'o14', t: '⭐⭐ 나의 Nike 1페이지', day: 23, ch: 'ath', desc: 'Pnyx Hill에서. 시작·함께·멈출·1년 뒤. 평생 보관.', star: 3 },
@@ -781,20 +581,15 @@ const OUTPUTS = [
 const storage = {
   async get(key) {
     try {
-      const val = localStorage.getItem(key);
-      return val ? JSON.parse(val) : null;
+      const r = await window.storage.get(key);
+      return r ? JSON.parse(r.value) : null;
     } catch (e) { return null; }
   },
   async set(key, value) {
     try {
-      localStorage.setItem(key, JSON.stringify(value));
+      await window.storage.set(key, JSON.stringify(value));
       return true;
-    } catch (e) {
-      if (e.name === 'QuotaExceededError') {
-        alert('저장 공간이 가득 찼습니다. 오래된 사진을 삭제하거나 브라우저 캐시를 정리해주세요.');
-      }
-      return false;
-    }
+    } catch (e) { return false; }
   }
 };
 
@@ -813,42 +608,8 @@ const getCurrentStatus = () => {
   return { phase: 'during', dDay: 0, current: DAYS_DEFAULT[Math.min(dayIdx, 27)] };
 };
 
-// =================== ERROR BOUNDARY ===================
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props);
-    this.state = { error: null };
-  }
-  static getDerivedStateFromError(error) {
-    return { error };
-  }
-  componentDidCatch(error, info) {
-    console.error('App render error:', error, info);
-  }
-  render() {
-    if (this.state.error) {
-      return (
-        <div style={{ minHeight: '100vh', background: '#FAF6EF', color: '#1B2A4A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif' }}>
-          <div style={{ fontSize: '40px', marginBottom: '16px' }}>🧭</div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '10px' }}>잠시 길을 잃었어요</div>
-          <div style={{ fontSize: '13px', color: '#6B6760', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
-            화면을 그리는 중 문제가 생겼어요. 저장된 데이터(메모·사진·체크리스트)는 그대로 있으니 안심하세요. 새로고침하면 대부분 해결됩니다.
-          </div>
-          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: '#1B2A4A', color: '#FFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
-            새로고침
-          </button>
-          <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '20px', wordBreak: 'break-word', maxWidth: '320px' }}>
-            {String((this.state.error && this.state.error.message) || this.state.error)}
-          </div>
-        </div>
-      );
-    }
-    return this.props.children;
-  }
-}
-
 // =================== APP ===================
-function App() {
+export default function App() {
   const [view, setView] = useState('home');
   const [checks, setChecks] = useState({});
   const [notes, setNotes] = useState({});
@@ -859,18 +620,7 @@ function App() {
   const [edits, setEdits] = useState({ day: {}, hotel: {}, flight: {} });
   const [photos, setPhotos] = useState({});
   const [loaded, setLoaded] = useState(false);
-  const [status, setStatus] = useState(getCurrentStatus());
-
-  useEffect(() => {
-    const update = () => setStatus(getCurrentStatus());
-    const interval = setInterval(update, 60000);
-    const onVis = () => { if (!document.hidden) update(); };
-    document.addEventListener('visibilitychange', onVis);
-    return () => {
-      clearInterval(interval);
-      document.removeEventListener('visibilitychange', onVis);
-    };
-  }, []);
+  const [status] = useState(getCurrentStatus());
 
   useEffect(() => {
     (async () => {
@@ -901,30 +651,20 @@ function App() {
   const getHotel = (h) => ({ ...h, ...(edits.hotel?.[h.n] || {}) });
   const getFlight = (f, i) => ({ ...f, ...(edits.flight?.[i] || {}) });
 
-  const DAYS = DAYS_DEFAULT.map(d => ({ ...getDay(d), ...(THEME_IMAGES[d.n] || {}) }));
+  const DAYS = DAYS_DEFAULT.map(getDay);
   const HOTELS = HOTELS_DEFAULT.map(getHotel);
   const FLIGHTS = FLIGHTS_DEFAULT.map(getFlight);
 
-  // Functional update prevents stale-closure bugs on rapid taps
-  // Subtle haptic on iOS-compatible browsers
-  const haptic = (ms = 8) => { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
-
-  const toggleCheck = (id) => {
-    haptic();
-    setChecks(prev => {
-      const updated = { ...prev, [id]: !prev[id] };
-      storage.set('check', updated);
-      return updated;
-    });
+  const toggleCheck = async (id) => {
+    const updated = { ...checks, [id]: !checks[id] };
+    setChecks(updated);
+    await storage.set('check', updated);
   };
 
-  const togglePacking = (id) => {
-    haptic();
-    setPacking(prev => {
-      const updated = { ...prev, [id]: !prev[id] };
-      storage.set('packing', updated);
-      return updated;
-    });
+  const togglePacking = async (id) => {
+    const updated = { ...packing, [id]: !packing[id] };
+    setPacking(updated);
+    await storage.set('packing', updated);
   };
 
   const saveNote = async (dayId, content) => {
@@ -1049,15 +789,10 @@ function App() {
     }
   };
 
-  // JSON Export (includePhotos=false by default — photos add ~3MB)
-  const exportData = async (includePhotos = false) => {
+  // JSON Export
+  const exportData = async () => {
     const data = {
-      version: '1.1',
-      _meta: {
-        exportedAt: new Date().toISOString(),
-        includePhotos,
-        note: 'PIN은 보안상 별도 재설정 필요. Photos excluded unless toggled on.',
-      },
+      version: '1.0',
       exportedAt: new Date().toISOString(),
       tyler: 'Taehyeon · Juyeon Grand Tour 2026',
       check: checks,
@@ -1065,7 +800,7 @@ function App() {
       outputs: outputs,
       packing: packing,
       edits: edits,
-      ...(includePhotos ? { photos: photos } : {}),
+      photos: photos,
       packing_custom: packingCustom,
       packing_edits: packingEdits,
     };
@@ -1073,7 +808,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}${includePhotos ? '-with-photos' : ''}.json`;
+    a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -1094,8 +829,7 @@ function App() {
         if (data.photos) { setPhotos(data.photos); await storage.set('photos', data.photos); }
         if (data.packing_custom) { setPackingCustom(data.packing_custom); await storage.set('packing_custom', data.packing_custom); }
         if (data.packing_edits) { setPackingEdits(data.packing_edits); await storage.set('packing_edits', data.packing_edits); }
-        // PIN은 의도적으로 복원하지 않음 (보안)
-        alert('복원 완료! 🎉\n\n💡 PIN은 복원되지 않습니다.\n잠금 화면 하단 "비밀번호 초기화"로 다시 설정해주세요.');
+        alert('복원 완료!');
       } catch (err) {
         alert('복원 실패: 파일 형식이 올바르지 않습니다.');
         console.error(err);
@@ -1110,27 +844,16 @@ function App() {
       background: '#FAF6EF',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif',
       color: '#1B2A4A',
-      paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
+      paddingBottom: '80px'
     }}>
       <Header status={status} />
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
-        {!loaded && (
-          <div style={{ padding: '32px 0' }}>
-            <div className="gt-skel" style={{ height: '120px', marginBottom: '14px' }} />
-            <div className="gt-skel" style={{ height: '72px', marginBottom: '14px' }} />
-            <div className="gt-skel" style={{ height: '72px', marginBottom: '14px' }} />
-            <div className="gt-skel" style={{ height: '180px' }} />
-          </div>
-        )}
-        {loaded && (
-          <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
-            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
-            {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
-            {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
-            {view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
-          </div>
-        )}
+        {!loaded && <div style={{ padding: '40px 0', textAlign: 'center', color: '#A8A39A' }}>Loading...</div>}
+        {loaded && view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
+        {loaded && view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
+        {loaded && view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
+        {loaded && view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+        {loaded && view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       </main>
       <BottomNav view={view} setView={setView} />
     </div>
@@ -1152,9 +875,11 @@ function Header({ status }) {
       : '"우리, 이제 시작이다"';
 
   return (
-    <header className="gt-header" style={{
+    <header style={{
+      background: '#1B2A4A',
       color: '#FAF6EF',
-      padding: 'calc(16px + env(safe-area-inset-top)) 16px 14px',
+      padding: '16px 16px 14px',
+      borderBottom: '1px solid rgba(201,169,97,0.3)'
     }}>
       <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
         <div>
@@ -1192,56 +917,6 @@ function Header({ status }) {
 }
 
 // =================== PHOTO SLOT ===================
-// =================== DAY HERO (theme image + chapter fallback) ===================
-function ChapterFallback({ chapter, day }) {
-  return (
-    <div style={{
-      width: '100%', height: '200px',
-      background: 'linear-gradient(135deg, ' + chapter.color + ' 0%, ' + chapter.accent + '22 100%)',
-      borderRadius: '10px', position: 'relative', overflow: 'hidden',
-      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-      marginBottom: '12px',
-    }}>
-      <div style={{ fontSize: '56px', lineHeight: 1 }}>{chapter.flag}</div>
-      <div style={{ fontSize: '18px', marginTop: '6px' }}>{chapter.icon} {chapter.name}</div>
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(transparent, rgba(0,0,0,0.55))',
-        padding: '24px 14px 10px',
-        color: '#fff', fontSize: '11px', fontWeight: 500,
-      }}>
-        Day {day.n} · {day.d}({day.w}) · {chapter.name}
-      </div>
-    </div>
-  );
-}
-
-function DayHero({ day, chapter }) {
-  const [err, setErr] = React.useState(false);
-  if (!day.themeImg || err) return <ChapterFallback chapter={chapter} day={day} />;
-  return (
-    <div style={{
-      width: '100%', height: '200px', borderRadius: '10px',
-      overflow: 'hidden', position: 'relative', marginBottom: '12px',
-    }}>
-      <img
-        src={day.themeImg}
-        alt={day.themeAlt || chapter.name}
-        onError={() => setErr(true)}
-        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
-      />
-      <div style={{
-        position: 'absolute', bottom: 0, left: 0, right: 0,
-        background: 'linear-gradient(transparent, rgba(0,0,0,0.60))',
-        padding: '28px 14px 10px',
-        color: '#fff', fontSize: '11px', fontWeight: 500,
-      }}>
-        Day {day.n} · {day.d}({day.w}) · {chapter.name}
-      </div>
-    </div>
-  );
-}
-
 function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -2014,7 +1689,6 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 
 // =================== HOME ===================
 function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, deletePhoto, exportData, importData }) {
-  const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
   const outputDone = Object.values(outputs).filter(o => o.done).length;
@@ -2110,7 +1784,7 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       <Card>
         <SectionTitle>9 챕터 · 도시 = 인간 능력</SectionTitle>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {CHAPTERS.filter(c => !['p', 'ret'].includes(c.id)).map(ch => (
+          {CHAPTERS.filter(c => !['p', 'tx', 'ret'].includes(c.id)).map(ch => (
             <a
               key={ch.id}
               href={ch.search ? mapsUrl(ch.search) : '#'}
@@ -2159,20 +1833,10 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
         <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px', lineHeight: 1.5 }}>
-          체크 · 메모 · 편집 · 산물 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.<br/>
-          <span style={{ color: '#C9A961' }}>⚠️ PIN은 복원되지 않으니 이전 후 재설정 필요.</span>
+          모든 데이터 (체크 · 메모 · 사진 · 편집 · 산물) JSON 파일로 백업하거나 복원. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: '12px', color: '#1B2A4A' }}>
-          <input
-            type="checkbox"
-            checked={withPhotos}
-            onChange={e => setWithPhotos(e.target.checked)}
-            style={{ width: '16px', height: '16px', accentColor: '#1B2A4A' }}
-          />
-          사진 포함 <span style={{ color: '#A8A39A' }}>(기본 OFF · 포함 시 ~수MB)</span>
-        </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <button onClick={() => exportData(withPhotos)} style={{
+          <button onClick={exportData} style={{
             padding: '12px',
             background: '#1B2A4A',
             color: '#FFF',
@@ -2290,9 +1954,6 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
             {isOpen && (
               <div style={{ padding: '0 16px 16px', borderTop: '1px solid #F5F0E8' }}>
                 <div style={{ paddingTop: '12px' }}>
-                  {/* Day Hero — theme image */}
-                  <DayHero day={day} chapter={ch} />
-
                   {/* Photo Slot */}
                   <PhotoSlot
                     dayId={day.n}
@@ -2878,6 +2539,164 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
   );
 }
 
+// =================== NOTES OVERVIEW ===================
+function Notes({ notes, saveNote, DAYS }) {
+  const written = Object.keys(notes).filter(k => notes[k]?.content).length;
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>28일 메모</h2>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
+        매일 저녁 15분 · 작성한 메모: {written}/28
+      </div>
+
+      {DAYS.map(day => {
+        const ch = C(day.c);
+        const noteContent = notes[day.n]?.content;
+        return (
+          <details key={day.n} style={{
+            background: '#FFF',
+            border: '1px solid #E8E2D5',
+            borderRadius: '10px',
+            marginBottom: '8px',
+            padding: '14px 16px'
+          }}>
+            <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                width: '32px',
+                height: '32px',
+                borderRadius: '6px',
+                background: ch.color,
+                color: ch.accent,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '12px',
+                fontWeight: 600,
+                flexShrink: 0
+              }}>
+                {day.n}
+              </div>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: '12px', color: '#A8A39A' }}>{day.d} · {ch.name}</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
+                  💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
+                </div>
+              </div>
+              <div style={{ fontSize: '14px' }}>
+                {noteContent ? '✏️' : '○'}
+              </div>
+            </summary>
+            <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
+              <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '4px' }}>💭 질문</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+              </div>
+              <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: '#9A3412', marginBottom: '4px' }}>💕 커플 모먼트</div>
+                <div style={{ fontSize: '12px', color: '#1B2A4A', lineHeight: 1.6 }}>{day.mo}</div>
+              </div>
+              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
+            </div>
+          </details>
+        );
+      })}
+    </div>
+  );
+}
+
+// =================== OUTPUTS ===================
+function Outputs({ outputs, toggleOutput, saveOutputContent }) {
+  const done = Object.values(outputs).filter(o => o.done).length;
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>ASI 산물 트래커</h2>
+      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
+        28일 동안 만들어내는 산물 · {done}/19 완료
+      </div>
+
+      <div style={{ background: '#FFF3E0', padding: '14px', borderRadius: '10px', marginBottom: '20px' }}>
+        <div style={{ fontSize: '12px', fontWeight: 500, color: '#9A3412', marginBottom: '6px' }}>
+          ⭐⭐⭐ 평생 보관 산물 4개
+        </div>
+        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.6 }}>
+          Seceda 정상 1페이지 · Pantheon 1페이지 · Nike 1페이지 · "우리, 이제 시작이다" 봉인
+        </div>
+      </div>
+
+      {OUTPUTS.map(o => {
+        const ch = C(o.ch);
+        const state = outputs[o.id] || {};
+        const stars = '⭐'.repeat(o.star || 0);
+        return (
+          <div key={o.id} style={{
+            background: '#FFF',
+            border: `1px solid ${state.done ? '#C9A961' : '#E8E2D5'}`,
+            borderRadius: '10px',
+            marginBottom: '10px',
+            overflow: 'hidden'
+          }}>
+            <div style={{ padding: '14px 16px' }}>
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <button
+                  onClick={() => toggleOutput(o.id)}
+                  style={{
+                    width: '22px',
+                    height: '22px',
+                    borderRadius: '4px',
+                    border: `2px solid ${state.done ? '#1B2A4A' : '#CCC'}`,
+                    background: state.done ? '#1B2A4A' : 'transparent',
+                    color: '#FFF',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    flexShrink: 0,
+                    marginTop: '1px'
+                  }}>
+                  {state.done && '✓'}
+                </button>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, letterSpacing: '0.5px' }}>
+                      Day {o.day} · {ch.name}
+                    </span>
+                    {stars && <span style={{ fontSize: '10px' }}>{stars}</span>}
+                  </div>
+                  <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#999' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
+                    {o.t}
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6B6760', lineHeight: 1.5, marginTop: '4px' }}>
+                    {o.desc}
+                  </div>
+                </div>
+              </div>
+              <textarea
+                placeholder="여기 산물 내용을 적거나 사진을 찍어 메모하세요..."
+                defaultValue={state.content || ''}
+                onBlur={(e) => saveOutputContent(o.id, e.target.value)}
+                style={{
+                  width: '100%',
+                  minHeight: '60px',
+                  marginTop: '12px',
+                  padding: '8px 10px',
+                  fontSize: '12px',
+                  lineHeight: 1.6,
+                  border: '1px solid #E8E2D5',
+                  borderRadius: '6px',
+                  background: '#FFFEF9',
+                  color: '#1B2A4A',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 // =================== LOGISTICS ===================
 function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
   const [subTab, setSubTab] = useState('map');
@@ -3210,10 +3029,7 @@ function ExchangeRates() {
       return;
     }
     try {
-      const ctrl = new AbortController();
-      const timer = setTimeout(() => ctrl.abort(), 8000);
-      const res = await fetch('https://open.er-api.com/v6/latest/KRW', { signal: ctrl.signal });
-      clearTimeout(timer);
+      const res = await fetch('https://open.er-api.com/v6/latest/KRW');
       const json = await res.json();
       if (json && json.result === 'success' && json.rates) {
         setRates(json.rates);
@@ -3331,16 +3147,14 @@ function CostsSummary() {
 }
 
 // =================== UI COMPONENTS ===================
-function Card({ children, onClick, style }) {
+function Card({ children }) {
   return (
-    <div className="gt-card" onClick={onClick} style={{
+    <div style={{
       background: '#FFF',
       border: '1px solid #E8E2D5',
-      borderRadius: '14px',
+      borderRadius: '12px',
       padding: '20px',
-      marginBottom: '16px',
-      cursor: onClick ? 'pointer' : 'default',
-      ...style,
+      marginBottom: '16px'
     }}>
       {children}
     </div>
@@ -3420,13 +3234,11 @@ const btnLightStyle = {
 };
 
 const pageTitleStyle = {
-  fontFamily: "'Cormorant Garamond', Georgia, serif",
-  fontSize: '30px',
-  fontWeight: 500,
+  fontFamily: 'Georgia, serif',
+  fontSize: '24px',
+  fontWeight: 400,
   color: '#1B2A4A',
-  marginBottom: '4px',
-  letterSpacing: '0.5px',
-  lineHeight: 1.1,
+  marginBottom: '4px'
 };
 
 // =================== BOTTOM NAV ===================
@@ -3449,35 +3261,31 @@ function BottomNav({ view, setView }) {
       borderTop: '1px solid #E8E2D5',
       display: 'flex',
       justifyContent: 'space-around',
-      padding: '8px 0 0',
-      paddingBottom: 'calc(16px + env(safe-area-inset-bottom))',
+      padding: '8px 0 16px',
       boxShadow: '0 -2px 8px rgba(0,0,0,0.04)',
       zIndex: 100
     }}>
       {tabs.map(t => (
         <button
           key={t.id}
-          onClick={() => { setView(t.id); if (navigator.vibrate) navigator.vibrate(8); }}
-          className={`gt-tab ${view === t.id ? 'active' : ''}`}
+          onClick={() => setView(t.id)}
           style={{
             background: 'transparent',
             border: 'none',
-            padding: '8px 4px 4px',
+            padding: '6px 4px',
             cursor: 'pointer',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '3px',
+            gap: '2px',
             flex: 1
           }}
         >
-          <span className="gt-tab-bar" />
-          <div className="gt-tab-icon" style={{ fontSize: '18px', opacity: view === t.id ? 1 : 0.45 }}>{t.icon}</div>
+          <div style={{ fontSize: '18px', opacity: view === t.id ? 1 : 0.4 }}>{t.icon}</div>
           <div style={{
             fontSize: '10px',
             color: view === t.id ? '#1B2A4A' : '#999',
-            fontWeight: view === t.id ? 500 : 400,
-            letterSpacing: '0.3px',
+            fontWeight: view === t.id ? 500 : 400
           }}>
             {t.label}
           </div>
@@ -3486,18 +3294,3 @@ function BottomNav({ view, setView }) {
     </nav>
   );
 }
-
-
-ReactDOM.createRoot(document.getElementById('root')).render(
-  <ErrorBoundary><App /></ErrorBoundary>
-);
-  </script>
-  <script>
-    if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
-      window.addEventListener('load', function () {
-        navigator.serviceWorker.register('/sw.js').catch(function () {});
-      });
-    }
-  </script>
-</body>
-</html>

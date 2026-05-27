@@ -1,0 +1,20 @@
+{
+  "name": "Grand Tour 2026 · Taehyeon × Juyeon",
+  "short_name": "Grand Tour",
+  "description": "Taehyeon × Juyeon 2026 유럽·UAE 신혼여행 동반자",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "lang": "ko",
+  "background_color": "#FAF6EF",
+  "theme_color": "#1B2A4A",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231B2A4A'/><text x='50' y='72' text-anchor='middle' font-size='58'>%E2%9C%88%EF%B8%8F</text></svg>",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
