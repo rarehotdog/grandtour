@@ -313,6 +313,38 @@ const DAYS_DEFAULT = [
   { n: 28, d: '7/12', w: '일', c: 'ret', city: 'HKG→ICN (도착)', hotel: '집', moves: '✈️ + 🚖', hl: '⭐⭐⭐ 인천 도착 → "우리, 이제 시작이다"', food: '🍙 편의점 김밥 (해방감!)', asi: '⭐⭐⭐ 노트 봉투에 봉인 — 10주년에 개봉', q: '오늘부터 첫 1주일, 이 여행을 어떻게 살아내는가?', mo: '⭐⭐⭐ 인천 공항 손잡고 → 사진 (10주년용)', int: 'L' },
 ];
 
+// Theme images per day (Unsplash direct links — ChapterFallback auto-kicks if broken)
+const THEME_IMAGES = {
+  1:  { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '비행기 창문과 구름' },
+  2:  { themeImg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=400&fit=crop&q=80', themeAlt: '파리 에펠탑' },
+  3:  { themeImg: 'https://images.unsplash.com/photo-1499856374874-3f4e79af58b5?w=800&h=400&fit=crop&q=80', themeAlt: '파리 야경' },
+  4:  { themeImg: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=400&fit=crop&q=80', themeAlt: '런던 스카이라인' },
+  5:  { themeImg: 'https://images.unsplash.com/photo-1520986606214-8b456906c813?w=800&h=400&fit=crop&q=80', themeAlt: '런던 빅벤' },
+  6:  { themeImg: 'https://images.unsplash.com/photo-1548345680-f5475ea5df84?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Hyde Park' },
+  7:  { themeImg: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Tower Bridge' },
+  8:  { themeImg: 'https://images.unsplash.com/photo-1504870712357-65ea720c1af0?w=800&h=400&fit=crop&q=80', themeAlt: '돌로미테 산 전경' },
+  9:  { themeImg: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=800&h=400&fit=crop&q=80', themeAlt: 'Alpe di Siusi 초원' },
+  10: { themeImg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=400&fit=crop&q=80', themeAlt: '알프스 일출' },
+  11: { themeImg: 'https://images.unsplash.com/photo-1534445538923-ab38f4978a0d?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 파노라마' },
+  12: { themeImg: 'https://images.unsplash.com/photo-1568797629192-789acf8e4df3?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 두오모' },
+  13: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 트레비 분수' },
+  14: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 콜로세움' },
+  15: { themeImg: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=400&fit=crop&q=80', themeAlt: '로마 판테온' },
+  16: { themeImg: 'https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=800&h=400&fit=crop&q=80', themeAlt: '포지타노 해안' },
+  17: { themeImg: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 보트' },
+  18: { themeImg: 'https://images.unsplash.com/photo-1501426026826-31c667bdf23d?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 일몰' },
+  19: { themeImg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 일몰' },
+  20: { themeImg: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&h=400&fit=crop&q=80', themeAlt: 'Oia 파란 돔' },
+  21: { themeImg: 'https://images.unsplash.com/photo-1601804551895-c75e4a8c7d31?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 칼데라' },
+  22: { themeImg: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 아크로폴리스 야경' },
+  23: { themeImg: 'https://images.unsplash.com/photo-1503152394-c571994fd383?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 파르테논 신전' },
+  24: { themeImg: 'https://images.unsplash.com/photo-1578894381226-a9cce3a5be1a?w=800&h=400&fit=crop&q=80', themeAlt: '아부다비 해변' },
+  25: { themeImg: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=400&fit=crop&q=80', themeAlt: '두바이 부르즈 할리파' },
+  26: { themeImg: 'https://images.unsplash.com/photo-1548532928-b34e3be62fc6?w=800&h=400&fit=crop&q=80', themeAlt: 'Sheikh Zayed Mosque' },
+  27: { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '귀국 기내 창문' },
+  28: { themeImg: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&h=400&fit=crop&q=80', themeAlt: '인천 도착' },
+};
+
 const HOTELS_DEFAULT = [
   { n: 1, ci: '6/16', co: '6/18', nights: 2, city: '파리', hotel: 'Hotel Indigo Paris-Opera', conf: 'IHG 포인트 2박 · 확정', status: 'ok' },
   { n: 2, ci: '6/18', co: '6/20', nights: 2, city: '런던', hotel: 'Park Hyatt London River Thames', conf: 'Hyatt · 39266341 · 확정', status: 'ok' },
@@ -734,7 +766,7 @@ function App() {
   const getHotel = (h) => ({ ...h, ...(edits.hotel?.[h.n] || {}) });
   const getFlight = (f, i) => ({ ...f, ...(edits.flight?.[i] || {}) });
 
-  const DAYS = DAYS_DEFAULT.map(getDay);
+  const DAYS = DAYS_DEFAULT.map(d => ({ ...getDay(d), ...(THEME_IMAGES[d.n] || {}) }));
   const HOTELS = HOTELS_DEFAULT.map(getHotel);
   const FLIGHTS = FLIGHTS_DEFAULT.map(getFlight);
 
@@ -1000,6 +1032,56 @@ function Header({ status }) {
 }
 
 // =================== PHOTO SLOT ===================
+// =================== DAY HERO (theme image + chapter fallback) ===================
+function ChapterFallback({ chapter, day }) {
+  return (
+    <div style={{
+      width: '100%', height: '200px',
+      background: 'linear-gradient(135deg, ' + chapter.color + ' 0%, ' + chapter.accent + '22 100%)',
+      borderRadius: '10px', position: 'relative', overflow: 'hidden',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+      marginBottom: '12px',
+    }}>
+      <div style={{ fontSize: '56px', lineHeight: 1 }}>{chapter.flag}</div>
+      <div style={{ fontSize: '18px', marginTop: '6px' }}>{chapter.icon} {chapter.name}</div>
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.55))',
+        padding: '24px 14px 10px',
+        color: '#fff', fontSize: '11px', fontWeight: 500,
+      }}>
+        Day {day.n} · {day.d}({day.w}) · {chapter.name}
+      </div>
+    </div>
+  );
+}
+
+function DayHero({ day, chapter }) {
+  const [err, setErr] = React.useState(false);
+  if (!day.themeImg || err) return <ChapterFallback chapter={chapter} day={day} />;
+  return (
+    <div style={{
+      width: '100%', height: '200px', borderRadius: '10px',
+      overflow: 'hidden', position: 'relative', marginBottom: '12px',
+    }}>
+      <img
+        src={day.themeImg}
+        alt={day.themeAlt || chapter.name}
+        onError={() => setErr(true)}
+        style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+      />
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0,
+        background: 'linear-gradient(transparent, rgba(0,0,0,0.60))',
+        padding: '28px 14px 10px',
+        color: '#fff', fontSize: '11px', fontWeight: 500,
+      }}>
+        Day {day.n} · {day.d}({day.w}) · {chapter.name}
+      </div>
+    </div>
+  );
+}
+
 function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -2037,6 +2119,9 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
             {isOpen && (
               <div style={{ padding: '0 16px 16px', borderTop: '1px solid #F5F0E8' }}>
                 <div style={{ paddingTop: '12px' }}>
+                  {/* Day Hero — theme image */}
+                  <DayHero day={day} chapter={ch} />
+
                   {/* Photo Slot */}
                   <PhotoSlot
                     dayId={day.n}
