@@ -2013,6 +2013,260 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 }
 
 // =================== HOME ===================
+// =================== STORYTELLING WIDGETS ===================
+
+// Premium D-Day hero — pre-trip cinematic countdown
+function HeroCountdown({ status, setView }) {
+  const totalPrepDays = 60; // Visual horizon (~2 months prep window)
+  const elapsed = Math.max(0, totalPrepDays - status.dDay);
+  const pct = Math.min(100, Math.round((elapsed / totalPrepDays) * 100));
+  return (
+    <div style={{
+      position: 'relative',
+      background: 'linear-gradient(135deg, #1B2A4A 0%, #2A3A5C 50%, #1B2A4A 100%)',
+      color: '#FAF6EF',
+      borderRadius: '18px',
+      padding: '36px 24px 28px',
+      marginBottom: '24px',
+      overflow: 'hidden',
+      boxShadow: '0 14px 32px rgba(27,42,74,0.18), 0 4px 10px rgba(27,42,74,0.10)',
+    }}>
+      {/* Decorative starburst */}
+      <div style={{
+        position: 'absolute', top: '-40px', right: '-40px',
+        width: '180px', height: '180px',
+        background: 'radial-gradient(circle, rgba(201,169,97,0.18) 0%, transparent 70%)',
+        pointerEvents: 'none',
+      }} />
+      <div style={{ fontSize: '10px', letterSpacing: '3px', color: '#C9A961', textTransform: 'uppercase', marginBottom: '14px' }}>
+        ⊹ The Grand Tour · 2026 ⊹
+      </div>
+      <div className="gt-serif" style={{
+        fontSize: '76px',
+        fontWeight: 500,
+        lineHeight: 0.95,
+        letterSpacing: '-1px',
+        color: '#FAF6EF',
+        fontStyle: 'italic',
+      }}>
+        D—{status.dDay}
+      </div>
+      <div style={{ fontSize: '13px', color: 'rgba(250,246,239,0.7)', marginTop: '10px', letterSpacing: '0.5px' }}>
+        2026.06.15 · Incheon → Charles de Gaulle
+      </div>
+      {/* Progress bar */}
+      <div style={{ marginTop: '24px' }}>
+        <div style={{
+          height: '3px',
+          background: 'rgba(250,246,239,0.12)',
+          borderRadius: '3px',
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            height: '100%',
+            width: pct + '%',
+            background: 'linear-gradient(90deg, #C9A961 0%, #D4B670 100%)',
+            transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)',
+          }} />
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '10px', color: 'rgba(250,246,239,0.55)', letterSpacing: '0.5px' }}>
+          <span>준비 진행 {pct}%</span>
+          <span>출발까지 {status.dDay}일</span>
+        </div>
+      </div>
+      <button
+        onClick={() => setView('check')}
+        style={{
+          marginTop: '22px',
+          width: '100%',
+          padding: '13px',
+          background: 'rgba(250,246,239,0.08)',
+          color: '#FAF6EF',
+          border: '1px solid rgba(201,169,97,0.4)',
+          borderRadius: '10px',
+          fontSize: '12px',
+          letterSpacing: '1.5px',
+          fontWeight: 500,
+          cursor: 'pointer',
+          textTransform: 'uppercase',
+        }}
+      >
+        체크리스트 → 출발 준비
+      </button>
+    </div>
+  );
+}
+
+// Horizontal 28-day timeline strip
+function TimelineStrip({ DAYS, status, setView }) {
+  const todayN = status.current?.n;
+  return (
+    <Card>
+      <SectionTitle>28일 타임라인</SectionTitle>
+      <div style={{
+        display: 'flex',
+        gap: '6px',
+        overflowX: 'auto',
+        paddingBottom: '6px',
+        scrollSnapType: 'x mandatory',
+        WebkitOverflowScrolling: 'touch',
+      }}>
+        {DAYS.map(day => {
+          const ch = C(day.c);
+          const isToday = day.n === todayN;
+          const isPast = todayN && day.n < todayN;
+          return (
+            <button
+              key={day.n}
+              onClick={() => setView('days')}
+              style={{
+                flex: '0 0 auto',
+                width: '54px',
+                padding: '10px 6px',
+                borderRadius: '10px',
+                border: isToday ? '1.5px solid #C9A961' : '1px solid #E8E2D5',
+                background: isToday ? ch.color : (isPast ? '#F5F0E8' : '#FFF'),
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '4px',
+                scrollSnapAlign: 'start',
+                opacity: isPast ? 0.55 : 1,
+                position: 'relative',
+              }}
+            >
+              <div style={{ fontSize: '9px', color: ch.accent, letterSpacing: '0.5px', fontWeight: 500 }}>
+                D{day.n}
+              </div>
+              <div style={{ fontSize: '18px', lineHeight: 1 }}>{ch.flag}</div>
+              <div style={{ fontSize: '9px', color: '#6B6760' }}>{day.d}</div>
+              {isToday && (
+                <div style={{
+                  position: 'absolute', bottom: '-3px', left: '50%', transform: 'translateX(-50%)',
+                  width: '6px', height: '6px', background: '#C9A961', borderRadius: '50%',
+                }} />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// Outputs 3-tier progress (Lifetime 4 / Major 6 / Working 9)
+function OutputsProgress({ outputs, setView }) {
+  const tiers = [
+    { key: 'lifetime', label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
+    { key: 'major',    label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
+    { key: 'working',  label: '⭐ Working',    tone: '#6B6760', bg: '#F5F0E8' },
+  ];
+  const counts = tiers.map(t => {
+    const total = OUTPUTS.filter(o => o.cat === t.key).length;
+    const done = OUTPUTS.filter(o => o.cat === t.key && outputs[o.id]?.done).length;
+    return { ...t, total, done };
+  });
+  const totalAll = OUTPUTS.length;
+  const doneAll = OUTPUTS.filter(o => outputs[o.id]?.done).length;
+  return (
+    <Card onClick={() => setView('private')} style={{ cursor: 'pointer' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+        <SectionTitle>산물 진행</SectionTitle>
+        <div className="gt-serif" style={{ fontSize: '22px', color: '#1B2A4A', fontStyle: 'italic' }}>
+          {doneAll}<span style={{ color: '#A8A39A', fontSize: '14px' }}>/{totalAll}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {counts.map(t => {
+          const pct = t.total === 0 ? 0 : Math.round((t.done / t.total) * 100);
+          return (
+            <div key={t.key}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
+                <span style={{ color: t.tone, fontWeight: 500 }}>{t.label}</span>
+                <span style={{ color: '#A8A39A' }}>{t.done}/{t.total}</span>
+              </div>
+              <div style={{ height: '4px', background: t.bg, borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  height: '100%',
+                  width: pct + '%',
+                  background: t.tone,
+                  transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)',
+                }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
+// Chapter progress dots (9 chapters with per-day status)
+function ChapterProgress({ DAYS, status }) {
+  const todayN = status.current?.n;
+  // group days by chapter (excluding 'p' and 'ret')
+  const chapters = CHAPTERS.filter(c => !['p', 'ret'].includes(c.id));
+  return (
+    <Card>
+      <SectionTitle>9 챕터 진행</SectionTitle>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {chapters.map(ch => {
+          const chapterDays = DAYS.filter(d => d.c === ch.id);
+          if (chapterDays.length === 0) return null;
+          const past = todayN ? chapterDays.filter(d => d.n < todayN).length : 0;
+          const isCurrent = todayN && chapterDays.some(d => d.n === todayN);
+          const isDone = todayN && chapterDays.every(d => d.n < todayN);
+          return (
+            <a
+              key={ch.id}
+              href={ch.search ? mapsUrl(ch.search) : '#'}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex', alignItems: 'center', gap: '12px',
+                padding: '10px 12px',
+                background: isCurrent ? ch.color : '#FFF',
+                border: isCurrent ? `1.5px solid ${ch.accent}` : '1px solid #E8E2D5',
+                borderRadius: '10px',
+                opacity: isDone ? 0.5 : 1,
+                textDecoration: 'none',
+                color: 'inherit',
+                transition: 'transform 0.18s var(--ease), box-shadow 0.18s var(--ease)',
+              }}
+            >
+              <span style={{ fontSize: '20px' }}>{ch.flag}</span>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '12px', fontWeight: 500, color: ch.accent }}>
+                  {ch.icon} {ch.name} <span style={{ color: '#A8A39A', fontWeight: 400 }}>· {ch.theme.split('·')[0].trim()}</span>
+                </div>
+                <div style={{ fontSize: '10px', color: '#A8A39A', letterSpacing: '0.5px', marginTop: '2px' }}>
+                  {ch.dates} · 📍 지도
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '3px' }}>
+                {chapterDays.map(d => {
+                  const isDayPast = todayN && d.n < todayN;
+                  const isDayToday = d.n === todayN;
+                  return (
+                    <span key={d.n} style={{
+                      width: isDayToday ? '8px' : '6px',
+                      height: isDayToday ? '8px' : '6px',
+                      borderRadius: '50%',
+                      background: isDayToday ? '#C9A961' : (isDayPast ? ch.accent : '#E8E2D5'),
+                      display: 'inline-block',
+                    }} />
+                  );
+                })}
+              </div>
+            </a>
+          );
+        })}
+      </div>
+    </Card>
+  );
+}
+
 function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
@@ -2025,20 +2279,27 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
 
   return (
     <div style={{ padding: '24px 0' }}>
+      {/* Hero Countdown — pre-trip only */}
+      {status.phase === 'pre' && <HeroCountdown status={status} setView={setView} />}
+
       {/* Trip Philosophy */}
-      <div style={{
+      <div className="gt-card" style={{
         background: '#FFF',
         border: '1px solid #E8E2D5',
-        borderRadius: '12px',
+        borderRadius: '14px',
         padding: '24px',
-        marginBottom: '24px',
-        textAlign: 'center'
+        marginBottom: '20px',
+        textAlign: 'center',
+        boxShadow: 'var(--shadow-sm)',
       }}>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '15px', fontStyle: 'italic', lineHeight: 1.6, color: '#6B6760' }}>
+        <div className="gt-serif" style={{ fontSize: '17px', fontStyle: 'italic', lineHeight: 1.6, color: '#6B6760' }}>
           "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
           앞으로 무엇을 할지 결정하기 위해 떠난다."
         </div>
       </div>
+
+      {/* 28-day Timeline */}
+      <TimelineStrip DAYS={DAYS} status={status} setView={setView} />
 
       {/* Today's Card */}
       {status.phase === 'during' && status.current && (
@@ -2089,60 +2350,17 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
         <Recommendations chapterId={todayChapter.id} chapter={todayChapter} />
       )}
 
-      {/* Pre-trip card */}
-      {status.phase === 'pre' && (
-        <Card>
-          <SectionTitle>출발까지 D-{status.dDay}</SectionTitle>
-          <div style={{ fontSize: '13px', lineHeight: 1.7, color: '#6B6760', marginBottom: '16px' }}>
-            지금은 준비의 시간. 호텔 4건 + 레스토랑 6건 + 입장권 8건 예약을 차근차근 잡아두면 출발 시 마음이 가벼워.
-          </div>
-          <button onClick={() => setView('check')} style={btnStyle}>체크리스트 보기 →</button>
-        </Card>
-      )}
-
       {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '24px 0' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '20px 0' }}>
         <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
-        <StatCard label="여행까지" value={status.dDay > 0 ? `D-${status.dDay}` : (status.phase === 'during' ? `Day ${status.current?.n || ''}` : '여행 후')} sub={status.phase === 'pre' ? '준비 단계' : (status.phase === 'during' ? '여행 중' : '귀국')} onClick={() => setView('days')} />
+        <StatCard label={status.phase === 'pre' ? '여행까지' : (status.phase === 'during' ? '여행 중' : '귀국')} value={status.dDay > 0 ? `D-${status.dDay}` : (status.phase === 'during' ? `Day ${status.current?.n || ''}` : '여행 후')} sub={status.phase === 'pre' ? '준비 단계' : (status.phase === 'during' ? '진행 중' : '복귀')} onClick={() => setView('days')} />
       </div>
 
-      {/* Chapter Quick Nav */}
-      <Card>
-        <SectionTitle>9 챕터 · 도시 = 인간 능력</SectionTitle>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {CHAPTERS.filter(c => !['p', 'ret'].includes(c.id)).map(ch => (
-            <a
-              key={ch.id}
-              href={ch.search ? mapsUrl(ch.search) : '#'}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '12px',
-                padding: '10px 12px',
-                background: ch.color,
-                borderRadius: '8px',
-                textDecoration: 'none',
-                color: 'inherit'
-              }}
-            >
-              <div style={{ fontSize: '22px', flexShrink: 0 }}>{ch.flag}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: ch.accent }}>
-                  {ch.icon} {ch.name}
-                </div>
-                <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '2px' }}>
-                  {ch.theme} · {ch.country}
-                </div>
-              </div>
-              <div style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, opacity: 0.7 }}>
-                📍 →
-              </div>
-            </a>
-          ))}
-        </div>
-      </Card>
+      {/* Chapter Progress (visual) */}
+      <ChapterProgress DAYS={DAYS} status={status} />
+
+      {/* Outputs 3-tier Progress */}
+      <OutputsProgress outputs={outputs} setView={setView} />
 
       {/* Quick Links — public only */}
       <Card>
