@@ -9,7 +9,7 @@
   <meta name="apple-mobile-web-app-title" content="Grand Tour">
   <title>Grand Tour 2026 · Taehyeon × Juyeon</title>
   <link rel="manifest" href="/manifest.webmanifest">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='80' font-size='80'>✈️</text></svg>">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231B2A4A'/><text x='50' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='48' font-style='italic' fill='%23C9A961' letter-spacing='-1'>GT</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
@@ -778,6 +778,77 @@ const OUTPUTS = [
 ];
 
 // =================== STORAGE ===================
+// =================== INDEXEDDB (photos beyond 5MB) ===================
+// Photos move from localStorage to IDB to lift the ~5MB cap.
+// Auto-migrates legacy localStorage photos on first load.
+const idb = {
+  DB: 'grandtour', STORE: 'photos', VER: 1, _p: null,
+  open() {
+    if (this._p) return this._p;
+    this._p = new Promise((resolve, reject) => {
+      if (!window.indexedDB) return reject(new Error('IndexedDB unsupported'));
+      const req = indexedDB.open(this.DB, this.VER);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos');
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this._p;
+  },
+  async get(key) {
+    try {
+      const db = await this.open();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction(this.STORE, 'readonly');
+        const r = tx.objectStore(this.STORE).get(key);
+        r.onsuccess = () => res(r.result || null);
+        r.onerror = () => rej(r.error);
+      });
+    } catch (e) { return null; }
+  },
+  async put(key, value) {
+    try {
+      const db = await this.open();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction(this.STORE, 'readwrite');
+        tx.objectStore(this.STORE).put(value, key);
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch (e) { return false; }
+  },
+  async delete(key) {
+    try {
+      const db = await this.open();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction(this.STORE, 'readwrite');
+        tx.objectStore(this.STORE).delete(key);
+        tx.oncomplete = () => res(true);
+        tx.onerror = () => rej(tx.error);
+      });
+    } catch (e) { return false; }
+  },
+  async all() {
+    try {
+      const db = await this.open();
+      return await new Promise((res, rej) => {
+        const tx = db.transaction(this.STORE, 'readonly');
+        const store = tx.objectStore(this.STORE);
+        const result = {};
+        const cursorReq = store.openCursor();
+        cursorReq.onsuccess = (e) => {
+          const cur = e.target.result;
+          if (cur) { result[cur.key] = cur.value; cur.continue(); }
+          else res(result);
+        };
+        cursorReq.onerror = () => rej(cursorReq.error);
+      });
+    } catch (e) { return {}; }
+  },
+};
+
 // =================== TIMEZONE / COPY HELPERS ===================
 const CITY_TZ = {
   paris:  'Europe/Paris',
@@ -916,7 +987,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const [c, n, o, p, e, ph, pc, pe] = await Promise.all([
+      const [c, n, o, p, e, lsPhotos, pc, pe, idbPhotos] = await Promise.all([
         storage.get('check'),
         storage.get('notes'),
         storage.get('outputs'),
@@ -925,13 +996,29 @@ function App() {
         storage.get('photos'),
         storage.get('packing_custom'),
         storage.get('packing_edits'),
+        idb.all(),
       ]);
+
+      // One-time migration: move legacy localStorage photos -> IndexedDB
+      let mergedPhotos = idbPhotos || {};
+      if (lsPhotos && Object.keys(lsPhotos).length > 0) {
+        for (const k of Object.keys(lsPhotos)) {
+          if (!mergedPhotos[k]) {
+            await idb.put(k, lsPhotos[k]);
+            mergedPhotos[k] = lsPhotos[k];
+          }
+        }
+        // Clear localStorage photos after successful migration to free quota
+        try { localStorage.removeItem('photos'); } catch (e) {}
+        console.log('[grandtour] Migrated', Object.keys(lsPhotos).length, 'photos from localStorage to IndexedDB');
+      }
+
       setChecks(c || {});
       setNotes(n || {});
       setOutputs(o || {});
       setPacking(p || {});
       setEdits(e || { day: {}, hotel: {}, flight: {} });
-      setPhotos(ph || {});
+      setPhotos(mergedPhotos);
       setPackingCustom(pc || { tyler: {}, juyeon: {}, couple: {} });
       setPackingEdits(pe || {});
       setLoaded(true);
@@ -1025,16 +1112,18 @@ function App() {
   };
 
   const savePhoto = async (dayId, base64) => {
-    const updated = { ...photos, [dayId]: { data: base64, savedAt: new Date().toISOString() } };
-    setPhotos(updated);
-    await storage.set('photos', updated);
+    const photo = { data: base64, savedAt: new Date().toISOString() };
+    setPhotos(prev => ({ ...prev, [dayId]: photo }));
+    await idb.put(String(dayId), photo);
   };
 
   const deletePhoto = async (dayId) => {
-    const updated = { ...photos };
-    delete updated[dayId];
-    setPhotos(updated);
-    await storage.set('photos', updated);
+    setPhotos(prev => {
+      const next = { ...prev };
+      delete next[dayId];
+      return next;
+    });
+    await idb.delete(String(dayId));
   };
 
   // Packing item edit (change text/source of any item)
@@ -1118,6 +1207,8 @@ function App() {
     a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}${includePhotos ? '-with-photos' : ''}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    // Track for backup reminder
+    await storage.set('lastBackupAt', Date.now());
   };
 
   // JSON Import
@@ -1133,7 +1224,13 @@ function App() {
         if (data.outputs) { setOutputs(data.outputs); await storage.set('outputs', data.outputs); }
         if (data.packing) { setPacking(data.packing); await storage.set('packing', data.packing); }
         if (data.edits) { setEdits(data.edits); await storage.set('edits', data.edits); }
-        if (data.photos) { setPhotos(data.photos); await storage.set('photos', data.photos); }
+        if (data.photos) {
+          setPhotos(data.photos);
+          // Write each photo to IndexedDB (not localStorage anymore)
+          for (const k of Object.keys(data.photos)) {
+            await idb.put(String(k), data.photos[k]);
+          }
+        }
         if (data.packing_custom) { setPackingCustom(data.packing_custom); await storage.set('packing_custom', data.packing_custom); }
         if (data.packing_edits) { setPackingEdits(data.packing_edits); await storage.set('packing_edits', data.packing_edits); }
         // PIN은 의도적으로 복원하지 않음 (보안)
@@ -2055,6 +2152,64 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 }
 
 // =================== HOME ===================
+// =================== STABILITY WIDGETS ===================
+
+// Backup reminder — shows banner if no backup in last 14 days
+function BackupReminder({ exportData }) {
+  const [lastAt, setLastAt] = useState(undefined);
+  const [dismissed, setDismissed] = useState(false);
+  useEffect(() => {
+    storage.get('lastBackupAt').then(v => setLastAt(v));
+  }, []);
+  if (lastAt === undefined || dismissed) return null;
+  const ms = lastAt ? (Date.now() - lastAt) : Infinity;
+  const days = Math.floor(ms / 86400000);
+  const shouldWarn = lastAt === null || days >= 14;
+  if (!shouldWarn) return null;
+  const msg = lastAt === null
+    ? '아직 백업을 한 적이 없어요. 출발 전에 한 번 받아두세요.'
+    : `마지막 백업 ${days}일 전. 다시 받아둘 시간이에요.`;
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #FFF8E1 0%, #FEF3C7 100%)',
+      border: '1px solid #C9A961',
+      borderRadius: '12px',
+      padding: '14px 16px',
+      marginBottom: '16px',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '12px',
+    }}>
+      <div style={{ fontSize: '22px' }}>💾</div>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: '#854D0E', marginBottom: '2px' }}>
+          백업 권장
+        </div>
+        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>{msg}</div>
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+        <button
+          onClick={async () => { await exportData(false); setLastAt(Date.now()); }}
+          style={{
+            fontSize: '11px', padding: '6px 12px',
+            background: '#854D0E', color: '#FFF',
+            border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
+            whiteSpace: 'nowrap',
+          }}
+        >📥 받기</button>
+        <button
+          onClick={() => setDismissed(true)}
+          style={{
+            fontSize: '10px', padding: '4px 8px',
+            background: 'transparent', color: '#A8A39A',
+            border: 'none', cursor: 'pointer',
+          }}
+        >나중에</button>
+      </div>
+    </div>
+  );
+}
+
 // =================== IN-TRIP UTILITY WIDGETS ===================
 
 // One-tap copy chip — shows "복사됨!" briefly on success
@@ -2504,6 +2659,9 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
 
   return (
     <div style={{ padding: '24px 0' }}>
+      {/* Backup reminder — top priority if overdue */}
+      <BackupReminder exportData={exportData} />
+
       {/* Hero Countdown — pre-trip only */}
       {status.phase === 'pre' && <HeroCountdown status={status} setView={setView} />}
 
