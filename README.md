@@ -17,3 +17,9 @@ open index.html
 ```
 
 That's it. All data saves to browser localStorage.
+
+## Security Note
+
+- **PIN is a privacy screen, not real security.** Do not store passwords, financial info, or sensitive documents.
+- PIN is intentionally excluded from JSON backups — reset it after restoring to a new device.
+- All data lives in your browser's localStorage. Clearing browser data erases everything; use the JSON backup regularly.

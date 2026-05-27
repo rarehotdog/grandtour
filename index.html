@@ -770,16 +770,21 @@ function App() {
   const HOTELS = HOTELS_DEFAULT.map(getHotel);
   const FLIGHTS = FLIGHTS_DEFAULT.map(getFlight);
 
-  const toggleCheck = async (id) => {
-    const updated = { ...checks, [id]: !checks[id] };
-    setChecks(updated);
-    await storage.set('check', updated);
+  // Functional update prevents stale-closure bugs on rapid taps
+  const toggleCheck = (id) => {
+    setChecks(prev => {
+      const updated = { ...prev, [id]: !prev[id] };
+      storage.set('check', updated);
+      return updated;
+    });
   };
 
-  const togglePacking = async (id) => {
-    const updated = { ...packing, [id]: !packing[id] };
-    setPacking(updated);
-    await storage.set('packing', updated);
+  const togglePacking = (id) => {
+    setPacking(prev => {
+      const updated = { ...prev, [id]: !prev[id] };
+      storage.set('packing', updated);
+      return updated;
+    });
   };
 
   const saveNote = async (dayId, content) => {
@@ -904,10 +909,15 @@ function App() {
     }
   };
 
-  // JSON Export
-  const exportData = async () => {
+  // JSON Export (includePhotos=false by default — photos add ~3MB)
+  const exportData = async (includePhotos = false) => {
     const data = {
-      version: '1.0',
+      version: '1.1',
+      _meta: {
+        exportedAt: new Date().toISOString(),
+        includePhotos,
+        note: 'PIN은 보안상 별도 재설정 필요. Photos excluded unless toggled on.',
+      },
       exportedAt: new Date().toISOString(),
       tyler: 'Taehyeon · Juyeon Grand Tour 2026',
       check: checks,
@@ -915,7 +925,7 @@ function App() {
       outputs: outputs,
       packing: packing,
       edits: edits,
-      photos: photos,
+      ...(includePhotos ? { photos: photos } : {}),
       packing_custom: packingCustom,
       packing_edits: packingEdits,
     };
@@ -923,7 +933,7 @@ function App() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `grand-tour-backup-${new Date().toISOString().slice(0, 10)}${includePhotos ? '-with-photos' : ''}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
@@ -944,7 +954,8 @@ function App() {
         if (data.photos) { setPhotos(data.photos); await storage.set('photos', data.photos); }
         if (data.packing_custom) { setPackingCustom(data.packing_custom); await storage.set('packing_custom', data.packing_custom); }
         if (data.packing_edits) { setPackingEdits(data.packing_edits); await storage.set('packing_edits', data.packing_edits); }
-        alert('복원 완료!');
+        // PIN은 의도적으로 복원하지 않음 (보안)
+        alert('복원 완료! 🎉\n\n💡 PIN은 복원되지 않습니다.\n잠금 화면 하단 "비밀번호 초기화"로 다시 설정해주세요.');
       } catch (err) {
         alert('복원 실패: 파일 형식이 올바르지 않습니다.');
         console.error(err);
@@ -1854,6 +1865,7 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 
 // =================== HOME ===================
 function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, deletePhoto, exportData, importData }) {
+  const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
   const outputDone = Object.values(outputs).filter(o => o.done).length;
@@ -1998,10 +2010,20 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
         <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px', lineHeight: 1.5 }}>
-          모든 데이터 (체크 · 메모 · 사진 · 편집 · 산물) JSON 파일로 백업하거나 복원. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
+          체크 · 메모 · 편집 · 산물 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.<br/>
+          <span style={{ color: '#C9A961' }}>⚠️ PIN은 복원되지 않으니 이전 후 재설정 필요.</span>
         </div>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: '12px', color: '#1B2A4A' }}>
+          <input
+            type="checkbox"
+            checked={withPhotos}
+            onChange={e => setWithPhotos(e.target.checked)}
+            style={{ width: '16px', height: '16px', accentColor: '#1B2A4A' }}
+          />
+          사진 포함 <span style={{ color: '#A8A39A' }}>(기본 OFF · 포함 시 ~수MB)</span>
+        </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <button onClick={exportData} style={{
+          <button onClick={() => exportData(withPhotos)} style={{
             padding: '12px',
             background: '#1B2A4A',
             color: '#FFF',
@@ -2701,164 +2723,6 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
               )}
             </div>
           </button>
-        );
-      })}
-    </div>
-  );
-}
-
-// =================== NOTES OVERVIEW ===================
-function Notes({ notes, saveNote, DAYS }) {
-  const written = Object.keys(notes).filter(k => notes[k]?.content).length;
-  return (
-    <div style={{ padding: '24px 0' }}>
-      <h2 style={pageTitleStyle}>28일 메모</h2>
-      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
-        매일 저녁 15분 · 작성한 메모: {written}/28
-      </div>
-
-      {DAYS.map(day => {
-        const ch = C(day.c);
-        const noteContent = notes[day.n]?.content;
-        return (
-          <details key={day.n} style={{
-            background: '#FFF',
-            border: '1px solid #E8E2D5',
-            borderRadius: '10px',
-            marginBottom: '8px',
-            padding: '14px 16px'
-          }}>
-            <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                width: '32px',
-                height: '32px',
-                borderRadius: '6px',
-                background: ch.color,
-                color: ch.accent,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '12px',
-                fontWeight: 600,
-                flexShrink: 0
-              }}>
-                {day.n}
-              </div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '12px', color: '#A8A39A' }}>{day.d} · {ch.name}</div>
-                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
-                  💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
-                </div>
-              </div>
-              <div style={{ fontSize: '14px' }}>
-                {noteContent ? '✏️' : '○'}
-              </div>
-            </summary>
-            <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
-              <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
-                <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '4px' }}>💭 질문</div>
-                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
-              </div>
-              <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
-                <div style={{ fontSize: '11px', color: '#9A3412', marginBottom: '4px' }}>💕 커플 모먼트</div>
-                <div style={{ fontSize: '12px', color: '#1B2A4A', lineHeight: 1.6 }}>{day.mo}</div>
-              </div>
-              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
-            </div>
-          </details>
-        );
-      })}
-    </div>
-  );
-}
-
-// =================== OUTPUTS ===================
-function Outputs({ outputs, toggleOutput, saveOutputContent }) {
-  const done = Object.values(outputs).filter(o => o.done).length;
-
-  return (
-    <div style={{ padding: '24px 0' }}>
-      <h2 style={pageTitleStyle}>ASI 산물 트래커</h2>
-      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
-        28일 동안 만들어내는 산물 · {done}/19 완료
-      </div>
-
-      <div style={{ background: '#FFF3E0', padding: '14px', borderRadius: '10px', marginBottom: '20px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 500, color: '#9A3412', marginBottom: '6px' }}>
-          ⭐⭐⭐ 평생 보관 산물 4개
-        </div>
-        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.6 }}>
-          Seceda 정상 1페이지 · Pantheon 1페이지 · Nike 1페이지 · "우리, 이제 시작이다" 봉인
-        </div>
-      </div>
-
-      {OUTPUTS.map(o => {
-        const ch = C(o.ch);
-        const state = outputs[o.id] || {};
-        const stars = '⭐'.repeat(o.star || 0);
-        return (
-          <div key={o.id} style={{
-            background: '#FFF',
-            border: `1px solid ${state.done ? '#C9A961' : '#E8E2D5'}`,
-            borderRadius: '10px',
-            marginBottom: '10px',
-            overflow: 'hidden'
-          }}>
-            <div style={{ padding: '14px 16px' }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
-                <button
-                  onClick={() => toggleOutput(o.id)}
-                  style={{
-                    width: '22px',
-                    height: '22px',
-                    borderRadius: '4px',
-                    border: `2px solid ${state.done ? '#1B2A4A' : '#CCC'}`,
-                    background: state.done ? '#1B2A4A' : 'transparent',
-                    color: '#FFF',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    flexShrink: 0,
-                    marginTop: '1px'
-                  }}>
-                  {state.done && '✓'}
-                </button>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                    <span style={{ fontSize: '10px', color: ch.accent, fontWeight: 500, letterSpacing: '0.5px' }}>
-                      Day {o.day} · {ch.name}
-                    </span>
-                    {stars && <span style={{ fontSize: '10px' }}>{stars}</span>}
-                  </div>
-                  <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#999' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
-                    {o.t}
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#6B6760', lineHeight: 1.5, marginTop: '4px' }}>
-                    {o.desc}
-                  </div>
-                </div>
-              </div>
-              <textarea
-                placeholder="여기 산물 내용을 적거나 사진을 찍어 메모하세요..."
-                defaultValue={state.content || ''}
-                onBlur={(e) => saveOutputContent(o.id, e.target.value)}
-                style={{
-                  width: '100%',
-                  minHeight: '60px',
-                  marginTop: '12px',
-                  padding: '8px 10px',
-                  fontSize: '12px',
-                  lineHeight: 1.6,
-                  border: '1px solid #E8E2D5',
-                  borderRadius: '6px',
-                  background: '#FFFEF9',
-                  color: '#1B2A4A',
-                  fontFamily: 'inherit',
-                  resize: 'vertical',
-                  boxSizing: 'border-box'
-                }}
-              />
-            </div>
-          </div>
         );
       })}
     </div>
