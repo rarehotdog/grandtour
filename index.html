@@ -778,6 +778,48 @@ const OUTPUTS = [
 ];
 
 // =================== STORAGE ===================
+// =================== TIMEZONE / COPY HELPERS ===================
+const CITY_TZ = {
+  paris:  'Europe/Paris',
+  london: 'Europe/London',
+  dol:    'Europe/Rome',
+  flo:    'Europe/Rome',
+  rom:    'Europe/Rome',
+  pos:    'Europe/Rome',
+  san:    'Europe/Athens',
+  ath:    'Europe/Athens',
+  dxb:    'Asia/Dubai',
+  p:      'Asia/Seoul',
+  ret:    'Asia/Seoul',
+};
+
+const formatTime = (tz) => {
+  try {
+    return new Date().toLocaleTimeString('ko-KR', {
+      timeZone: tz, hour: '2-digit', minute: '2-digit', hour12: false,
+    });
+  } catch (e) { return '--:--'; }
+};
+
+const copyText = async (text) => {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+    // Fallback for old browsers
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    return ok;
+  } catch (e) { return false; }
+};
+
 const storage = {
   async get(key) {
     try {
@@ -1124,7 +1166,7 @@ function App() {
         )}
         {loaded && (
           <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
+            {view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
             {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
@@ -2013,6 +2055,189 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 }
 
 // =================== HOME ===================
+// =================== IN-TRIP UTILITY WIDGETS ===================
+
+// One-tap copy chip — shows "복사됨!" briefly on success
+function CopyChip({ text, label = '복사', icon = '📋', style }) {
+  const [copied, setCopied] = useState(false);
+  if (!text) return null;
+  const onCopy = async (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    const ok = await copyText(text);
+    if (ok) {
+      try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    }
+  };
+  return (
+    <button onClick={onCopy} style={{
+      fontSize: '10px',
+      padding: '3px 8px',
+      background: copied ? 'rgba(0,128,0,0.12)' : 'rgba(27,42,74,0.06)',
+      color: copied ? '#008000' : '#1B2A4A',
+      border: 'none',
+      borderRadius: '4px',
+      cursor: 'pointer',
+      fontWeight: 500,
+      whiteSpace: 'nowrap',
+      ...style,
+    }}>
+      {copied ? '✓ 복사됨' : `${icon} ${label}`}
+    </button>
+  );
+}
+
+// Local time + KST dual display (auto-updates every minute)
+function TimezoneWidget({ status, DAYS }) {
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const t = setInterval(() => setNow(new Date()), 30000);
+    return () => clearInterval(t);
+  }, []);
+  const current = status.current ? DAYS.find(d => d.n === status.current.n) : null;
+  const ch = current ? C(current.c) : null;
+  const localTZ = ch ? CITY_TZ[ch.id] : null;
+  if (!localTZ || ch.id === 'p' || ch.id === 'ret') return null;
+  const localTime = formatTime(localTZ);
+  const kstTime = formatTime('Asia/Seoul');
+  return (
+    <Card>
+      <SectionTitle>현재 시각</SectionTitle>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+        <div style={{
+          padding: '14px',
+          background: ch.color,
+          borderRadius: '10px',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '10px', color: ch.accent, letterSpacing: '1.5px', fontWeight: 500 }}>
+            {ch.flag} {ch.name.toUpperCase()}
+          </div>
+          <div className="gt-serif" style={{ fontSize: '32px', color: '#1B2A4A', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+            {localTime}
+          </div>
+          <div style={{ fontSize: '9px', color: '#6B6760', marginTop: '2px' }}>현지</div>
+        </div>
+        <div style={{
+          padding: '14px',
+          background: '#F5F0E8',
+          borderRadius: '10px',
+          textAlign: 'center',
+        }}>
+          <div style={{ fontSize: '10px', color: '#6B6760', letterSpacing: '1.5px', fontWeight: 500 }}>
+            🇰🇷 SEOUL
+          </div>
+          <div className="gt-serif" style={{ fontSize: '32px', color: '#1B2A4A', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+            {kstTime}
+          </div>
+          <div style={{ fontSize: '9px', color: '#6B6760', marginTop: '2px' }}>KST</div>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+// Next flight/transit countdown — shows nearest upcoming
+function NextFlight({ FLIGHTS, status, setView }) {
+  // Parse flight dates assuming year 2026
+  const today = new Date();
+  const upcoming = FLIGHTS.map(f => {
+    const [mo, da] = f.d.split('/').map(Number);
+    const date = new Date(2026, mo - 1, da);
+    return { ...f, date };
+  }).filter(f => f.date >= new Date(today.getFullYear(), today.getMonth(), today.getDate()))
+    .sort((a, b) => a.date - b.date);
+  const next = upcoming[0];
+  if (!next) return null;
+  const msPerDay = 1000 * 60 * 60 * 24;
+  const daysOut = Math.ceil((next.date - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / msPerDay);
+  const isToday = daysOut === 0;
+  const isTomorrow = daysOut === 1;
+  return (
+    <Card style={{ background: isToday ? '#FFF8E1' : '#FFF', border: isToday ? '1.5px solid #C9A961' : '1px solid #E8E2D5' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
+        <SectionTitle>다음 이동</SectionTitle>
+        <div style={{ fontSize: '11px', color: '#C9A961', fontWeight: 500 }}>
+          {isToday ? '🟡 오늘' : isTomorrow ? '내일' : `${daysOut}일 뒤`}
+        </div>
+      </div>
+      <div className="gt-serif" style={{ fontSize: '20px', color: '#1B2A4A', fontWeight: 500, lineHeight: 1.2 }}>
+        {next.route}
+      </div>
+      <div style={{ fontSize: '12px', color: '#6B6760', marginTop: '6px' }}>
+        ✈️ {next.no} · {next.t}
+      </div>
+      {next.note && (
+        <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px', fontStyle: 'italic' }}>
+          {next.note}
+        </div>
+      )}
+      <button onClick={() => setView('logi')} style={{
+        marginTop: '12px', fontSize: '11px', padding: '8px 12px',
+        background: 'rgba(27,42,74,0.06)', color: '#1B2A4A',
+        border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
+      }}>
+        전체 일정 보기 →
+      </button>
+    </Card>
+  );
+}
+
+// Emergency contacts card — collapsed by default, accessible always
+function EmergencyContacts() {
+  const [open, setOpen] = useState(false);
+  const contacts = [
+    { label: '🇰🇷 주한 영사관 콜센터', value: '+82-2-3210-0404', tel: '+82232100404' },
+    { label: '🇫🇷 파리 한국대사관', value: '+33-1-47-53-01-01', tel: '+33147530101' },
+    { label: '🇬🇧 런던 한국대사관', value: '+44-20-7227-5500', tel: '+442072275500' },
+    { label: '🇮🇹 로마 한국대사관', value: '+39-06-802-461', tel: '+390680246' },
+    { label: '🇬🇷 아테네 한국대사관', value: '+30-210-698-4080', tel: '+302106984080' },
+    { label: '🇦🇪 아부다비 한국대사관', value: '+971-2-441-1520', tel: '+97124411520' },
+    { label: '국제 응급 (EU 공통)', value: '112', tel: '112' },
+    { label: '국제 응급 (UAE)', value: '999', tel: '999' },
+    { label: 'Amex Platinum (24h)', value: '1577-2000', tel: '15772000' },
+  ];
+  return (
+    <Card>
+      <button onClick={() => setOpen(o => !o)} style={{
+        width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
+      }}>
+        <SectionTitle>🆘 비상 연락처</SectionTitle>
+        <span style={{ fontSize: '12px', color: '#A8A39A' }}>{open ? '▾' : '▸'}</span>
+      </button>
+      {open && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
+          {contacts.map((c, i) => (
+            <div key={i} style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: '10px 12px', background: '#FAF6EF', borderRadius: '8px', gap: '8px',
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '11px', color: '#6B6760' }}>{c.label}</div>
+                <div style={{ fontSize: '13px', color: '#1B2A4A', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{c.value}</div>
+              </div>
+              <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
+                <a href={`tel:${c.tel}`} style={{
+                  fontSize: '11px', padding: '6px 10px',
+                  background: '#1B2A4A', color: '#FFF',
+                  textDecoration: 'none', borderRadius: '6px', fontWeight: 500,
+                }}>📞 전화</a>
+                <CopyChip text={c.value} label="복사" icon="📋" />
+              </div>
+            </div>
+          ))}
+          <div style={{ fontSize: '10px', color: '#A8A39A', textAlign: 'center', marginTop: '4px', fontStyle: 'italic' }}>
+            ⚠️ 응급 시 가장 가까운 한국대사관 또는 현지 112/999 우선
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 // =================== STORYTELLING WIDGETS ===================
 
 // Premium D-Day hero — pre-trip cinematic countdown
@@ -2267,7 +2492,7 @@ function ChapterProgress({ DAYS, status }) {
   );
 }
 
-function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, deletePhoto, exportData, importData }) {
+function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
@@ -2300,6 +2525,12 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
 
       {/* 28-day Timeline */}
       <TimelineStrip DAYS={DAYS} status={status} setView={setView} />
+
+      {/* Current city timezone — only during trip */}
+      {status.phase === 'during' && <TimezoneWidget status={status} DAYS={DAYS} />}
+
+      {/* Next flight / transit countdown */}
+      <NextFlight FLIGHTS={FLIGHTS} status={status} setView={setView} />
 
       {/* Today's Card */}
       {status.phase === 'during' && status.current && (
@@ -2361,6 +2592,9 @@ function Home({ status, checks, outputs, setView, DAYS, photos, savePhoto, delet
 
       {/* Outputs 3-tier Progress */}
       <OutputsProgress outputs={outputs} setView={setView} />
+
+      {/* Emergency Contacts */}
+      <EmergencyContacts />
 
       {/* Quick Links — public only */}
       <Card>
@@ -3338,15 +3572,18 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   🗺️ Maps
                 </a>
               </div>
-              <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '6px', marginLeft: '4px' }}>
-                <span style={{ marginRight: '4px' }}>📋 Conf:</span>
-                <EditableField
-                  value={h.conf}
-                  onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
-                  onReset={() => resetEdit('hotel', h.n, 'conf')}
-                  edited={isEdited('hotel', h.n, 'conf')}
-                  textStyle={{ fontSize: '10px', color: '#A8A39A' }}
-                />
+              <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '6px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                <span style={{ marginRight: '2px' }}>📋 Conf:</span>
+                <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+                  <EditableField
+                    value={h.conf}
+                    onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
+                    onReset={() => resetEdit('hotel', h.n, 'conf')}
+                    edited={isEdited('hotel', h.n, 'conf')}
+                    textStyle={{ fontSize: '10px', color: '#A8A39A' }}
+                  />
+                </div>
+                {h.conf && <CopyChip text={h.conf} label="Conf" icon="📋" />}
               </div>
             </div>
           );
