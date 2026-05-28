@@ -12,39 +12,148 @@
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231B2A4A'/><text x='50' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='48' font-style='italic' fill='%23C9A961' letter-spacing='-1'>GT</text></svg>">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
   <style>
-    /* ===== Design Tokens (CSS Vars) ===== */
+    /* ===== Design Tokens — Wanted DS pattern (Atomic + Semantic) ===== */
     :root {
-      --navy: #1B2A4A;
-      --navy-soft: #2A3A5C;
-      --gold: #C9A961;
-      --gold-soft: #D4B670;
-      --cream: #FAF6EF;
-      --card: #FFFFFF;
-      --line: #E8E2D5;
-      --line-soft: #F5F0E8;
-      --text-1: #1B2A4A;
-      --text-2: #6B6760;
-      --text-3: #A8A39A;
-      --danger: #C00000;
+      /* ── Atomic colors (raw palette) ─────────────────────────────── */
+      --color-atomic-navy-900: #1B2A4A;
+      --color-atomic-navy-700: #2A3A5C;
+      --color-atomic-navy-500: #4A5878;
+      --color-atomic-gold-600: #B8975A;
+      --color-atomic-gold-500: #C9A961;
+      --color-atomic-gold-400: #D4B670;
+      --color-atomic-cream-50:  #FAF6EF;
+      --color-atomic-cream-100: #F5F0E8;
+      --color-atomic-cream-200: #E8E2D5;
+      --color-atomic-white:     #FFFFFF;
+      --color-atomic-warm-600: #6B6760;
+      --color-atomic-warm-400: #A8A39A;
+      --color-atomic-red-700: #C00000;
+      --color-atomic-amber-700: #854D0E;
+      --color-atomic-amber-50: #FFF8E1;
+
+      /* ── Semantic colors (intent mapping) ────────────────────────── */
+      --color-bg-page:        var(--color-atomic-cream-50);
+      --color-bg-surface:     var(--color-atomic-white);
+      --color-bg-surface-alt: var(--color-atomic-cream-100);
+      --color-bg-inverse:     var(--color-atomic-navy-900);
+      --color-text-strong:    var(--color-atomic-navy-900);
+      --color-text-default:   var(--color-atomic-navy-900);
+      --color-text-soft:      var(--color-atomic-warm-600);
+      --color-text-muted:     var(--color-atomic-warm-400);
+      --color-text-inverse:   var(--color-atomic-cream-50);
+      --color-border-default: var(--color-atomic-cream-200);
+      --color-border-soft:    var(--color-atomic-cream-100);
+      --color-border-strong:  var(--color-atomic-navy-900);
+      --color-accent-primary: var(--color-atomic-gold-500);
+      --color-accent-hover:   var(--color-atomic-gold-600);
+      --color-accent-soft:    var(--color-atomic-gold-400);
+      --color-danger:         var(--color-atomic-red-700);
+      --color-warning-bg:     var(--color-atomic-amber-50);
+      --color-warning-text:   var(--color-atomic-amber-700);
+
+      /* ── Spacing scale (4pt grid à la Wanted) ────────────────────── */
+      --space-1: 4px;
+      --space-2: 8px;
+      --space-3: 12px;
+      --space-4: 16px;
+      --space-5: 20px;
+      --space-6: 24px;
+      --space-8: 32px;
+      --space-10: 40px;
+      --space-12: 48px;
+      --space-16: 64px;
+
+      /* ── Radius scale ────────────────────────────────────────────── */
+      --radius-xs: 4px;
+      --radius-sm: 6px;
+      --radius-md: 10px;
+      --radius-lg: 14px;
+      --radius-xl: 18px;
+      --radius-2xl: 24px;
+      --radius-pill: 999px;
+
+      /* ── Elevation (shadows) ─────────────────────────────────────── */
       --shadow-sm: 0 1px 3px rgba(27,42,74,0.06), 0 1px 2px rgba(27,42,74,0.04);
       --shadow-md: 0 4px 14px rgba(27,42,74,0.08), 0 2px 4px rgba(27,42,74,0.04);
       --shadow-lg: 0 14px 32px rgba(27,42,74,0.12), 0 4px 10px rgba(27,42,74,0.06);
+      --shadow-focus: 0 0 0 3px rgba(201,169,97,0.25);
+
+      /* ── Motion ──────────────────────────────────────────────────── */
       --ease: cubic-bezier(0.4, 0, 0.2, 1);
       --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-      --serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+
+      /* ── Typography stacks ───────────────────────────────────────── */
+      --font-sans: 'Pretendard Variable', 'Pretendard', -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Segoe UI', Roboto, sans-serif;
+      --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, 'Roboto Mono', monospace;
+
+      /* ── Type scale (semantic — Korean optimized) ────────────────── */
+      --type-display: 30px;   /* page titles (gt-serif overrides Korean→Cormorant) */
+      --type-h1: 22px;
+      --type-h2: 18px;
+      --type-h3: 16px;
+      --type-body: 14px;
+      --type-body-sm: 13px;
+      --type-caption: 12px;
+      --type-eyebrow: 11px;   /* uppercase small labels */
+      --type-micro: 10px;
+
+      /* ── Legacy alias (do not remove — used by older inline styles) ─ */
+      --navy: var(--color-atomic-navy-900);
+      --navy-soft: var(--color-atomic-navy-700);
+      --gold: var(--color-atomic-gold-500);
+      --gold-soft: var(--color-atomic-gold-400);
+      --cream: var(--color-atomic-cream-50);
+      --card: var(--color-atomic-white);
+      --line: var(--color-atomic-cream-200);
+      --line-soft: var(--color-atomic-cream-100);
+      --text-1: var(--color-text-strong);
+      --text-2: var(--color-text-soft);
+      --text-3: var(--color-text-muted);
+      --danger: var(--color-danger);
+      --serif: var(--font-serif);
     }
 
     /* ===== Resets ===== */
     * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-    html, body { margin: 0; padding: 0; background: var(--cream); overscroll-behavior-y: contain; }
+    html, body { margin: 0; padding: 0; background: var(--color-bg-page); overscroll-behavior-y: contain; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif;
-      color: var(--text-1);
+      font-family: var(--font-sans);
+      font-size: var(--type-body);
+      color: var(--color-text-default);
+      letter-spacing: -0.01em;
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
+      font-feature-settings: 'ss03', 'cv01', 'cv11';
     }
+
+    /* ===== Wanted DS-style Utility Classes ===== */
+    /* Eyebrow label — small uppercase tag (used in SectionTitle) */
+    .gt-eyebrow {
+      font-size: var(--type-eyebrow);
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+    }
+    /* Section header — Pretendard bold, no caps */
+    .gt-section-title {
+      font-size: var(--type-h2);
+      font-weight: 700;
+      color: var(--color-text-strong);
+      letter-spacing: -0.02em;
+      line-height: 1.3;
+    }
+    /* Body text variants */
+    .gt-body { font-size: var(--type-body); line-height: 1.65; color: var(--color-text-default); }
+    .gt-body-soft { font-size: var(--type-body-sm); line-height: 1.6; color: var(--color-text-soft); }
+    .gt-caption { font-size: var(--type-caption); line-height: 1.5; color: var(--color-text-muted); }
+    /* Numeric display (for D-day, time, counters) — tabular */
+    .gt-num { font-feature-settings: 'tnum' on, 'lnum' on; font-variant-numeric: tabular-nums; }
     #root { min-height: 100vh; }
     button { font-family: inherit; }
     main { -webkit-overflow-scrolling: touch; }
@@ -3947,11 +4056,11 @@ function CostsSummary() {
 function Card({ children, onClick, style }) {
   return (
     <div className="gt-card" onClick={onClick} style={{
-      background: '#FFF',
-      border: '1px solid #E8E2D5',
-      borderRadius: '14px',
-      padding: '20px',
-      marginBottom: '16px',
+      background: 'var(--color-bg-surface)',
+      border: '1px solid var(--color-border-default)',
+      borderRadius: 'var(--radius-lg)',
+      padding: 'var(--space-5)',
+      marginBottom: 'var(--space-4)',
       cursor: onClick ? 'pointer' : 'default',
       ...style,
     }}>
@@ -3962,13 +4071,7 @@ function Card({ children, onClick, style }) {
 
 function SectionTitle({ children }) {
   return (
-    <div style={{
-      fontSize: '11px',
-      letterSpacing: '2px',
-      color: '#A8A39A',
-      marginBottom: '14px',
-      textTransform: 'uppercase'
-    }}>
+    <div className="gt-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
       {children}
     </div>
   );
@@ -3976,18 +4079,27 @@ function SectionTitle({ children }) {
 
 function StatCard({ label, value, sub, onClick }) {
   return (
-    <button onClick={onClick} style={{
-      background: '#FFF',
-      border: '1px solid #E8E2D5',
-      borderRadius: '12px',
-      padding: '16px',
+    <button onClick={onClick} className="gt-card" style={{
+      background: 'var(--color-bg-surface)',
+      border: '1px solid var(--color-border-default)',
+      borderRadius: 'var(--radius-lg)',
+      padding: 'var(--space-4)',
       textAlign: 'left',
       cursor: 'pointer',
-      width: '100%'
+      width: '100%',
+      fontFamily: 'inherit',
     }}>
-      <div style={{ fontSize: '11px', color: '#A8A39A', letterSpacing: '1px' }}>{label}</div>
-      <div style={{ fontFamily: 'Georgia, serif', fontSize: '24px', color: '#1B2A4A', marginTop: '6px', fontWeight: 500 }}>{value}</div>
-      <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '2px' }}>{sub}</div>
+      <div className="gt-eyebrow">{label}</div>
+      <div className="gt-num" style={{
+        fontFamily: "'Cormorant Garamond', 'Pretendard Variable', Georgia, sans-serif",
+        fontSize: '26px',
+        color: 'var(--color-text-strong)',
+        marginTop: 'var(--space-2)',
+        fontWeight: 600,
+        letterSpacing: '-0.02em',
+        lineHeight: 1.1,
+      }}>{value}</div>
+      <div className="gt-caption" style={{ marginTop: 'var(--space-1)' }}>{sub}</div>
     </button>
   );
 }
@@ -3995,51 +4107,62 @@ function StatCard({ label, value, sub, onClick }) {
 function SubTab({ active, onClick, children }) {
   return (
     <button onClick={onClick} style={{
-      padding: '8px 14px',
-      fontSize: '12px',
-      background: active ? '#1B2A4A' : '#FFF',
-      color: active ? '#FFF' : '#666',
-      border: '1px solid #E8E2D5',
-      borderRadius: '20px',
+      padding: 'var(--space-2) var(--space-4)',
+      fontSize: 'var(--type-caption)',
+      background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
+      color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
+      border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
+      borderRadius: 'var(--radius-pill)',
       cursor: 'pointer',
-      fontWeight: active ? 500 : 400
+      fontWeight: active ? 600 : 500,
+      letterSpacing: '-0.01em',
+      fontFamily: 'inherit',
+      whiteSpace: 'nowrap',
     }}>
       {children}
     </button>
   );
 }
 
+// Primary CTA — solid navy, used for main actions
 const btnStyle = {
   width: '100%',
-  padding: '12px',
-  background: '#1B2A4A',
-  color: '#FFF',
+  padding: 'var(--space-3) var(--space-4)',
+  background: 'var(--color-bg-inverse)',
+  color: 'var(--color-text-inverse)',
   border: 'none',
-  borderRadius: '8px',
-  fontSize: '13px',
-  fontWeight: 500,
-  cursor: 'pointer'
-};
-
-const btnLightStyle = {
-  padding: '12px',
-  background: '#FAF6EF',
-  color: '#1B2A4A',
-  border: '1px solid #E8E2D5',
-  borderRadius: '8px',
-  fontSize: '12px',
+  borderRadius: 'var(--radius-md)',
+  fontSize: 'var(--type-body-sm)',
+  fontWeight: 600,
   cursor: 'pointer',
-  fontWeight: 500
+  letterSpacing: '-0.01em',
+  fontFamily: 'inherit',
 };
 
+// Secondary — soft cream surface with border
+const btnLightStyle = {
+  padding: 'var(--space-3) var(--space-4)',
+  background: 'var(--color-bg-surface-alt)',
+  color: 'var(--color-text-strong)',
+  border: '1px solid var(--color-border-default)',
+  borderRadius: 'var(--radius-md)',
+  fontSize: 'var(--type-caption)',
+  cursor: 'pointer',
+  fontWeight: 600,
+  letterSpacing: '-0.01em',
+  fontFamily: 'inherit',
+};
+
+// Korean falls through Cormorant (no Hangul glyphs) -> Pretendard.
+// Latin renders in Cormorant for the luxury serif feel.
 const pageTitleStyle = {
-  fontFamily: "'Cormorant Garamond', Georgia, serif",
-  fontSize: '30px',
+  fontFamily: "'Cormorant Garamond', 'Pretendard Variable', 'Pretendard', Georgia, 'Apple SD Gothic Neo', sans-serif",
+  fontSize: 'var(--type-display)',
   fontWeight: 500,
-  color: '#1B2A4A',
-  marginBottom: '4px',
-  letterSpacing: '0.5px',
-  lineHeight: 1.1,
+  color: 'var(--color-text-strong)',
+  marginBottom: 'var(--space-1)',
+  letterSpacing: '-0.01em',
+  lineHeight: 1.15,
 };
 
 // =================== BOTTOM NAV ===================
