@@ -4,7 +4,7 @@
 // index.html 수정 시 버전을 올릴 필요 없음(navigation이 network-first라 자동 최신).
 // 단, 이 sw.js 자체를 바꿀 때만 CACHE 버전을 올린다.
 
-const CACHE = 'grandtour-v1';
+const CACHE = 'grandtour-v2';
 
 const PRECACHE = [
   './',
@@ -13,6 +13,7 @@ const PRECACHE = [
   'https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js',
+  'https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css',
 ];
 
 self.addEventListener('install', (event) => {
@@ -66,7 +67,11 @@ self.addEventListener('fetch', (event) => {
         .then((res) => {
           const cacheable =
             res && res.status === 200 &&
-            (url.origin === self.location.origin || url.hostname.indexOf('cdnjs.cloudflare.com') !== -1);
+            (url.origin === self.location.origin ||
+             url.hostname.indexOf('cdnjs.cloudflare.com') !== -1 ||
+             url.hostname.indexOf('cdn.jsdelivr.net') !== -1 ||
+             url.hostname.indexOf('fonts.googleapis.com') !== -1 ||
+             url.hostname.indexOf('fonts.gstatic.com') !== -1);
           if (cacheable) {
             const copy = res.clone();
             caches.open(CACHE).then((c) => c.put(req, copy));
