@@ -1423,12 +1423,13 @@ function Header({ status }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-sans)',
             fontSize: '20px',
-            fontWeight: 600,
+            fontWeight: 700,
             color: 'var(--color-accent-primary)',
             lineHeight: 1,
-            letterSpacing: '1px'
+            letterSpacing: '0px',
+            fontVariantNumeric: 'tabular-nums',
           }}>
             {dDayLabel}
           </div>
@@ -1943,9 +1944,10 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
                 height: '60px',
                 margin: '0 auto',
                 cursor: 'pointer',
-                fontFamily: 'Georgia, serif',
+                fontFamily: 'var(--font-sans)',
                 color: 'var(--color-text-strong)',
-                fontWeight: 400
+                fontWeight: 500,
+                fontVariantNumeric: 'tabular-nums'
               }}
             >
               {d}
@@ -1964,9 +1966,10 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
               height: '60px',
               margin: '0 auto',
               cursor: 'pointer',
-              fontFamily: 'Georgia, serif',
+              fontFamily: 'var(--font-sans)',
               color: 'var(--color-text-strong)',
-              fontWeight: 400
+              fontWeight: 500,
+              fontVariantNumeric: 'tabular-nums'
             }}
           >0</button>
           <button
@@ -2948,7 +2951,7 @@ function HeroCountdown({ status, setView }) {
                       }}>
                         <div style={{ fontSize: '9px', color: 'rgba(201,169,97,0.9)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
                         <div style={{ fontSize: '22px', lineHeight: 1, marginBottom: '4px' }}>{wmoT ? wmoT.e : '—'}</div>
-                        <div style={{ fontFamily: 'Georgia, serif', fontSize: '17px', fontWeight: 700, color: 'var(--color-accent-primary)', lineHeight: 1 }}>
+                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '17px', fontWeight: 700, color: 'var(--color-accent-primary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {w.today.max}°
                         </div>
                         <div style={{ fontSize: '9px', color: 'rgba(250,246,239,0.55)', marginTop: '3px' }}>{w.today.min}° min</div>
@@ -2965,7 +2968,7 @@ function HeroCountdown({ status, setView }) {
                       }}>
                         <div style={{ fontSize: '9px', color: 'rgba(201,169,97,0.65)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>내일</div>
                         <div style={{ fontSize: '22px', lineHeight: 1, marginBottom: '4px' }}>{wmoN ? wmoN.e : '—'}</div>
-                        <div style={{ fontFamily: 'Georgia, serif', fontSize: '17px', fontWeight: 700, color: 'rgba(201,169,97,0.75)', lineHeight: 1 }}>
+                        <div style={{ fontFamily: 'var(--font-sans)', fontSize: '17px', fontWeight: 700, color: 'rgba(201,169,97,0.75)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {wmoN ? w.tomorrow.max + '°' : '—'}
                         </div>
                         <div style={{ fontSize: '9px', color: 'rgba(250,246,239,0.45)', marginTop: '3px' }}>{wmoN ? w.tomorrow.min + '° min' : ''}</div>
@@ -4214,9 +4217,9 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <h2 style={pageTitleStyle}>위치 · 예약</h2>
+      <h2 style={pageTitleStyle}>🧭 여정 정보</h2>
       <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-        지도 · 호텔 · 항공 · 환율 · 날씨 · 미식 · 비용 통합
+        지도 · 호텔 · 항공 · 환율 · 날씨 · 미식 · 비용
       </div>
 
       {/* Sub-tab nav */}
@@ -4627,7 +4630,7 @@ function ExchangeRates() {
                   {c.unit > 1 ? c.unit + ' ' : '1 '}{c.code}
                   <span style={{ color: 'var(--color-text-muted)', marginLeft: '6px', fontSize: '11px' }}>{c.label}</span>
                 </span>
-                <span style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: 'var(--color-text-strong)', fontWeight: 500 }}>
+                <span style={{ fontFamily: 'var(--font-sans)', fontSize: '16px', color: 'var(--color-text-strong)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
                   {v != null ? v.toLocaleString() + '원' : '—'}
                 </span>
               </div>
@@ -4932,7 +4935,7 @@ function WeatherWidget() {
                   )}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ fontSize: '15px', fontFamily: 'Georgia, serif', color: 'var(--color-text-strong)', fontWeight: 600 }}>{max}°</span>
+                  <span style={{ fontSize: '15px', fontFamily: 'var(--font-sans)', color: 'var(--color-text-strong)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{max}°</span>
                   <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '5px' }}>{min}°</span>
                 </div>
               </div>
@@ -5172,7 +5175,7 @@ function BottomNav({ view, setView }) {
     { id: 'home', label: '홈', icon: '🏠' },
     { id: 'days', label: '일정', icon: '📅' },
     { id: 'check', label: '체크', icon: '✓' },
-    { id: 'logi', label: '지도', icon: '🗺️' },
+    { id: 'logi', label: '여정', icon: '🧭' },
     { id: 'private', label: '🔒', icon: '🔒' },
   ];
 
@@ -5183,7 +5186,7 @@ function BottomNav({ view, setView }) {
       left: 0,
       right: 0,
       background: 'var(--color-bg-surface)',
-      borderTop: '1px solid #E8E2D5',
+      borderTop: '1px solid var(--color-border-default)',
       display: 'flex',
       justifyContent: 'space-around',
       padding: '8px 0 0',
@@ -5212,7 +5215,7 @@ function BottomNav({ view, setView }) {
           <div className="gt-tab-icon" style={{ fontSize: '18px', opacity: view === t.id ? 1 : 0.45 }}>{t.icon}</div>
           <div style={{
             fontSize: '10px',
-            color: view === t.id ? '#1B2A4A' : 'var(--color-text-muted)',
+            color: view === t.id ? 'var(--color-text-strong)' : 'var(--color-text-muted)',
             fontWeight: view === t.id ? 500 : 400,
             letterSpacing: '0.3px',
           }}>
