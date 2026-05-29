@@ -3123,14 +3123,16 @@ function TimelineStrip({ DAYS, status, setView }) {
 
 // Outputs 3-tier progress (Lifetime 4 / Major 6 / Working 9)
 function OutputsProgress({ outputs, setView }) {
+  // Tier is derived from `star` (3 = Lifetime, 2 = Major, 1 = Working).
+  // OUTPUTS data has no `cat` field — star is the source of truth.
   const tiers = [
-    { key: 'lifetime', label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
-    { key: 'major',    label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
-    { key: 'working',  label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
+    { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
+    { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
+    { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
   ];
   const counts = tiers.map(t => {
-    const total = OUTPUTS.filter(o => o.cat === t.key).length;
-    const done = OUTPUTS.filter(o => o.cat === t.key && outputs[o.id]?.done).length;
+    const total = OUTPUTS.filter(o => o.star === t.star).length;
+    const done = OUTPUTS.filter(o => o.star === t.star && outputs[o.id]?.done).length;
     return { ...t, total, done };
   });
   const totalAll = OUTPUTS.length;
@@ -3147,7 +3149,7 @@ function OutputsProgress({ outputs, setView }) {
         {counts.map(t => {
           const pct = t.total === 0 ? 0 : Math.round((t.done / t.total) * 100);
           return (
-            <div key={t.key}>
+            <div key={t.star}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
                 <span style={{ color: t.tone, fontWeight: 500 }}>{t.label}</span>
                 <span style={{ color: 'var(--color-text-muted)' }}>{t.done}/{t.total}</span>
