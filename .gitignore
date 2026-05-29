@@ -15,3 +15,7 @@ grand-tour-app/
 
 # Node (in case future tools are added)
 node_modules/
+
+# Local preview config
+.claude/
+_postpreview.html
