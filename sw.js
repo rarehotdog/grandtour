@@ -4,7 +4,7 @@
 // index.html 수정 시 버전을 올릴 필요 없음(navigation이 network-first라 자동 최신).
 // 단, 이 sw.js 자체를 바꿀 때만 CACHE 버전을 올린다.
 
-const CACHE = 'grandtour-v2';
+const CACHE = 'grandtour-v3';
 
 const PRECACHE = [
   './',
@@ -32,6 +32,25 @@ self.addEventListener('activate', (event) => {
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
+});
+
+// Push notification handler (Web Push API — requires VAPID + server for true background push)
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  event.waitUntil(
+    self.registration.showNotification(data.title || '🌙 Grand Tour · 오늘의 질문', {
+      body: data.body || '일정 앱을 열어 오늘의 질문을 확인하세요.',
+      icon: './manifest.webmanifest',
+      badge: './manifest.webmanifest',
+      tag: 'gt-daily-question',
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow('./'));
 });
 
 self.addEventListener('fetch', (event) => {
