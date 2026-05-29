@@ -31,7 +31,7 @@
       --color-atomic-cream-200: #E8E2D5;
       --color-atomic-white:     #FFFFFF;
       --color-atomic-warm-600: #6B6760;
-      --color-atomic-warm-400: #A8A39A;
+      --color-atomic-warm-400: #7D7669;
       --color-atomic-red-700: #C00000;
       --color-atomic-amber-700: #854D0E;
       --color-atomic-amber-50: #FFF8E1;
@@ -2897,7 +2897,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
       {/* Closing line */}
       <div className="gt-serif" style={{
         marginTop: 'var(--space-5)', textAlign: 'center',
-        fontSize: '18px', fontStyle: 'italic', color: 'var(--color-accent-soft)', letterSpacing: '0.3px',
+        fontSize: '18px', color: 'var(--color-accent-soft)', letterSpacing: '0.3px',
       }}>
         "우리, 이제 시작이다"
       </div>
@@ -3493,7 +3493,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
           textAlign: 'center',
           boxShadow: 'var(--shadow-sm)',
         }}>
-          <div className="gt-serif" style={{ fontSize: '17px', fontStyle: 'italic', lineHeight: 1.6, color: 'var(--color-text-soft)' }}>
+          <div className="gt-serif" style={{ fontSize: '18px', lineHeight: 1.65, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
             "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
             앞으로 무엇을 할지 결정하기 위해 떠난다."
           </div>
@@ -3520,7 +3520,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
                 {todayChapter?.theme.toUpperCase()}
               </div>
             </div>
-            <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontStyle: 'italic', color: 'var(--color-text-strong)' }}>
+            <div className="gt-serif" style={{ fontSize: '21px', color: 'var(--color-text-strong)', letterSpacing: '0.2px', lineHeight: 1.4 }}>
               "{todayChapter?.tag}"
             </div>
           </div>
@@ -4477,7 +4477,7 @@ function MapView() {
               </div>
             </div>
           </div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: 'var(--color-text-soft)', marginBottom: '14px', lineHeight: 1.5 }}>
+          <div className="gt-serif" style={{ fontSize: '15px', color: 'var(--color-text-soft)', marginBottom: '14px', lineHeight: 1.55, letterSpacing: '0.2px' }}>
             "{selected.tag}"
           </div>
           <InlineMap
