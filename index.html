@@ -190,7 +190,7 @@
 
     /* Skeleton shimmer */
     .gt-skel {
-      background: linear-gradient(90deg, #EFEAE0 25%, #F5F0E8 50%, #EFEAE0 75%);
+      background: linear-gradient(90deg, var(--color-atomic-cream-200) 25%, var(--color-atomic-cream-100) 50%, var(--color-atomic-cream-200) 75%);
       background-size: 200% 100%;
       animation: gtShimmer 1.6s linear infinite;
       border-radius: 8px;
@@ -263,6 +263,7 @@
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
     }
+
   </style>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
@@ -1052,16 +1053,16 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.error) {
       return (
-        <div style={{ minHeight: '100vh', background: '#FAF6EF', color: '#1B2A4A', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif' }}>
+        <div style={{ minHeight: '100vh', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif' }}>
           <div style={{ fontSize: '40px', marginBottom: '16px' }}>🧭</div>
           <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', marginBottom: '10px' }}>잠시 길을 잃었어요</div>
-          <div style={{ fontSize: '13px', color: '#6B6760', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
+          <div style={{ fontSize: '13px', color: 'var(--color-text-soft)', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
             화면을 그리는 중 문제가 생겼어요. 저장된 데이터(메모·사진·체크리스트)는 그대로 있으니 안심하세요. 새로고침하면 대부분 해결됩니다.
           </div>
-          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: '#1B2A4A', color: '#FFF', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: '8px', fontSize: '14px', fontWeight: 500, cursor: 'pointer' }}>
             새로고침
           </button>
-          <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '20px', wordBreak: 'break-word', maxWidth: '320px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '20px', wordBreak: 'break-word', maxWidth: '320px' }}>
             {String((this.state.error && this.state.error.message) || this.state.error)}
           </div>
         </div>
@@ -1084,7 +1085,6 @@ function App() {
   const [photos, setPhotos] = useState({});
   const [loaded, setLoaded] = useState(false);
   const [status, setStatus] = useState(getCurrentStatus());
-
   useEffect(() => {
     const update = () => setStatus(getCurrentStatus());
     const interval = setInterval(update, 60000);
@@ -1357,9 +1357,9 @@ function App() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#FAF6EF',
+      background: 'var(--color-bg-page)',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", Roboto, sans-serif',
-      color: '#1B2A4A',
+      color: 'var(--color-text-strong)',
       paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
     }}>
       <Header status={status} />
@@ -1374,7 +1374,7 @@ function App() {
         )}
         {loaded && (
           <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} outputs={outputs} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
+            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
             {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
@@ -1403,7 +1403,7 @@ function Header({ status }) {
 
   return (
     <header className="gt-header" style={{
-      color: '#FAF6EF',
+      color: 'var(--color-text-inverse)',
       padding: 'calc(16px + env(safe-area-inset-top)) 16px 14px',
     }}>
       <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
@@ -1426,7 +1426,7 @@ function Header({ status }) {
             fontFamily: 'Georgia, serif',
             fontSize: '20px',
             fontWeight: 600,
-            color: '#C9A961',
+            color: 'var(--color-accent-primary)',
             lineHeight: 1,
             letterSpacing: '1px'
           }}>
@@ -1492,6 +1492,36 @@ function DayHero({ day, chapter }) {
   );
 }
 
+function ChapterIntro({ chapter }) {
+  return (
+    <div style={{
+      background: chapter.color,
+      borderRadius: '10px',
+      padding: '22px 20px',
+      marginBottom: '12px',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      <div style={{
+        position: 'absolute', right: '-8px', top: '50%', transform: 'translateY(-50%)',
+        fontSize: '88px', opacity: 0.12, lineHeight: 1, pointerEvents: 'none', userSelect: 'none'
+      }}>{chapter.flag}</div>
+      <div style={{ fontSize: '10px', color: chapter.accent, letterSpacing: '2px', fontWeight: 700, marginBottom: '8px', opacity: 0.65 }}>
+        CHAPTER · {chapter.dates}
+      </div>
+      <div style={{ fontSize: '26px', fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600, color: chapter.accent, lineHeight: 1.1, marginBottom: '5px' }}>
+        {chapter.flag} {chapter.name}
+      </div>
+      <div style={{ fontSize: '12px', color: chapter.accent, fontWeight: 600, marginBottom: '10px', opacity: 0.75 }}>
+        {chapter.theme}
+      </div>
+      <div style={{ fontSize: '13px', color: chapter.accent, fontStyle: 'italic', lineHeight: 1.65, opacity: 0.85 }}>
+        "{chapter.tag}"
+      </div>
+    </div>
+  );
+}
+
 function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
   const fileInputRef = useRef(null);
   const [uploading, setUploading] = useState(false);
@@ -1544,7 +1574,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
             padding: '4px 8px',
             borderRadius: '4px',
             fontSize: '10px',
-            color: '#6B6760',
+            color: 'var(--color-text-soft)',
             fontFamily: 'Georgia, serif',
             fontStyle: 'italic'
           }}>
@@ -1552,7 +1582,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           </div>
         </div>
         <div style={{ display: 'flex', gap: '6px', marginTop: '6px', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={{ fontSize: '10px', color: '#A8A39A' }}>
+          <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>
             {photo.savedAt ? new Date(photo.savedAt).toLocaleDateString() : ''}
           </span>
           <div style={{ display: 'flex', gap: '6px' }}>
@@ -1561,7 +1591,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
               style={{
                 padding: '4px 10px',
                 fontSize: '11px',
-                background: '#FFF',
+                background: 'var(--color-bg-surface)',
                 border: '1px solid #E8E2D5',
                 borderRadius: '4px',
                 cursor: 'pointer'
@@ -1612,13 +1642,13 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           borderRadius: '8px',
           cursor: uploading ? 'wait' : 'pointer',
           textAlign: 'center',
-          color: '#C9A961',
+          color: 'var(--color-accent-primary)',
           fontSize: '13px',
           fontWeight: 500
         }}
       >
         {uploading ? '⏳ 처리 중...' : '📸 오늘의 한 장 추가하기'}
-        <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px', fontWeight: 400 }}>
+        <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', fontWeight: 400 }}>
           매일 1장 · 28장이 모이면 평생 회고록
         </div>
       </button>
@@ -1645,7 +1675,7 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
       borderRadius: '10px',
       overflow: 'hidden',
       border: '1px solid #E8E2D5',
-      background: '#FFF',
+      background: 'var(--color-bg-surface)',
       marginBottom: '12px'
     }}>
       <iframe
@@ -1657,8 +1687,8 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
         loading="lazy"
       />
       <div style={{
-        background: '#1B2A4A',
-        color: '#FFF',
+        background: 'var(--color-bg-inverse)',
+        color: 'var(--color-text-inverse)',
         padding: '8px 12px',
         fontSize: '11px',
         display: 'flex',
@@ -1670,7 +1700,7 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
           href={mapsUrl(label)}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ color: '#C9A961', textDecoration: 'none', fontWeight: 500 }}
+          style={{ color: 'var(--color-accent-primary)', textDecoration: 'none', fontWeight: 500 }}
         >
           Google Maps →
         </a>
@@ -1695,7 +1725,7 @@ function Recommendations({ chapterId, chapter }) {
   return (
     <Card>
       <SectionTitle>💡 {chapter.name} 추가 추천 활동</SectionTitle>
-      <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
         현재 계획에 더해 시도하면 좋을 큐레이션 · 탭하여 Google Maps에서 보기
       </div>
 
@@ -1708,9 +1738,9 @@ function Recommendations({ chapterId, chapter }) {
             style={{
               padding: '6px 12px',
               fontSize: '11px',
-              background: openSection === s.key ? chapter.accent : '#FFF',
-              color: openSection === s.key ? '#FFF' : '#666',
-              border: `1px solid ${openSection === s.key ? chapter.accent : '#E8E2D5'}`,
+              background: openSection === s.key ? chapter.accent : 'var(--color-bg-surface)',
+              color: openSection === s.key ? '#FFF' : 'var(--color-text-soft)',
+              border: `1px solid ${openSection === s.key ? chapter.accent : 'var(--color-border-default)'}`,
               borderRadius: '20px',
               cursor: 'pointer',
               fontWeight: openSection === s.key ? 500 : 400
@@ -1745,7 +1775,7 @@ function Recommendations({ chapterId, chapter }) {
                 <div style={{ fontSize: '13px', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
                   {item.t}
                 </div>
-                <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>
                   {item.why}
                 </div>
                 {item.tip && (
@@ -1837,7 +1867,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
   };
 
   if (!pinChecked) {
-    return <div style={{ padding: '40px 0', textAlign: 'center', color: '#A8A39A', fontSize: '13px' }}>...</div>;
+    return <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '13px' }}>...</div>;
   }
 
   // Lock screen
@@ -1852,10 +1882,10 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
     return (
       <div style={{ padding: '40px 0 24px', maxWidth: '320px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.85 }}>🔒</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: '#1B2A4A', marginBottom: '6px' }}>
+        <div style={{ fontFamily: 'Georgia, serif', fontSize: '22px', color: 'var(--color-text-strong)', marginBottom: '6px' }}>
           {title}
         </div>
-        <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '32px' }}>
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '32px' }}>
           {subtitle}
         </div>
 
@@ -1906,7 +1936,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
               style={{
                 padding: '18px',
                 fontSize: '20px',
-                background: '#FFF',
+                background: 'var(--color-bg-surface)',
                 border: '1px solid #E8E2D5',
                 borderRadius: '50%',
                 width: '60px',
@@ -1914,7 +1944,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
                 margin: '0 auto',
                 cursor: 'pointer',
                 fontFamily: 'Georgia, serif',
-                color: '#1B2A4A',
+                color: 'var(--color-text-strong)',
                 fontWeight: 400
               }}
             >
@@ -1927,7 +1957,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
             style={{
               padding: '18px',
               fontSize: '20px',
-              background: '#FFF',
+              background: 'var(--color-bg-surface)',
               border: '1px solid #E8E2D5',
               borderRadius: '50%',
               width: '60px',
@@ -1935,7 +1965,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
               margin: '0 auto',
               cursor: 'pointer',
               fontFamily: 'Georgia, serif',
-              color: '#1B2A4A',
+              color: 'var(--color-text-strong)',
               fontWeight: 400
             }}
           >0</button>
@@ -1948,7 +1978,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
               background: 'transparent',
               border: 'none',
               cursor: pinInput.length ? 'pointer' : 'default',
-              color: pinInput.length ? '#A8A39A' : '#E8E2D5',
+              color: pinInput.length ? 'var(--color-text-muted)' : 'var(--color-border-default)',
               margin: '0 auto'
             }}
           >⌫</button>
@@ -1967,7 +1997,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
             style={{
               marginTop: '24px',
               fontSize: '11px',
-              color: '#A8A39A',
+              color: 'var(--color-text-muted)',
               background: 'transparent',
               border: 'none',
               cursor: 'pointer',
@@ -1995,7 +2025,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
           onClick={() => setUnlocked(false)}
           style={{
             fontSize: '11px',
-            color: '#A8A39A',
+            color: 'var(--color-text-muted)',
             background: 'transparent',
             border: '1px solid #E8E2D5',
             borderRadius: '6px',
@@ -2004,7 +2034,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
           }}
         >🔒 잠그기</button>
       </div>
-      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '20px' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '20px' }}>
         메모 {writtenCount}/28 · 산물 {outputDone}/19
       </div>
 
@@ -2022,14 +2052,66 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
 
 // Inner Notes (without the page header)
 function NotesInner({ notes, saveNote, DAYS }) {
+  const [query, setQuery] = useState('');
+  const q = query.trim().toLowerCase();
+
+  const filtered = q
+    ? DAYS.filter(day => {
+        const noteContent = (notes[day.n]?.content || '').toLowerCase();
+        const ch = C(day.c);
+        return (
+          noteContent.includes(q) ||
+          day.q.toLowerCase().includes(q) ||
+          ch.name.toLowerCase().includes(q) ||
+          (day.city || '').toLowerCase().includes(q) ||
+          day.d.includes(q)
+        );
+      })
+    : DAYS;
+
   return (
     <div>
-      {DAYS.map(day => {
+      {/* Search bar */}
+      <div style={{ position: 'relative', marginBottom: '12px' }}>
+        <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px', pointerEvents: 'none' }}>🔍</span>
+        <input
+          type="text"
+          value={query}
+          onChange={e => setQuery(e.target.value)}
+          placeholder="메모 · 질문 · 도시 검색…"
+          style={{
+            width: '100%',
+            padding: '10px 36px 10px 36px',
+            border: '1px solid #E8E2D5',
+            borderRadius: '10px',
+            fontSize: '13px',
+            color: 'var(--color-text-strong)',
+            background: 'var(--color-bg-page)',
+            outline: 'none',
+            boxSizing: 'border-box',
+            fontFamily: 'var(--font-sans)'
+          }}
+        />
+        {query && (
+          <button
+            onClick={() => setQuery('')}
+            style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', fontSize: '14px', color: 'var(--color-text-muted)', padding: '4px' }}
+          >✕</button>
+        )}
+      </div>
+
+      {q && (
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '10px' }}>
+          {filtered.length > 0 ? `${filtered.length}일 일치` : '일치하는 메모 없음'}
+        </div>
+      )}
+
+      {filtered.map(day => {
         const ch = C(day.c);
         const noteContent = notes[day.n]?.content;
         return (
-          <details key={day.n} style={{
-            background: '#FFF',
+          <details key={day.n} open={!!q} style={{
+            background: 'var(--color-bg-surface)',
             border: '1px solid #E8E2D5',
             borderRadius: '10px',
             marginBottom: '8px',
@@ -2049,18 +2131,18 @@ function NotesInner({ notes, saveNote, DAYS }) {
                 fontWeight: 600,
                 flexShrink: 0
               }}>{day.n}</div>
-              <div style={{ flex: 1 }}>
-                <div style={{ fontSize: '12px', color: '#A8A39A' }}>{day.d} · {ch.flag} {ch.name}</div>
-                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{day.d} · {ch.flag} {ch.name}</div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-strong)', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
                 </div>
               </div>
               <div style={{ fontSize: '14px' }}>{noteContent ? '✏️' : '○'}</div>
             </summary>
             <div style={{ paddingTop: '14px', borderTop: '1px solid #F5F0E8', marginTop: '12px' }}>
-              <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
-                <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '4px' }}>💭 질문</div>
-                <div style={{ fontSize: '12px', color: '#1B2A4A', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+              <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '6px', marginBottom: '10px' }}>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '4px' }}>💭 질문</div>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-strong)', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
               </div>
               <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
             </div>
@@ -2075,11 +2157,11 @@ function NotesInner({ notes, saveNote, DAYS }) {
 function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
   return (
     <div>
-      <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
         <div style={{ fontSize: '11px', fontWeight: 500, color: '#9A3412', marginBottom: '4px' }}>
           ⭐⭐⭐ 평생 보관 산물 4개
         </div>
-        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>
           Seceda 정상 · Pantheon · Nike · "우리, 이제 시작이다" 봉인
         </div>
       </div>
@@ -2090,8 +2172,8 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
         const stars = '⭐'.repeat(o.star || 0);
         return (
           <div key={o.id} style={{
-            background: '#FFF',
-            border: `1px solid ${state.done ? '#C9A961' : '#E8E2D5'}`,
+            background: 'var(--color-bg-surface)',
+            border: `1px solid ${state.done ? 'var(--color-accent-primary)' : 'var(--color-border-default)'}`,
             borderRadius: '10px',
             marginBottom: '10px',
             padding: '14px 16px'
@@ -2103,9 +2185,9 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
                   width: '22px',
                   height: '22px',
                   borderRadius: '4px',
-                  border: `2px solid ${state.done ? '#1B2A4A' : '#CCC'}`,
+                  border: `2px solid ${state.done ? '#1B2A4A' : 'var(--color-border-strong)'}`,
                   background: state.done ? '#1B2A4A' : 'transparent',
-                  color: '#FFF',
+                  color: 'var(--color-text-inverse)',
                   cursor: 'pointer',
                   fontSize: '14px',
                   flexShrink: 0,
@@ -2120,10 +2202,10 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
                   </span>
                   {stars && <span style={{ fontSize: '10px' }}>{stars}</span>}
                 </div>
-                <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? '#A8A39A' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
+                <div style={{ fontSize: '14px', fontWeight: 500, color: state.done ? 'var(--color-text-muted)' : '#1B2A4A', textDecoration: state.done ? 'line-through' : 'none' }}>
                   {o.t}
                 </div>
-                <div style={{ fontSize: '12px', color: '#6B6760', lineHeight: 1.5, marginTop: '4px' }}>
+                <div style={{ fontSize: '12px', color: 'var(--color-text-soft)', lineHeight: 1.5, marginTop: '4px' }}>
                   {o.desc}
                 </div>
               </div>
@@ -2141,8 +2223,8 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
                 lineHeight: 1.6,
                 border: '1px solid #E8E2D5',
                 borderRadius: '6px',
-                background: '#FFFEF9',
-                color: '#1B2A4A',
+                background: 'var(--color-bg-surface)',
+                color: 'var(--color-text-strong)',
                 fontFamily: 'inherit',
                 resize: 'vertical',
                 boxSizing: 'border-box'
@@ -2186,9 +2268,9 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
         <button
           onClick={() => setEditing(true)}
           style={{
-            background: edited ? '#C9A961' : 'transparent',
+            background: edited ? 'var(--color-accent-primary)' : 'transparent',
             border: edited ? '1px solid #C9A961' : '1px solid transparent',
-            color: edited ? '#FFF' : '#C9A961',
+            color: edited ? '#FFF' : 'var(--color-accent-primary)',
             cursor: 'pointer',
             fontSize: '10px',
             padding: '2px 6px',
@@ -2220,9 +2302,9 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
           lineHeight: 1.5,
           border: '2px solid #C9A961',
           borderRadius: '6px',
-          background: '#FFFEF9',
+          background: 'var(--color-bg-surface)',
           fontFamily: 'inherit',
-          color: '#1B2A4A',
+          color: 'var(--color-text-strong)',
           ...(multiline && { minHeight: '70px', resize: 'vertical' }),
           boxSizing: 'border-box',
           ...inputStyle
@@ -2243,7 +2325,7 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
         <button onClick={cancel} style={{
           padding: '4px 10px',
           fontSize: '11px',
-          background: '#FFF',
+          background: 'var(--color-bg-surface)',
           border: '1px solid #E8E2D5',
           borderRadius: '4px',
           cursor: 'pointer'
@@ -2251,8 +2333,8 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
         <button onClick={save} style={{
           padding: '4px 10px',
           fontSize: '11px',
-          background: '#1B2A4A',
-          color: '#FFF',
+          background: 'var(--color-bg-inverse)',
+          color: 'var(--color-text-inverse)',
           border: 'none',
           borderRadius: '4px',
           cursor: 'pointer'
@@ -2266,6 +2348,70 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 // =================== STABILITY WIDGETS ===================
 
 // Backup reminder — shows banner if no backup in last 14 days
+function EveningReminder({ status }) {
+  const [visible, setVisible] = useState(false);
+  const [notifPerm, setNotifPerm] = useState(null);
+
+  useEffect(() => {
+    if (status.phase !== 'during' || !status.current) return;
+    const now = new Date();
+    const totalMin = now.getHours() * 60 + now.getMinutes();
+    if (totalMin < 1230 || totalMin > 1380) return; // 20:30~23:00
+    const todayKey = 'evening_shown_' + now.toISOString().slice(0, 10);
+    storage.get(todayKey).then(shown => { if (!shown) setVisible(true); });
+    if ('Notification' in window) setNotifPerm(Notification.permission);
+  }, [status.phase]);
+
+  const dismiss = async () => {
+    const todayKey = 'evening_shown_' + new Date().toISOString().slice(0, 10);
+    await storage.set(todayKey, true);
+    setVisible(false);
+  };
+
+  const requestNotif = async () => {
+    if (!('Notification' in window)) return;
+    const perm = await Notification.requestPermission();
+    setNotifPerm(perm);
+    if (perm === 'granted' && status.current) {
+      new Notification('🌙 Grand Tour · 오늘의 질문', {
+        body: status.current.q,
+        icon: '/manifest.webmanifest'
+      });
+    }
+  };
+
+  if (!visible || !status.current) return null;
+
+  return (
+    <div style={{
+      background: 'linear-gradient(135deg, #1B2A4A 0%, #2A3A5C 100%)',
+      borderRadius: 'var(--radius-md)',
+      padding: 'var(--space-4)',
+      marginBottom: 'var(--space-4)',
+      position: 'relative'
+    }}>
+      <button onClick={dismiss} style={{
+        position: 'absolute', top: '10px', right: '12px',
+        background: 'transparent', border: 'none', cursor: 'pointer',
+        color: 'rgba(255,255,255,0.4)', fontSize: '16px', lineHeight: 1
+      }}>✕</button>
+      <div style={{ fontSize: '10px', color: 'var(--color-accent-primary)', letterSpacing: '2px', fontWeight: 700, marginBottom: '8px' }}>
+        🌙 오늘의 질문 · Day {status.current.n}
+      </div>
+      <div style={{ fontSize: '14px', fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
+        "{status.current.q}"
+      </div>
+      {'Notification' in window && notifPerm !== 'granted' && (
+        <button onClick={requestNotif} style={{
+          fontSize: '11px', color: 'var(--color-accent-primary)',
+          background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.3)',
+          borderRadius: 'var(--radius-sm)', padding: '5px 12px', cursor: 'pointer', fontFamily: 'inherit'
+        }}>🔔 알림 허용</button>
+      )}
+    </div>
+  );
+}
+
 function BackupReminder({ exportData }) {
   const [lastAt, setLastAt] = useState(undefined);
   const [dismissed, setDismissed] = useState(false);
@@ -2296,14 +2442,14 @@ function BackupReminder({ exportData }) {
         <div style={{ fontSize: '12px', fontWeight: 600, color: '#854D0E', marginBottom: '2px' }}>
           백업 권장
         </div>
-        <div style={{ fontSize: '11px', color: '#6B6760', lineHeight: 1.5 }}>{msg}</div>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>{msg}</div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <button
           onClick={async () => { await exportData(false); setLastAt(Date.now()); }}
           style={{
             fontSize: '11px', padding: '6px 12px',
-            background: '#854D0E', color: '#FFF',
+            background: '#854D0E', color: 'var(--color-text-inverse)',
             border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
             whiteSpace: 'nowrap',
           }}
@@ -2312,7 +2458,7 @@ function BackupReminder({ exportData }) {
           onClick={() => setDismissed(true)}
           style={{
             fontSize: '10px', padding: '4px 8px',
-            background: 'transparent', color: '#A8A39A',
+            background: 'transparent', color: 'var(--color-text-muted)',
             border: 'none', cursor: 'pointer',
           }}
         >나중에</button>
@@ -2339,12 +2485,12 @@ function CopyChip({ text, label = '복사', icon = '📋', style }) {
   };
   return (
     <button onClick={onCopy} style={{
-      fontSize: '10px',
-      padding: '3px 8px',
+      fontSize: '11px',
+      padding: '7px 10px',
       background: copied ? 'rgba(0,128,0,0.12)' : 'rgba(27,42,74,0.06)',
-      color: copied ? '#008000' : '#1B2A4A',
+      color: copied ? '#008000' : 'var(--color-text-strong)',
       border: 'none',
-      borderRadius: '4px',
+      borderRadius: '6px',
       cursor: 'pointer',
       fontWeight: 500,
       whiteSpace: 'nowrap',
@@ -2381,24 +2527,24 @@ function TimezoneWidget({ status, DAYS }) {
           <div style={{ fontSize: '10px', color: ch.accent, letterSpacing: '1.5px', fontWeight: 500 }}>
             {ch.flag} {ch.name.toUpperCase()}
           </div>
-          <div className="gt-serif" style={{ fontSize: '32px', color: '#1B2A4A', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
             {localTime}
           </div>
-          <div style={{ fontSize: '9px', color: '#6B6760', marginTop: '2px' }}>현지</div>
+          <div style={{ fontSize: '9px', color: 'var(--color-text-soft)', marginTop: '2px' }}>현지</div>
         </div>
         <div style={{
           padding: '14px',
-          background: '#F5F0E8',
+          background: 'var(--color-border-soft)',
           borderRadius: '10px',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: '10px', color: '#6B6760', letterSpacing: '1.5px', fontWeight: 500 }}>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-soft)', letterSpacing: '1.5px', fontWeight: 500 }}>
             🇰🇷 SEOUL
           </div>
-          <div className="gt-serif" style={{ fontSize: '32px', color: '#1B2A4A', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
             {kstTime}
           </div>
-          <div style={{ fontSize: '9px', color: '#6B6760', marginTop: '2px' }}>KST</div>
+          <div style={{ fontSize: '9px', color: 'var(--color-text-soft)', marginTop: '2px' }}>KST</div>
         </div>
       </div>
     </Card>
@@ -2406,7 +2552,7 @@ function TimezoneWidget({ status, DAYS }) {
 }
 
 // Next flight/transit countdown — shows nearest upcoming
-function NextFlight({ FLIGHTS, status, setView }) {
+function NextFlight({ FLIGHTS, DAYS, status, setView }) {
   // Parse flight dates assuming year 2026
   const today = new Date();
   const upcoming = FLIGHTS.map(f => {
@@ -2421,33 +2567,172 @@ function NextFlight({ FLIGHTS, status, setView }) {
   const daysOut = Math.ceil((next.date - new Date(today.getFullYear(), today.getMonth(), today.getDate())) / msPerDay);
   const isToday = daysOut === 0;
   const isTomorrow = daysOut === 1;
+
+  // Find arrival chapter from DAYS matching the flight date
+  const arrivalDay = (DAYS || []).find(d => d.d === next.d);
+  const arrivalChapter = arrivalDay ? C(arrivalDay.c) : null;
+  const showWeatherPreview = arrivalChapter && arrivalChapter.coords && daysOut <= 16;
+
   return (
-    <Card style={{ background: isToday ? '#FFF8E1' : '#FFF', border: isToday ? '1.5px solid #C9A961' : '1px solid #E8E2D5' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
-        <SectionTitle>다음 이동</SectionTitle>
-        <div style={{ fontSize: '11px', color: '#C9A961', fontWeight: 500 }}>
-          {isToday ? '🟡 오늘' : isTomorrow ? '내일' : `${daysOut}일 뒤`}
+    <Card style={{ background: isToday ? 'var(--color-warning-bg)' : 'var(--color-bg-surface)', border: isToday ? '1.5px solid #C9A961' : '1px solid #E8E2D5', padding: 0, overflow: 'hidden' }}>
+      <div style={{ padding: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px' }}>
+          {/* Left: flight info */}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+              <span style={{ fontSize: '10px', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>다음 이동</span>
+              {arrivalChapter && (
+                <span style={{ fontSize: '10px', padding: '2px 6px', borderRadius: '4px', background: arrivalChapter.color, color: arrivalChapter.accent, fontWeight: 600 }}>
+                  {arrivalChapter.flag} {arrivalChapter.name}
+                </span>
+              )}
+            </div>
+            <div className="gt-serif" style={{ fontSize: '19px', color: 'var(--color-text-strong)', fontWeight: 500, lineHeight: 1.25 }}>
+              {next.route}
+            </div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', marginTop: '4px' }}>
+              ✈️ {next.no} · {next.t}
+            </div>
+          </div>
+          {/* Right: dDay badge */}
+          <div style={{
+            flexShrink: 0,
+            textAlign: 'center',
+            padding: '10px 14px',
+            borderRadius: '12px',
+            background: isToday ? '#C9A961' : 'var(--color-bg-page)',
+            color: isToday ? '#FFF' : 'var(--color-text-strong)',
+            minWidth: '70px',
+          }}>
+            <div className="gt-serif" style={{ fontSize: isToday ? '20px' : '22px', fontWeight: 500, fontStyle: 'italic', lineHeight: 1 }}>
+              {isToday ? '오늘' : isTomorrow ? '내일' : `D−${daysOut}`}
+            </div>
+            <div style={{ fontSize: '10px', color: isToday ? 'rgba(255,255,255,0.85)' : 'var(--color-text-muted)', marginTop: '3px', letterSpacing: '0.5px' }}>
+              {next.d}
+            </div>
+          </div>
         </div>
+
+        {next.note && (
+          <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '8px', fontStyle: 'italic' }}>
+            ℹ️ {next.note}
+          </div>
+        )}
       </div>
-      <div className="gt-serif" style={{ fontSize: '20px', color: '#1B2A4A', fontWeight: 500, lineHeight: 1.2 }}>
-        {next.route}
-      </div>
-      <div style={{ fontSize: '12px', color: '#6B6760', marginTop: '6px' }}>
-        ✈️ {next.no} · {next.t}
-      </div>
-      {next.note && (
-        <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px', fontStyle: 'italic' }}>
-          {next.note}
-        </div>
+
+      {/* Bottom: arrival city weather preview */}
+      {showWeatherPreview && (
+        <ArrivalWeather chapter={arrivalChapter} dateStr={next.d} />
       )}
-      <button onClick={() => setView('logi')} style={{
-        marginTop: '12px', fontSize: '11px', padding: '8px 12px',
-        background: 'rgba(27,42,74,0.06)', color: '#1B2A4A',
-        border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
-      }}>
-        전체 일정 보기 →
-      </button>
+
+      <div style={{ padding: '10px 16px', borderTop: '1px solid #F0EBE0', background: 'var(--color-bg-page)', display: 'flex', gap: '6px' }}>
+        <button onClick={() => setView('logi')} style={{
+          flex: 1, fontSize: '11px', padding: '7px 10px',
+          background: 'transparent', color: 'var(--color-text-strong)',
+          border: '1px solid #E8E2D5', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
+        }}>
+          전체 항공 →
+        </button>
+        {arrivalChapter && (
+          <a
+            href={mapsUrl(arrivalChapter.search)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              flex: 1, fontSize: '11px', padding: '7px 10px',
+              background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
+              border: 'none', borderRadius: '6px', textAlign: 'center', textDecoration: 'none',
+              fontWeight: 500,
+            }}
+          >
+            📍 {arrivalChapter.name} 지도
+          </a>
+        )}
+      </div>
     </Card>
+  );
+}
+
+// Inline weather preview for arrival city (uses Open-Meteo, cached via global weather_cache)
+function ArrivalWeather({ chapter, dateStr }) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const cache = await storage.get('weather_cache');
+        const fresh = cache && cache.savedAt && (Date.now() - cache.savedAt < 1800000);
+        if (cache && cache.data && cache.data[chapter.id] && fresh) {
+          if (!cancelled) { setData(cache.data[chapter.id]); setLoading(false); }
+          return;
+        }
+        const { lat, lng } = chapter.coords;
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&timezone=auto&forecast_days=16`;
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 8000);
+        const res = await fetch(url, { signal: ctrl.signal });
+        clearTimeout(timer);
+        const json = await res.json();
+        if (!cancelled && json.daily) setData(json.daily);
+      } catch (e) { /* offline-ok */ }
+      if (!cancelled) setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [chapter.id]);
+
+  if (loading) return (
+    <div style={{ padding: '10px 16px', borderTop: '1px solid #F0EBE0', fontSize: '11px', color: 'var(--color-text-muted)' }}>
+      🌤️ 도착지 날씨 불러오는 중…
+    </div>
+  );
+  if (!data || !data.time) return null;
+
+  // Find the index of the target date; fallback to first day
+  const [mo, da] = dateStr.split('/').map(Number);
+  const targetISO = `2026-${String(mo).padStart(2,'0')}-${String(da).padStart(2,'0')}`;
+  const startIdx = Math.max(0, data.time.indexOf(targetISO));
+  const slice = data.time.slice(startIdx, startIdx + 4);
+  if (slice.length === 0) return null;
+
+  return (
+    <div style={{ padding: '12px 16px', borderTop: '1px solid #F0EBE0', background: 'var(--color-bg-page)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+        <span style={{ fontSize: '10px', letterSpacing: '1.5px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+          🌤️ {chapter.name} 도착지 날씨
+        </span>
+        <span style={{ fontSize: '10px', color: 'var(--color-text-muted)' }}>{dateStr}~</span>
+      </div>
+      <div style={{ display: 'flex', gap: '6px' }}>
+        {slice.map((dateStr2, i) => {
+          const idx = startIdx + i;
+          const wmo = wmoInfo(data.weathercode[idx]);
+          const hi = Math.round(data.temperature_2m_max[idx]);
+          const lo = Math.round(data.temperature_2m_min[idx]);
+          const rain = data.precipitation_probability_mean[idx];
+          const dt = new Date(dateStr2);
+          const dn = ['일','월','화','수','목','금','토'][dt.getDay()];
+          return (
+            <div key={dateStr2} style={{
+              flex: 1, textAlign: 'center', padding: '8px 4px',
+              background: 'var(--color-bg-surface)', borderRadius: '8px', border: '1px solid #E8E2D5',
+            }}>
+              <div style={{ fontSize: '9px', color: 'var(--color-text-muted)', fontWeight: 600 }}>
+                {dt.getMonth()+1}/{dt.getDate()} {dn}
+              </div>
+              <div style={{ fontSize: '18px', margin: '3px 0', lineHeight: 1 }}>{wmo.e}</div>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-strong)', fontWeight: 500 }}>
+                {hi}°<span style={{ color: 'var(--color-text-muted)' }}>/{lo}°</span>
+              </div>
+              {rain >= 30 && (
+                <div style={{ fontSize: '9px', color: '#0369A1', marginTop: '2px' }}>💧{rain}%</div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
   );
 }
 
@@ -2472,30 +2757,30 @@ function EmergencyContacts() {
         background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
       }}>
         <SectionTitle>🆘 비상 연락처</SectionTitle>
-        <span style={{ fontSize: '12px', color: '#A8A39A' }}>{open ? '▾' : '▸'}</span>
+        <span style={{ fontSize: '12px', color: 'var(--color-text-muted)' }}>{open ? '▾' : '▸'}</span>
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
           {contacts.map((c, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 12px', background: '#FAF6EF', borderRadius: '8px', gap: '8px',
+              padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: '8px', gap: '8px',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '11px', color: '#6B6760' }}>{c.label}</div>
-                <div style={{ fontSize: '13px', color: '#1B2A4A', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{c.value}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-soft)' }}>{c.label}</div>
+                <div style={{ fontSize: '13px', color: 'var(--color-text-strong)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{c.value}</div>
               </div>
               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
                 <a href={`tel:${c.tel}`} style={{
                   fontSize: '11px', padding: '6px 10px',
-                  background: '#1B2A4A', color: '#FFF',
+                  background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
                   textDecoration: 'none', borderRadius: '6px', fontWeight: 500,
                 }}>📞 전화</a>
                 <CopyChip text={c.value} label="복사" icon="📋" />
               </div>
             </div>
           ))}
-          <div style={{ fontSize: '10px', color: '#A8A39A', textAlign: 'center', marginTop: '4px', fontStyle: 'italic' }}>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '4px', fontStyle: 'italic' }}>
             ⚠️ 응급 시 가장 가까운 한국대사관 또는 현지 112/999 우선
           </div>
         </div>
@@ -2507,83 +2792,273 @@ function EmergencyContacts() {
 // =================== STORYTELLING WIDGETS ===================
 
 // Premium D-Day hero — pre-trip cinematic countdown
+function wxBg(code) {
+  if (code == null) return { bg: 'linear-gradient(135deg, #1B2A4A 0%, #2A3A5C 50%, #1B2A4A 100%)', glow: 'rgba(201,169,97,0.12)' };
+  if (code === 0)             return { bg: 'linear-gradient(135deg, #0f2a50 0%, #1a4a80 45%, #1B2A4A 100%)', glow: 'rgba(100,160,255,0.18)' }; // 맑음 — 투명한 파란 하늘
+  if (code <= 2)              return { bg: 'linear-gradient(135deg, #1B2A4A 0%, #2A4060 45%, #1B2A4A 100%)', glow: 'rgba(201,169,97,0.14)' }; // 구름 조금
+  if (code === 3)             return { bg: 'linear-gradient(135deg, #1a2535 0%, #28384A 45%, #1a2535 100%)', glow: 'rgba(150,170,200,0.10)' }; // 흐림
+  if (code <= 48)             return { bg: 'linear-gradient(135deg, #1e2838 0%, #2a3848 45%, #1e2838 100%)', glow: 'rgba(180,190,210,0.08)' }; // 안개
+  if (code <= 67 || (code >= 80 && code <= 82)) return { bg: 'linear-gradient(135deg, #0a1828 0%, #102038 45%, #0a1828 100%)', glow: 'rgba(80,120,200,0.18)' }; // 비
+  if (code <= 77 || (code >= 85 && code <= 86)) return { bg: 'linear-gradient(135deg, #162035 0%, #243255 45%, #162035 100%)', glow: 'rgba(180,210,255,0.15)' }; // 눈
+  if (code >= 95)             return { bg: 'linear-gradient(135deg, #12102a 0%, #1e1a40 45%, #12102a 100%)', glow: 'rgba(130,80,200,0.18)' }; // 천둥
+  return { bg: 'linear-gradient(135deg, #1B2A4A 0%, #2A3A5C 50%, #1B2A4A 100%)', glow: 'rgba(201,169,97,0.12)' };
+}
+
 function HeroCountdown({ status, setView }) {
-  const totalPrepDays = 60; // Visual horizon (~2 months prep window)
+  const totalPrepDays = 60;
   const elapsed = Math.max(0, totalPrepDays - status.dDay);
   const pct = Math.min(100, Math.round((elapsed / totalPrepDays) * 100));
+
+  const SEOUL = { id: 'seoul', flag: '🇰🇷', name: '서울', lat: 37.5665, lng: 126.9780 };
+
+  const wxCities = React.useMemo(() => {
+    if (status.phase === 'pre') {
+      const first = CHAPTERS.find(c => c.coords);
+      return [SEOUL, first ? { id: first.id, flag: first.flag, name: first.name, lat: first.coords.lat, lng: first.coords.lng } : null].filter(Boolean);
+    }
+    if (status.phase === 'during') {
+      const cur = CHAPTERS.find(c => c.id === status.current?.c);
+      const curIdx = CHAPTERS.findIndex(c => c.id === status.current?.c);
+      const next = CHAPTERS.slice(curIdx + 1).find(c => c.coords);
+      return [
+        cur && cur.coords ? { id: cur.id, flag: cur.flag, name: cur.name, lat: cur.coords.lat, lng: cur.coords.lng } : null,
+        next ? { id: next.id, flag: next.flag, name: next.name, lat: next.coords.lat, lng: next.coords.lng } : null,
+      ].filter(Boolean);
+    }
+    return [];
+  }, [status.phase, status.current?.c]);
+
+  const [wx, setWx] = useState({});
+
+  useEffect(() => {
+    if (!wxCities.length) return;
+    (async () => {
+      const cache = await storage.get('weather_cache');
+      const results = {};
+      for (const city of wxCities) {
+        if (cache && cache.data && cache.data[city.id] && cache.savedAt && Date.now() - cache.savedAt < 1800000) {
+          const d = cache.data[city.id];
+          results[city.id] = {
+            today: { code: d.weathercode[0], max: Math.round(d.temperature_2m_max[0]), min: Math.round(d.temperature_2m_min[0]) },
+            tomorrow: d.weathercode[1] != null ? { code: d.weathercode[1], max: Math.round(d.temperature_2m_max[1]), min: Math.round(d.temperature_2m_min[1]) } : null,
+          };
+        } else {
+          try {
+            const ctrl = new AbortController();
+            const t = setTimeout(() => ctrl.abort(), 8000);
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lng}&daily=temperature_2m_max,temperature_2m_min,weathercode&timezone=auto&forecast_days=2`;
+            const res = await fetch(url, { signal: ctrl.signal });
+            clearTimeout(t);
+            const json = await res.json();
+            if (json.daily) results[city.id] = {
+              today: { code: json.daily.weathercode[0], max: Math.round(json.daily.temperature_2m_max[0]), min: Math.round(json.daily.temperature_2m_min[0]) },
+              tomorrow: { code: json.daily.weathercode[1], max: Math.round(json.daily.temperature_2m_max[1]), min: Math.round(json.daily.temperature_2m_min[1]) },
+            };
+          } catch (e) {}
+        }
+      }
+      setWx(results);
+    })();
+  }, [wxCities.map(c => c.id).join(',')]);
+
+  const curCode = wx[wxCities[0]?.id]?.today?.code ?? null;
+  const { bg: heroBg, glow: heroGlow } = wxBg(curCode);
+
   return (
     <div style={{
       position: 'relative',
-      background: 'linear-gradient(135deg, #1B2A4A 0%, #2A3A5C 50%, #1B2A4A 100%)',
-      color: '#FAF6EF',
-      borderRadius: '18px',
-      padding: '36px 24px 28px',
-      marginBottom: '24px',
+      background: heroBg,
+      color: 'var(--color-text-inverse)',
+      borderRadius: '14px',
+      padding: '20px 20px 18px',
+      marginBottom: '16px',
       overflow: 'hidden',
-      boxShadow: '0 14px 32px rgba(27,42,74,0.18), 0 4px 10px rgba(27,42,74,0.10)',
+      boxShadow: 'var(--shadow-md)',
+      transition: 'background 1.2s ease',
     }}>
-      {/* Decorative starburst */}
-      <div style={{
-        position: 'absolute', top: '-40px', right: '-40px',
-        width: '180px', height: '180px',
-        background: 'radial-gradient(circle, rgba(201,169,97,0.18) 0%, transparent 70%)',
-        pointerEvents: 'none',
-      }} />
-      <div style={{ fontSize: '10px', letterSpacing: '3px', color: '#C9A961', textTransform: 'uppercase', marginBottom: '14px' }}>
+      <div style={{ position: 'absolute', top: '-30px', right: '-30px', width: '140px', height: '140px', background: `radial-gradient(circle, ${heroGlow} 0%, transparent 70%)`, pointerEvents: 'none' }} />
+      <div style={{ fontSize: '10px', letterSpacing: '3px', color: 'var(--color-accent-primary)', textTransform: 'uppercase', marginBottom: '10px' }}>
         ⊹ The Grand Tour · 2026 ⊹
       </div>
-      <div className="gt-serif" style={{
-        fontSize: '76px',
-        fontWeight: 500,
-        lineHeight: 0.95,
-        letterSpacing: '-1px',
-        color: '#FAF6EF',
-        fontStyle: 'italic',
-      }}>
-        D—{status.dDay}
-      </div>
-      <div style={{ fontSize: '13px', color: 'rgba(250,246,239,0.7)', marginTop: '10px', letterSpacing: '0.5px' }}>
-        2026.06.15 · Incheon → Charles de Gaulle
-      </div>
-      {/* Progress bar */}
-      <div style={{ marginTop: '24px' }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', gap: '0' }}>
+
+        {/* ── Block 1: D-Day ── */}
         <div style={{
-          height: '3px',
-          background: 'rgba(250,246,239,0.12)',
-          borderRadius: '3px',
-          overflow: 'hidden',
+          flex: '0 0 auto',
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          paddingRight: '18px', marginRight: '18px',
+          borderRight: '1px solid rgba(255,255,255,0.10)',
         }}>
-          <div style={{
-            height: '100%',
-            width: pct + '%',
-            background: 'linear-gradient(90deg, #C9A961 0%, #D4B670 100%)',
-            transition: 'width 0.8s cubic-bezier(0.16,1,0.3,1)',
-          }} />
+          <div className="gt-serif" style={{
+            fontSize: '50px', fontWeight: 500, lineHeight: 1,
+            letterSpacing: '-1px', color: 'var(--color-text-inverse)', fontStyle: 'italic',
+          }}>
+            D—{status.dDay}
+          </div>
+          <div style={{ marginTop: '8px' }}>
+            <div style={{ fontSize: '11px', color: 'var(--color-accent-primary)', fontWeight: 600, letterSpacing: '0.3px' }}>
+              2026.06.15
+            </div>
+            <div style={{ fontSize: '11px', color: 'rgba(250,246,239,0.80)', letterSpacing: '0.2px', marginTop: '3px', lineHeight: 1.4 }}>
+              인천국제공항 → 파리 CDG
+            </div>
+            <div style={{ fontSize: '10px', color: 'rgba(250,246,239,0.38)', letterSpacing: '0.3px', marginTop: '2px' }}>
+              경유 홍콩 HKG · Cathay
+            </div>
+          </div>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '8px', fontSize: '10px', color: 'rgba(250,246,239,0.55)', letterSpacing: '0.5px' }}>
-          <span>준비 진행 {pct}%</span>
-          <span>출발까지 {status.dDay}일</span>
-        </div>
+
+        {/* ── Block 2 & 3: Weather ── */}
+        {wxCities.length > 0 && (
+          <div style={{ flex: 1, display: 'flex', gap: '0' }}>
+            {wxCities.map((city, idx) => {
+              const w = wx[city.id];
+              const wmoT = w ? wmoInfo(w.today.code) : null;
+              const wmoN = w && w.tomorrow ? wmoInfo(w.tomorrow.code) : null;
+              const isLast = idx === wxCities.length - 1;
+              const label = idx === 0
+                ? (status.phase === 'pre' ? '지금 있는 곳' : '현재 도시')
+                : '다음 행선지';
+              return (
+                <div key={city.id} style={{
+                  flex: 1,
+                  paddingLeft: '18px',
+                  paddingRight: isLast ? '0' : '18px',
+                  borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.10)',
+                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                }}>
+                  {/* City label */}
+                  <div style={{ fontSize: '9px', letterSpacing: '1.8px', color: 'rgba(201,169,97,0.85)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '7px' }}>
+                    {label}
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '15px' }}>{city.flag}</span>
+                    <span style={{ fontSize: '13px', color: 'rgba(250,246,239,0.95)', fontWeight: 600, letterSpacing: '0.2px' }}>{city.name}</span>
+                  </div>
+
+                  {w ? (
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                      {/* 오늘 */}
+                      <div style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.13)',
+                        borderRadius: '10px',
+                        padding: '8px 10px',
+                        minWidth: 0,
+                      }}>
+                        <div style={{ fontSize: '9px', color: 'rgba(201,169,97,0.9)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
+                        <div style={{ fontSize: '22px', lineHeight: 1, marginBottom: '4px' }}>{wmoT ? wmoT.e : '—'}</div>
+                        <div style={{ fontFamily: 'Georgia, serif', fontSize: '17px', fontWeight: 700, color: 'var(--color-accent-primary)', lineHeight: 1 }}>
+                          {w.today.max}°
+                        </div>
+                        <div style={{ fontSize: '9px', color: 'rgba(250,246,239,0.55)', marginTop: '3px' }}>{w.today.min}° min</div>
+                      </div>
+                      {/* 화살표 */}
+                      <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: '12px', alignSelf: 'center', flexShrink: 0 }}>→</div>
+                      {/* 내일 */}
+                      <div style={{
+                        flex: 1,
+                        background: 'rgba(255,255,255,0.07)',
+                        borderRadius: '10px',
+                        padding: '8px 10px',
+                        minWidth: 0,
+                      }}>
+                        <div style={{ fontSize: '9px', color: 'rgba(201,169,97,0.65)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>내일</div>
+                        <div style={{ fontSize: '22px', lineHeight: 1, marginBottom: '4px' }}>{wmoN ? wmoN.e : '—'}</div>
+                        <div style={{ fontFamily: 'Georgia, serif', fontSize: '17px', fontWeight: 700, color: 'rgba(201,169,97,0.75)', lineHeight: 1 }}>
+                          {wmoN ? w.tomorrow.max + '°' : '—'}
+                        </div>
+                        <div style={{ fontSize: '9px', color: 'rgba(250,246,239,0.45)', marginTop: '3px' }}>{wmoN ? w.tomorrow.min + '° min' : ''}</div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ fontSize: '10px', color: 'rgba(250,246,239,0.45)', marginTop: '2px' }}>불러오는 중…</div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
-      <button
-        onClick={() => setView('check')}
-        style={{
-          marginTop: '22px',
-          width: '100%',
-          padding: '13px',
-          background: 'rgba(250,246,239,0.08)',
-          color: '#FAF6EF',
-          border: '1px solid rgba(201,169,97,0.4)',
-          borderRadius: '10px',
-          fontSize: '12px',
-          letterSpacing: '1.5px',
-          fontWeight: 500,
-          cursor: 'pointer',
-          textTransform: 'uppercase',
-        }}
-      >
-        체크리스트 → 출발 준비
-      </button>
+    </div>
+  );
+}
+
+// Pre-trip compact summary widget — checklist + packing + reservations at-a-glance
+function TripSummaryCard({ status, setView, checks, packing }) {
+  const [restCount, setRestCount] = useState({ done: 0, total: 6 });
+
+  useEffect(() => {
+    storage.get('restaurant_status').then(v => {
+      if (v) {
+        const done = Object.values(v).filter(s => s === 'confirmed' || s === 'visited').length;
+        setRestCount({ done, total: 6 });
+      }
+    });
+  }, []);
+
+  const checkTotal = Object.values(CHECKLIST).flat().length;
+  const checkDone = Object.values(checks || {}).filter(Boolean).length;
+  const checkPct = Math.round((checkDone / checkTotal) * 100);
+
+  const packingTotal = Object.values(PACKING_ALL).reduce((acc, p) => acc + Object.values(p.sections).flat().length, 0);
+  const packingDone = Object.values(packing || {}).filter(Boolean).length;
+  const packingPct = Math.round((packingDone / packingTotal) * 100);
+
+  const restPct = Math.round((restCount.done / restCount.total) * 100);
+
+  const rows = [
+    { icon: '✓', label: '체크리스트', done: checkDone, total: checkTotal, pct: checkPct, onClick: () => setView('check') },
+    { icon: '👔', label: '패킹', done: packingDone, total: packingTotal, pct: packingPct, onClick: () => setView('check') },
+    { icon: '🍽️', label: '미슐랭 예약', done: restCount.done, total: restCount.total, pct: restPct, onClick: () => setView('logi') },
+  ];
+
+  return (
+    <div style={{
+      background: 'var(--color-bg-surface)',
+      border: '1px solid #E8E2D5',
+      borderRadius: '14px',
+      padding: '16px',
+      marginBottom: '16px',
+      boxShadow: 'var(--shadow-sm)',
+    }}>
+      <div style={{ fontSize: '10px', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
+        준비 현황
+      </div>
+      {rows.map((r, i) => (
+        <button
+          key={r.label}
+          onClick={r.onClick}
+          style={{
+            width: '100%',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            padding: '10px 0',
+            background: 'transparent',
+            border: 'none',
+            borderTop: i === 0 ? 'none' : '1px solid #F5F0E8',
+            cursor: 'pointer',
+            textAlign: 'left',
+          }}
+        >
+          <div style={{ fontSize: '15px', width: '20px', textAlign: 'center', flexShrink: 0 }}>{r.icon}</div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '5px' }}>
+              <span style={{ fontSize: '12px', color: 'var(--color-text-strong)', fontWeight: 500 }}>{r.label}</span>
+              <span style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{r.done}/{r.total} · {r.pct}%</span>
+            </div>
+            <div style={{ height: '4px', background: 'var(--color-border-soft)', borderRadius: '2px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${r.pct}%`,
+                height: '100%',
+                background: r.pct >= 80 ? '#65A30D' : (r.pct >= 50 ? 'var(--color-accent-primary)' : '#B45309'),
+                transition: 'width 0.3s ease',
+              }} />
+            </div>
+          </div>
+        </button>
+      ))}
     </div>
   );
 }
@@ -2616,7 +3091,7 @@ function TimelineStrip({ DAYS, status, setView }) {
                 padding: '10px 6px',
                 borderRadius: '10px',
                 border: isToday ? '1.5px solid #C9A961' : '1px solid #E8E2D5',
-                background: isToday ? ch.color : (isPast ? '#F5F0E8' : '#FFF'),
+                background: isToday ? ch.color : (isPast ? 'var(--color-border-soft)' : 'var(--color-bg-surface)'),
                 cursor: 'pointer',
                 display: 'flex',
                 flexDirection: 'column',
@@ -2631,11 +3106,11 @@ function TimelineStrip({ DAYS, status, setView }) {
                 D{day.n}
               </div>
               <div style={{ fontSize: '18px', lineHeight: 1 }}>{ch.flag}</div>
-              <div style={{ fontSize: '9px', color: '#6B6760' }}>{day.d}</div>
+              <div style={{ fontSize: '9px', color: 'var(--color-text-soft)' }}>{day.d}</div>
               {isToday && (
                 <div style={{
                   position: 'absolute', bottom: '-3px', left: '50%', transform: 'translateX(-50%)',
-                  width: '6px', height: '6px', background: '#C9A961', borderRadius: '50%',
+                  width: '6px', height: '6px', background: 'var(--color-accent-primary)', borderRadius: '50%',
                 }} />
               )}
             </button>
@@ -2651,7 +3126,7 @@ function OutputsProgress({ outputs, setView }) {
   const tiers = [
     { key: 'lifetime', label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
     { key: 'major',    label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
-    { key: 'working',  label: '⭐ Working',    tone: '#6B6760', bg: '#F5F0E8' },
+    { key: 'working',  label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
   ];
   const counts = tiers.map(t => {
     const total = OUTPUTS.filter(o => o.cat === t.key).length;
@@ -2664,8 +3139,8 @@ function OutputsProgress({ outputs, setView }) {
     <Card onClick={() => setView('private')} style={{ cursor: 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
         <SectionTitle>산물 진행</SectionTitle>
-        <div className="gt-serif" style={{ fontSize: '22px', color: '#1B2A4A', fontStyle: 'italic' }}>
-          {doneAll}<span style={{ color: '#A8A39A', fontSize: '14px' }}>/{totalAll}</span>
+        <div className="gt-serif" style={{ fontSize: '22px', color: 'var(--color-text-strong)', fontStyle: 'italic' }}>
+          {doneAll}<span style={{ color: 'var(--color-text-muted)', fontSize: '14px' }}>/{totalAll}</span>
         </div>
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -2675,7 +3150,7 @@ function OutputsProgress({ outputs, setView }) {
             <div key={t.key}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px', marginBottom: '4px' }}>
                 <span style={{ color: t.tone, fontWeight: 500 }}>{t.label}</span>
-                <span style={{ color: '#A8A39A' }}>{t.done}/{t.total}</span>
+                <span style={{ color: 'var(--color-text-muted)' }}>{t.done}/{t.total}</span>
               </div>
               <div style={{ height: '4px', background: t.bg, borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{
@@ -2694,8 +3169,9 @@ function OutputsProgress({ outputs, setView }) {
 }
 
 // Chapter progress dots (9 chapters with per-day status)
-function ChapterProgress({ DAYS, status }) {
+function ChapterProgress({ DAYS, status, setView }) {
   const todayN = status.current?.n;
+  const [openId, setOpenId] = useState(null);
   // group days by chapter (excluding 'p' and 'ret')
   const chapters = CHAPTERS.filter(c => !['p', 'ret'].includes(c.id));
   return (
@@ -2705,52 +3181,159 @@ function ChapterProgress({ DAYS, status }) {
         {chapters.map(ch => {
           const chapterDays = DAYS.filter(d => d.c === ch.id);
           if (chapterDays.length === 0) return null;
-          const past = todayN ? chapterDays.filter(d => d.n < todayN).length : 0;
           const isCurrent = todayN && chapterDays.some(d => d.n === todayN);
           const isDone = todayN && chapterDays.every(d => d.n < todayN);
+          const isOpen = openId === ch.id;
+          const recs = RECOMMENDATIONS[ch.id];
           return (
-            <a
+            <div
               key={ch.id}
-              href={ch.search ? mapsUrl(ch.search) : '#'}
-              target="_blank"
-              rel="noopener noreferrer"
               style={{
-                display: 'flex', alignItems: 'center', gap: '12px',
-                padding: '10px 12px',
-                background: isCurrent ? ch.color : '#FFF',
-                border: isCurrent ? `1.5px solid ${ch.accent}` : '1px solid #E8E2D5',
+                background: isCurrent ? ch.color : 'var(--color-bg-surface)',
+                border: isCurrent ? `1.5px solid ${ch.accent}` : (isOpen ? `1px solid ${ch.accent}` : '1px solid #E8E2D5'),
                 borderRadius: '10px',
-                opacity: isDone ? 0.5 : 1,
-                textDecoration: 'none',
-                color: 'inherit',
-                transition: 'transform 0.18s var(--ease), box-shadow 0.18s var(--ease)',
+                opacity: isDone ? 0.65 : 1,
+                overflow: 'hidden',
+                transition: 'border-color 0.18s var(--ease)',
               }}
             >
-              <span style={{ fontSize: '20px' }}>{ch.flag}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: '12px', fontWeight: 500, color: ch.accent }}>
-                  {ch.icon} {ch.name} <span style={{ color: '#A8A39A', fontWeight: 400 }}>· {ch.theme.split('·')[0].trim()}</span>
+              <button
+                onClick={() => setOpenId(isOpen ? null : ch.id)}
+                style={{
+                  width: '100%',
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '10px 12px',
+                  background: 'transparent',
+                  border: 'none',
+                  textAlign: 'left',
+                  cursor: 'pointer',
+                  color: 'inherit',
+                }}
+              >
+                <span style={{ fontSize: '20px' }}>{ch.flag}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 500, color: ch.accent }}>
+                    {ch.icon} {ch.name} <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>· {ch.theme.split('·')[0].trim()}</span>
+                  </div>
+                  <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', letterSpacing: '0.5px', marginTop: '2px' }}>
+                    {ch.dates} · {chapterDays.length}일
+                  </div>
                 </div>
-                <div style={{ fontSize: '10px', color: '#A8A39A', letterSpacing: '0.5px', marginTop: '2px' }}>
-                  {ch.dates} · 📍 지도
+                <div style={{ display: 'flex', gap: '3px', alignItems: 'center' }}>
+                  {chapterDays.map(d => {
+                    const isDayPast = todayN && d.n < todayN;
+                    const isDayToday = d.n === todayN;
+                    return (
+                      <span key={d.n} style={{
+                        width: isDayToday ? '8px' : '6px',
+                        height: isDayToday ? '8px' : '6px',
+                        borderRadius: '50%',
+                        background: isDayToday ? 'var(--color-accent-primary)' : (isDayPast ? ch.accent : 'var(--color-border-default)'),
+                        display: 'inline-block',
+                      }} />
+                    );
+                  })}
+                  <span style={{ marginLeft: '8px', fontSize: '10px', color: 'var(--color-text-muted)' }}>{isOpen ? '▾' : '▸'}</span>
                 </div>
-              </div>
-              <div style={{ display: 'flex', gap: '3px' }}>
-                {chapterDays.map(d => {
-                  const isDayPast = todayN && d.n < todayN;
-                  const isDayToday = d.n === todayN;
-                  return (
-                    <span key={d.n} style={{
-                      width: isDayToday ? '8px' : '6px',
-                      height: isDayToday ? '8px' : '6px',
-                      borderRadius: '50%',
-                      background: isDayToday ? '#C9A961' : (isDayPast ? ch.accent : '#E8E2D5'),
-                      display: 'inline-block',
-                    }} />
-                  );
-                })}
-              </div>
-            </a>
+              </button>
+
+              {isOpen && (
+                <div style={{ padding: '0 12px 14px', borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                  {/* Theme tagline */}
+                  <div className="gt-serif" style={{ fontSize: '13px', fontStyle: 'italic', color: 'var(--color-text-soft)', padding: '10px 0 6px', lineHeight: 1.5 }}>
+                    "{ch.tag}"
+                  </div>
+
+                  {/* Days highlights */}
+                  <div style={{ marginTop: '8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {chapterDays.map(d => (
+                      <button
+                        key={d.n}
+                        onClick={(e) => { e.stopPropagation(); setView && setView('days'); }}
+                        style={{
+                          display: 'flex', gap: '10px', alignItems: 'flex-start',
+                          padding: '8px 10px',
+                          background: 'var(--color-bg-page)',
+                          border: '1px solid #E8E2D5',
+                          borderRadius: '8px',
+                          cursor: setView ? 'pointer' : 'default',
+                          textAlign: 'left',
+                          width: '100%',
+                        }}
+                      >
+                        <span style={{
+                          flexShrink: 0, fontSize: '10px', padding: '3px 6px',
+                          borderRadius: '4px', background: ch.color, color: ch.accent,
+                          fontWeight: 600, minWidth: '34px', textAlign: 'center',
+                        }}>D{d.n}</span>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ fontSize: '12px', color: 'var(--color-text-strong)', fontWeight: 500, lineHeight: 1.4 }}>
+                            {d.hl}
+                          </div>
+                          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '2px' }}>
+                            {d.d}({d.w}) · 🍽️ {d.food}
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Recommendations preview */}
+                  {recs && (
+                    <div style={{ marginTop: '12px' }}>
+                      <div style={{ fontSize: '10px', letterSpacing: '1.5px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+                        추천 활동
+                      </div>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
+                        {[...(recs.morning || []), ...(recs.afternoon || []), ...(recs.evening || [])].slice(0, 6).map((r, i) => (
+                          <span key={i} style={{
+                            fontSize: '11px',
+                            padding: '4px 8px',
+                            background: 'var(--color-bg-surface)',
+                            border: '1px solid var(--color-border-default)',
+                            borderRadius: '12px',
+                            color: 'var(--color-text-strong)',
+                          }}>
+                            {r.tag} {r.t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Footer actions */}
+                  <div style={{ display: 'flex', gap: '6px', marginTop: '12px' }}>
+                    <a
+                      href={ch.search ? mapsUrl(ch.search) : '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        flex: 1, padding: '8px 10px', fontSize: '11px',
+                        background: 'rgba(255,255,255,0.6)',
+                        border: '1px solid #E8E2D5', borderRadius: '6px',
+                        textAlign: 'center', textDecoration: 'none',
+                        color: 'var(--color-text-strong)', fontWeight: 500,
+                      }}
+                    >
+                      📍 지도 열기
+                    </a>
+                    {setView && (
+                      <button
+                        onClick={(e) => { e.stopPropagation(); setView('days'); }}
+                        style={{
+                          flex: 1, padding: '8px 10px', fontSize: '11px',
+                          background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
+                          border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500,
+                        }}
+                      >
+                        일정 자세히 →
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
           );
         })}
       </div>
@@ -2758,7 +3341,7 @@ function ChapterProgress({ DAYS, status }) {
   );
 }
 
-function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
+function Home({ status, checks, packing, outputs, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
@@ -2773,12 +3356,15 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
       {/* Backup reminder — top priority if overdue */}
       <BackupReminder exportData={exportData} />
 
+      {/* Evening question reminder — during trip, 20:30~23:00 only */}
+      <EveningReminder status={status} />
+
       {/* Hero Countdown — pre-trip only */}
       {status.phase === 'pre' && <HeroCountdown status={status} setView={setView} />}
 
       {/* Trip Philosophy */}
       <div className="gt-card" style={{
-        background: '#FFF',
+        background: 'var(--color-bg-surface)',
         border: '1px solid #E8E2D5',
         borderRadius: '14px',
         padding: '24px',
@@ -2786,20 +3372,20 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
         textAlign: 'center',
         boxShadow: 'var(--shadow-sm)',
       }}>
-        <div className="gt-serif" style={{ fontSize: '17px', fontStyle: 'italic', lineHeight: 1.6, color: '#6B6760' }}>
+        <div className="gt-serif" style={{ fontSize: '17px', fontStyle: 'italic', lineHeight: 1.6, color: 'var(--color-text-soft)' }}>
           "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
           앞으로 무엇을 할지 결정하기 위해 떠난다."
         </div>
       </div>
 
-      {/* 28-day Timeline */}
-      <TimelineStrip DAYS={DAYS} status={status} setView={setView} />
+      {/* Trip Summary — pre-trip compact widget */}
+      {status.phase === 'pre' && <TripSummaryCard status={status} setView={setView} checks={checks} packing={packing} />}
 
       {/* Current city timezone — only during trip */}
       {status.phase === 'during' && <TimezoneWidget status={status} DAYS={DAYS} />}
 
       {/* Next flight / transit countdown */}
-      <NextFlight FLIGHTS={FLIGHTS} status={status} setView={setView} />
+      <NextFlight FLIGHTS={FLIGHTS} DAYS={DAYS} status={status} setView={setView} />
 
       {/* Today's Card */}
       {status.phase === 'during' && status.current && (
@@ -2812,7 +3398,7 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
                 {todayChapter?.theme.toUpperCase()}
               </div>
             </div>
-            <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontStyle: 'italic', color: '#1B2A4A' }}>
+            <div style={{ fontFamily: 'Georgia, serif', fontSize: '20px', fontStyle: 'italic', color: 'var(--color-text-strong)' }}>
               "{todayChapter?.tag}"
             </div>
           </div>
@@ -2828,19 +3414,19 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
           <div style={{ fontSize: '14px', lineHeight: 1.7, marginBottom: '8px' }}>
             <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
           </div>
-          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#6B6760', marginBottom: '12px' }}>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
             <strong>오늘:</strong> {today.hl}
           </div>
-          <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#6B6760', marginBottom: '12px' }}>
+          <div style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
             <strong>식사:</strong> {today.food}
           </div>
-          <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#A8A39A', marginBottom: '6px' }}>💭 오늘의 질문</div>
-            <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#1B2A4A' }}>{today.q}</div>
+          <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+            <div style={{ fontSize: '11px', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
           </div>
-          <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px' }}>
+          <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px' }}>
             <div style={{ fontSize: '11px', letterSpacing: '1px', color: '#9A3412', marginBottom: '6px' }}>💕 커플 모먼트</div>
-            <div style={{ fontSize: '13px', lineHeight: 1.6, color: '#1B2A4A' }}>{today.mo}</div>
+            <div style={{ fontSize: '13px', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.mo}</div>
           </div>
         </Card>
       )}
@@ -2850,14 +3436,15 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
         <Recommendations chapterId={todayChapter.id} chapter={todayChapter} />
       )}
 
-      {/* Stats Grid */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', margin: '20px 0' }}>
-        <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
-        <StatCard label={status.phase === 'pre' ? '여행까지' : (status.phase === 'during' ? '여행 중' : '귀국')} value={status.dDay > 0 ? `D-${status.dDay}` : (status.phase === 'during' ? `Day ${status.current?.n || ''}` : '여행 후')} sub={status.phase === 'pre' ? '준비 단계' : (status.phase === 'during' ? '진행 중' : '복귀')} onClick={() => setView('days')} />
-      </div>
+      {/* Stats Grid — checklist only (D-day shown in HeroCountdown) */}
+      {status.phase !== 'pre' && (
+        <div style={{ margin: '20px 0' }}>
+          <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
+        </div>
+      )}
 
       {/* Chapter Progress (visual) */}
-      <ChapterProgress DAYS={DAYS} status={status} />
+      <ChapterProgress DAYS={DAYS} status={status} setView={setView} />
 
       {/* Outputs 3-tier Progress */}
       <OutputsProgress outputs={outputs} setView={setView} />
@@ -2879,24 +3466,24 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
       {/* JSON Backup / Restore */}
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
-        <div style={{ fontSize: '11px', color: '#A8A39A', marginBottom: '12px', lineHeight: 1.5 }}>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
           체크 · 메모 · 편집 · 산물 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.<br/>
-          <span style={{ color: '#C9A961' }}>⚠️ PIN은 복원되지 않으니 이전 후 재설정 필요.</span>
+          <span style={{ color: 'var(--color-accent-primary)' }}>⚠️ PIN은 복원되지 않으니 이전 후 재설정 필요.</span>
         </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: '12px', color: '#1B2A4A' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: '12px', color: 'var(--color-text-strong)' }}>
           <input
             type="checkbox"
             checked={withPhotos}
             onChange={e => setWithPhotos(e.target.checked)}
             style={{ width: '16px', height: '16px', accentColor: '#1B2A4A' }}
           />
-          사진 포함 <span style={{ color: '#A8A39A' }}>(기본 OFF · 포함 시 ~수MB)</span>
+          사진 포함 <span style={{ color: 'var(--color-text-muted)' }}>(기본 OFF · 포함 시 ~수MB)</span>
         </label>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button onClick={() => exportData(withPhotos)} style={{
             padding: '12px',
-            background: '#1B2A4A',
-            color: '#FFF',
+            background: 'var(--color-bg-inverse)',
+            color: 'var(--color-text-inverse)',
             border: 'none',
             borderRadius: '8px',
             fontSize: '12px',
@@ -2907,8 +3494,8 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
           </button>
           <label style={{
             padding: '12px',
-            background: '#FAF6EF',
-            color: '#1B2A4A',
+            background: 'var(--color-bg-page)',
+            color: 'var(--color-text-strong)',
             border: '1px solid #E8E2D5',
             borderRadius: '8px',
             fontSize: '12px',
@@ -2936,18 +3523,52 @@ function Home({ status, checks, outputs, setView, DAYS, FLIGHTS, photos, savePho
 // =================== DAYS ===================
 function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
   const [openDay, setOpenDay] = useState(null);
+  const [filterCh, setFilterCh] = useState('all');
+
+  const chapterIds = DAYS.reduce((acc, d) => {
+    if (!acc.includes(d.c)) acc.push(d.c);
+    return acc;
+  }, []);
+  const filtered = filterCh === 'all' ? DAYS : DAYS.filter(d => d.c === filterCh);
 
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>28일 일정</h2>
-      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '8px' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
         탭하여 상세 · 모든 필드 ✎ 편집 · 매일 사진 1장 · 도시 지도 + 추천
       </div>
-      <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '20px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--color-accent-primary)', marginBottom: '14px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
         💡 편집된 항목은 골드 ● 표시 · "원래대로" 버튼으로 초기화 가능
       </div>
 
-      {DAYS.map(day => {
+      {/* Chapter filter pills */}
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginBottom: '16px', paddingBottom: '4px' }}>
+        <button
+          onClick={() => setFilterCh('all')}
+          style={{
+            padding: '5px 12px', borderRadius: '20px', border: '1px solid ' + (filterCh === 'all' ? '#1B2A4A' : 'var(--color-border-default)'),
+            background: filterCh === 'all' ? '#1B2A4A' : 'var(--color-bg-surface)', color: filterCh === 'all' ? '#FFF' : 'var(--color-text-soft)',
+            fontSize: '12px', whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0, fontWeight: filterCh === 'all' ? 600 : 400
+          }}
+        >전체 {DAYS.length}일</button>
+        {chapterIds.map(id => {
+          const ch = C(id);
+          const count = DAYS.filter(d => d.c === id).length;
+          const active = filterCh === id;
+          return (
+            <button key={id} onClick={() => { setFilterCh(id); setOpenDay(null); }} style={{
+              padding: '5px 12px', borderRadius: '20px',
+              border: '1px solid ' + (active ? ch.accent : 'var(--color-border-default)'),
+              background: active ? ch.color : 'var(--color-bg-surface)', color: active ? ch.accent : 'var(--color-text-soft)',
+              fontSize: '12px', whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0, fontWeight: active ? 600 : 400
+            }}>
+              {ch.flag} {ch.name} {count}
+            </button>
+          );
+        })}
+      </div>
+
+      {filtered.map(day => {
         const ch = C(day.c);
         const isOpen = openDay === day.n;
         const hasNote = notes[day.n]?.content;
@@ -2955,7 +3576,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
 
         return (
           <div key={day.n} style={{
-            background: '#FFF',
+            background: 'var(--color-bg-surface)',
             border: '1px solid #E8E2D5',
             borderRadius: '10px',
             marginBottom: '8px',
@@ -2997,11 +3618,11 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                   {day.int === 'H' && <span style={{ fontSize: '10px', color: '#C00000' }}>●</span>}
                   {day.int === 'L' && <span style={{ fontSize: '10px', color: '#008000' }}>●</span>}
                 </div>
-                <div style={{ fontSize: '13px', color: '#6B6760', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{ fontSize: '13px', color: 'var(--color-text-soft)', marginTop: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {day.hl}
                 </div>
               </div>
-              <div style={{ fontSize: '14px', color: '#A8A39A', display: 'flex', gap: '4px' }}>
+              <div style={{ fontSize: '14px', color: 'var(--color-text-muted)', display: 'flex', gap: '4px' }}>
                 {hasPhoto && '📸'}
                 {hasNote && '✏️'}
                 <span>{isOpen ? '▾' : '▸'}</span>
@@ -3011,6 +3632,9 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
             {isOpen && (
               <div style={{ padding: '0 16px 16px', borderTop: '1px solid #F5F0E8' }}>
                 <div style={{ paddingTop: '12px' }}>
+                  {/* Chapter intro — first day of each chapter only */}
+                  {DAYS.find(d => d.c === day.c)?.n === day.n && <ChapterIntro chapter={ch} />}
+
                   {/* Day Hero — theme image */}
                   <DayHero day={day} chapter={ch} />
 
@@ -3078,7 +3702,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             gap: '6px',
             padding: '6px 12px',
             background: chapter.accent,
-            color: '#FFF',
+            color: 'var(--color-text-inverse)',
             borderRadius: '6px',
             fontSize: '11px',
             fontWeight: 500,
@@ -3096,7 +3720,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('city')}
             onReset={resetField('city')}
             edited={isEdited('day', day.n, 'city')}
-            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
+            textStyle={{ fontSize: '12px', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
         <EditRow label="🏨 호텔">
@@ -3105,7 +3729,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('hotel')}
             onReset={resetField('hotel')}
             edited={isEdited('day', day.n, 'hotel')}
-            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
+            textStyle={{ fontSize: '12px', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
         <EditRow label="🚐 이동">
@@ -3115,7 +3739,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onReset={resetField('moves')}
             edited={isEdited('day', day.n, 'moves')}
             multiline
-            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
+            textStyle={{ fontSize: '12px', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
         <EditRow label="✨ 활동">
@@ -3125,7 +3749,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onReset={resetField('hl')}
             edited={isEdited('day', day.n, 'hl')}
             multiline
-            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
+            textStyle={{ fontSize: '12px', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
         <EditRow label="🍽️ 식사">
@@ -3134,7 +3758,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             onSave={editField('food')}
             onReset={resetField('food')}
             edited={isEdited('day', day.n, 'food')}
-            textStyle={{ fontSize: '12px', color: '#1B2A4A' }}
+            textStyle={{ fontSize: '12px', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
       </div>
@@ -3146,21 +3770,21 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           onReset={resetField('asi')}
           edited={isEdited('day', day.n, 'asi')}
           multiline
-          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A' }}
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: 'var(--color-text-strong)' }}
         />
       </div>
-      <div style={{ background: '#FAF6EF', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
-        <div style={{ fontSize: '10px', color: '#A8A39A', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
+      <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+        <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
         <EditableField
           value={day.q}
           onSave={editField('q')}
           onReset={resetField('q')}
           edited={isEdited('day', day.n, 'q')}
           multiline
-          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A', fontStyle: 'italic' }}
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: 'var(--color-text-strong)', fontStyle: 'italic' }}
         />
       </div>
-      <div style={{ background: '#FFF8E1', padding: '12px', borderRadius: '8px', marginBottom: '14px' }}>
+      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '14px' }}>
         <div style={{ fontSize: '10px', color: '#9A3412', letterSpacing: '1px', marginBottom: '6px' }}>💕 커플 모먼트</div>
         <EditableField
           value={day.mo}
@@ -3168,7 +3792,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           onReset={resetField('mo')}
           edited={isEdited('day', day.n, 'mo')}
           multiline
-          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: '#1B2A4A' }}
+          textStyle={{ fontSize: '12px', lineHeight: 1.6, color: 'var(--color-text-strong)' }}
         />
       </div>
     </div>
@@ -3178,7 +3802,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
 function EditRow({ label, children }) {
   return (
     <div style={{ fontSize: '12px', lineHeight: 1.5 }}>
-      <div style={{ color: '#A8A39A', marginBottom: '2px', fontSize: '11px' }}>{label}</div>
+      <div style={{ color: 'var(--color-text-muted)', marginBottom: '2px', fontSize: '11px' }}>{label}</div>
       <div>{children}</div>
     </div>
   );
@@ -3209,7 +3833,7 @@ function NoteEditor({ dayId, note, save }) {
 
   return (
     <div>
-      <div style={{ fontSize: '11px', color: '#6B6760', marginBottom: '6px', letterSpacing: '1px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', marginBottom: '6px', letterSpacing: '1px' }}>
         📝 오늘의 1줄 인사이트
       </div>
       <textarea
@@ -3224,14 +3848,14 @@ function NoteEditor({ dayId, note, save }) {
           lineHeight: 1.6,
           border: '1px solid #E8E2D5',
           borderRadius: '6px',
-          background: '#FFFEF9',
-          color: '#1B2A4A',
+          background: 'var(--color-bg-surface)',
+          color: 'var(--color-text-strong)',
           fontFamily: 'inherit',
           resize: 'vertical',
           boxSizing: 'border-box'
         }}
       />
-      <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px', textAlign: 'right' }}>
+      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px', textAlign: 'right' }}>
         {saving && '저장 중...'}
         {!saving && savedAt && `저장됨 · ${savedAt.toLocaleTimeString()}`}
         {!saving && !savedAt && note?.updated && `마지막 저장: ${new Date(note.updated).toLocaleDateString()}`}
@@ -3293,8 +3917,8 @@ function Checklist({ checks, toggleCheck, packing, togglePacking, packingCustom,
                 style={{
                   padding: '10px 16px',
                   fontSize: '13px',
-                  background: packingPerson === p ? '#1B2A4A' : '#FFF',
-                  color: packingPerson === p ? '#FFF' : '#666',
+                  background: packingPerson === p ? '#1B2A4A' : 'var(--color-bg-surface)',
+                  color: packingPerson === p ? '#FFF' : 'var(--color-text-soft)',
                   border: '1px solid #E8E2D5',
                   borderRadius: '20px',
                   cursor: 'pointer',
@@ -3308,7 +3932,7 @@ function Checklist({ checks, toggleCheck, packing, togglePacking, packingCustom,
             ))}
           </div>
 
-          <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-accent-primary)', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
             💡 ✎로 기존 항목 편집 · "+ 추가" 버튼으로 새 항목 · 직접 추가한 건 삭제 가능
           </div>
 
@@ -3349,93 +3973,76 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
 
   return (
     <div style={{
-      background: '#FFF',
+      background: 'var(--color-bg-surface)',
       border: '1px solid #E8E2D5',
       borderRadius: '12px',
       marginBottom: '12px',
       overflow: 'hidden'
     }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
-        <div style={{ fontSize: '11px', color: '#A8A39A' }}>{done}/{total}</div>
+        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text-strong)' }}>{title}</div>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{done}/{total}</div>
       </div>
       {items.map(item => {
         const edited = packingEdits[item.id] || {};
         const displayText = edited.t !== undefined ? edited.t : item.t;
-        const displaySrc = edited.src !== undefined ? edited.src : item.src;
         const isEditedT = edited.t !== undefined;
-        const isEditedS = edited.src !== undefined;
         const isUrgent = displayText.includes('⭐');
         const checked = !!packing[item.id];
 
         return (
-          <div key={item.id} style={{
-            padding: '12px 16px',
-            borderTop: '1px solid #F5F0E8',
-            display: 'flex',
-            alignItems: 'flex-start',
-            gap: '10px'
-          }}>
-            <button
-              onClick={() => togglePacking(item.id)}
-              style={{
-                width: '20px',
-                height: '20px',
-                borderRadius: '4px',
-                border: `2px solid ${checked ? '#1B2A4A' : '#CCC'}`,
-                background: checked ? '#1B2A4A' : 'transparent',
-                color: '#FFF',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '14px',
-                flexShrink: 0,
-                marginTop: '1px',
-                cursor: 'pointer'
-              }}
-            >
-              {checked && '✓'}
-            </button>
-            <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.5, minWidth: 0 }}>
-              <div style={{
-                color: checked ? '#999' : '#333',
-                textDecoration: checked ? 'line-through' : 'none'
-              }}>
-                {isUrgent && !checked && <span style={{ color: '#C00000', fontWeight: 600 }}>🔴 </span>}
-                <EditableField
-                  value={displayText}
-                  onSave={(v) => savePackingEdit(item.id, 't', v)}
-                  onReset={isEditedT ? () => resetPackingEdit(item.id, 't') : null}
-                  edited={isEditedT}
-                  multiline
-                  textStyle={{
-                    fontSize: '13px',
-                    color: checked ? '#999' : '#333',
-                    textDecoration: checked ? 'line-through' : 'none'
-                  }}
-                />
-                {item.custom && (
+          <div
+            key={item.id}
+            onClick={(e) => {
+              // Avoid toggling when interacting with inner editable text or delete button
+              if (e.target.closest('button, input, textarea')) return;
+              togglePacking(item.id);
+            }}
+            style={{
+              padding: '9px 14px',
+              borderTop: '1px solid #F5F0E8',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              cursor: 'pointer',
+              background: checked ? '#FAFAF8' : 'transparent',
+              transition: 'background 0.15s ease',
+            }}
+          >
+            <div style={{
+              width: '8px',
+              height: '8px',
+              borderRadius: '50%',
+              background: checked ? '#1B2A4A' : '#D6CFC0',
+              flexShrink: 0,
+              transition: 'background 0.15s ease',
+            }} />
+            <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.45, minWidth: 0, display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              {isUrgent && !checked && <span style={{ color: '#C00000', fontWeight: 600, fontSize: '11px' }}>🔴</span>}
+              <EditableField
+                value={displayText}
+                onSave={(v) => savePackingEdit(item.id, 't', v)}
+                onReset={isEditedT ? () => resetPackingEdit(item.id, 't') : null}
+                edited={isEditedT}
+                multiline
+                textStyle={{
+                  fontSize: '13px',
+                  color: checked ? 'var(--color-text-muted)' : 'var(--color-text-strong)',
+                  textDecoration: checked ? 'line-through' : 'none'
+                }}
+              />
+              {item.custom && (
+                <React.Fragment>
                   <span style={{
-                    marginLeft: '6px',
                     fontSize: '9px',
                     background: '#FFE0B2',
                     color: '#9A3412',
                     padding: '2px 6px',
                     borderRadius: '3px'
                   }}>직접 추가</span>
-                )}
-              </div>
-              <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <EditableField
-                  value={displaySrc}
-                  onSave={(v) => savePackingEdit(item.id, 'src', v)}
-                  onReset={isEditedS ? () => resetPackingEdit(item.id, 'src') : null}
-                  edited={isEditedS}
-                  textStyle={{ fontSize: '11px', color: '#A8A39A' }}
-                />
-                {item.custom && (
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       if (confirm('이 항목을 삭제할까?')) removePackingItem(person, title, item.id);
                     }}
                     style={{
@@ -3450,8 +4057,8 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
                   >
                     삭제
                   </button>
-                )}
-              </div>
+                </React.Fragment>
+              )}
             </div>
           </div>
         );
@@ -3459,7 +4066,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
 
       {/* Add new item */}
       {adding ? (
-        <div style={{ padding: '12px 16px', borderTop: '1px solid #F5F0E8', background: '#FAF6EF' }}>
+        <div style={{ padding: '12px 16px', borderTop: '1px solid #F5F0E8', background: 'var(--color-bg-page)' }}>
           <input
             value={newText}
             onChange={(e) => setNewText(e.target.value)}
@@ -3475,7 +4082,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
               fontSize: '13px',
               border: '2px solid #C9A961',
               borderRadius: '6px',
-              background: '#FFFEF9',
+              background: 'var(--color-bg-surface)',
               fontFamily: 'inherit',
               boxSizing: 'border-box',
               marginBottom: '8px'
@@ -3487,7 +4094,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
               style={{
                 padding: '6px 12px',
                 fontSize: '11px',
-                background: '#FFF',
+                background: 'var(--color-bg-surface)',
                 border: '1px solid #E8E2D5',
                 borderRadius: '4px',
                 cursor: 'pointer'
@@ -3498,8 +4105,8 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
               style={{
                 padding: '6px 12px',
                 fontSize: '11px',
-                background: '#1B2A4A',
-                color: '#FFF',
+                background: 'var(--color-bg-inverse)',
+                color: 'var(--color-text-inverse)',
                 border: 'none',
                 borderRadius: '4px',
                 cursor: 'pointer'
@@ -3517,7 +4124,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
             border: 'none',
             borderTop: '1px solid #F5F0E8',
             cursor: 'pointer',
-            color: '#C9A961',
+            color: 'var(--color-accent-primary)',
             fontSize: '12px',
             fontWeight: 500
           }}
@@ -3535,15 +4142,15 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
 
   return (
     <div style={{
-      background: '#FFF',
+      background: 'var(--color-bg-surface)',
       border: '1px solid #E8E2D5',
       borderRadius: '12px',
       marginBottom: '12px',
       overflow: 'hidden'
     }}>
       <div style={{ padding: '14px 16px', borderBottom: '1px solid #F5F0E8', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: '14px', fontWeight: 500, color: '#1B2A4A' }}>{title}</div>
-        <div style={{ fontSize: '11px', color: '#A8A39A' }}>{done}/{total}</div>
+        <div style={{ fontSize: '14px', fontWeight: 500, color: 'var(--color-text-strong)' }}>{title}</div>
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{done}/{total}</div>
       </div>
       {items.map(item => {
         const checked = !!checks[item.id];
@@ -3568,9 +4175,9 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
               width: '20px',
               height: '20px',
               borderRadius: '4px',
-              border: `2px solid ${checked ? '#1B2A4A' : '#CCC'}`,
+              border: `2px solid ${checked ? '#1B2A4A' : 'var(--color-border-strong)'}`,
               background: checked ? '#1B2A4A' : 'transparent',
-              color: '#FFF',
+              color: 'var(--color-text-inverse)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -3580,16 +4187,16 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
             }}>
               {checked && '✓'}
             </div>
-            <div style={{ flex: 1, fontSize: '13px', lineHeight: 1.5 }}>
+            <div style={{ flex: 1, minWidth: 0, fontSize: '13px', lineHeight: 1.5 }}>
               <div style={{
-                color: checked ? '#999' : '#333',
+                color: checked ? 'var(--color-text-muted)' : 'var(--color-text-strong)',
                 textDecoration: checked ? 'line-through' : 'none'
               }}>
                 {item.urgent && !checked && <span style={{ color: '#C00000', fontWeight: 600 }}>🔴 </span>}
                 {item.t}
               </div>
               {showSource && item.src && (
-                <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '4px' }}>{item.src}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '4px' }}>{item.src}</div>
               )}
             </div>
           </button>
@@ -3606,8 +4213,8 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>위치 · 예약</h2>
-      <div style={{ fontSize: '12px', color: '#A8A39A', marginBottom: '16px' }}>
-        지도 · 호텔 · 항공 · 환율 · 비용 통합
+      <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
+        지도 · 호텔 · 항공 · 환율 · 날씨 · 미식 · 비용 통합
       </div>
 
       {/* Sub-tab nav */}
@@ -3616,6 +4223,8 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
         <SubTab active={subTab === 'hotels'} onClick={() => setSubTab('hotels')}>🏨 호텔</SubTab>
         <SubTab active={subTab === 'flights'} onClick={() => setSubTab('flights')}>✈️ 항공</SubTab>
         <SubTab active={subTab === 'fx'} onClick={() => setSubTab('fx')}>💱 환율</SubTab>
+        <SubTab active={subTab === 'weather'} onClick={() => setSubTab('weather')}>🌤️ 날씨</SubTab>
+        <SubTab active={subTab === 'food'} onClick={() => setSubTab('food')}>🍽️ 미식</SubTab>
         <SubTab active={subTab === 'costs'} onClick={() => setSubTab('costs')}>💰 비용</SubTab>
       </div>
 
@@ -3623,6 +4232,8 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
       {subTab === 'hotels' && <HotelsList HOTELS={HOTELS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       {subTab === 'flights' && <FlightsList FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       {subTab === 'fx' && <ExchangeRates />}
+      {subTab === 'weather' && <WeatherWidget />}
+      {subTab === 'food' && <RestaurantTracker />}
       {subTab === 'costs' && <CostsSummary />}
     </div>
   );
@@ -3648,12 +4259,12 @@ function MapView() {
 
   return (
     <div>
-      <div style={{ fontSize: '12px', color: '#6B6760', marginBottom: '12px', textAlign: 'center' }}>
+      <div style={{ fontSize: '12px', color: 'var(--color-text-soft)', marginBottom: '12px', textAlign: 'center' }}>
         9개 도시 · 4개 국가 · 약 11,000km
       </div>
 
       {/* SVG Journey Overview */}
-      <div style={{ background: '#FFF', border: '1px solid #E8E2D5', borderRadius: '12px', padding: '12px', marginBottom: '20px', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--color-bg-surface)', border: '1px solid #E8E2D5', borderRadius: '12px', padding: '12px', marginBottom: '20px', overflow: 'hidden' }}>
         <svg viewBox="0 0 800 500" style={{ width: '100%', height: 'auto', display: 'block' }}>
           <rect width="800" height="500" fill="#E8F2F7" />
           <g opacity="0.5">
@@ -3715,9 +4326,9 @@ function MapView() {
             style={{
               padding: '8px 14px',
               fontSize: '12px',
-              background: selectedId === p.id ? p.accent : '#FFF',
-              color: selectedId === p.id ? '#FFF' : '#666',
-              border: `1px solid ${selectedId === p.id ? p.accent : '#E8E2D5'}`,
+              background: selectedId === p.id ? p.accent : 'var(--color-bg-surface)',
+              color: selectedId === p.id ? '#FFF' : 'var(--color-text-soft)',
+              border: `1px solid ${selectedId === p.id ? p.accent : 'var(--color-border-default)'}`,
               borderRadius: '20px',
               cursor: 'pointer',
               fontWeight: 500,
@@ -3735,16 +4346,16 @@ function MapView() {
         <Card>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
             <span style={{ fontSize: '28px' }}>{selected.flag}</span>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: '18px', fontWeight: 600, color: selected.accent }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: '18px', fontWeight: 600, color: selected.accent, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selected.icon} {selected.name}
               </div>
-              <div style={{ fontSize: '11px', color: '#A8A39A' }}>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                 {selected.country} · {selected.dates} · {selected.theme}
               </div>
             </div>
           </div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: '#6B6760', marginBottom: '14px', lineHeight: 1.5 }}>
+          <div style={{ fontFamily: 'Georgia, serif', fontSize: '14px', fontStyle: 'italic', color: 'var(--color-text-soft)', marginBottom: '14px', lineHeight: 1.5 }}>
             "{selected.tag}"
           </div>
           <InlineMap
@@ -3762,7 +4373,7 @@ function MapView() {
       )}
 
       {/* Map legend */}
-      <div style={{ fontSize: '11px', color: '#A8A39A', marginTop: '16px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: '6px', lineHeight: 1.7 }}>
+      <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '16px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: '6px', lineHeight: 1.7 }}>
         🗺️ <strong>여행 순서</strong>: 위 SVG의 핀이나 챕터 탭을 누르면 해당 도시의 인라인 지도 + 추천 활동 표시
       </div>
     </div>
@@ -3773,7 +4384,7 @@ function MapView() {
 function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
   return (
     <div>
-      <div style={{ fontSize: '11px', color: '#C9A961', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
+      <div style={{ fontSize: '11px', color: 'var(--color-accent-primary)', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: '6px' }}>
         💡 호텔명·예약번호 편집 가능 (✎) · 상태 라벨 탭하여 🔴→🟡→✅ 순환
       </div>
       <Card>
@@ -3797,9 +4408,9 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   style={{
                     background: statusBg,
                     color: statusColor,
-                    fontSize: '10px',
-                    padding: '4px 8px',
-                    borderRadius: '4px',
+                    fontSize: '11px',
+                    padding: '7px 10px',
+                    borderRadius: '6px',
                     border: 'none',
                     cursor: 'pointer',
                     whiteSpace: 'nowrap',
@@ -3811,18 +4422,18 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   {statusLabel}
                 </button>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}>
+                  <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-strong)' }}>
                     <EditableField
                       value={h.hotel}
                       onSave={(v) => saveEdit('hotel', h.n, 'hotel', v)}
                       onReset={() => resetEdit('hotel', h.n, 'hotel')}
                       edited={isEdited('hotel', h.n, 'hotel')}
-                      textStyle={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}
+                      textStyle={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-strong)' }}
                     />
                   </div>
                 </div>
               </div>
-              <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
                 <span>📍 {h.city} · {h.ci}~{h.co} ({h.nights}박)</span>
                 <a
                   href={mapsUrl(hotelMapQuery)}
@@ -3830,7 +4441,7 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   rel="noopener noreferrer"
                   style={{
                     fontSize: '10px',
-                    color: '#C9A961',
+                    color: 'var(--color-accent-primary)',
                     textDecoration: 'none',
                     fontWeight: 500,
                     padding: '2px 6px',
@@ -3841,7 +4452,7 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                   🗺️ Maps
                 </a>
               </div>
-              <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '6px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+              <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '6px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
                 <span style={{ marginRight: '2px' }}>📋 Conf:</span>
                 <div style={{ flex: '1 1 auto', minWidth: 0 }}>
                   <EditableField
@@ -3849,7 +4460,7 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
                     onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
                     onReset={() => resetEdit('hotel', h.n, 'conf')}
                     edited={isEdited('hotel', h.n, 'conf')}
-                    textStyle={{ fontSize: '10px', color: '#A8A39A' }}
+                    textStyle={{ fontSize: '10px', color: 'var(--color-text-muted)' }}
                   />
                 </div>
                 {h.conf && <CopyChip text={h.conf} label="Conf" icon="📋" />}
@@ -3873,33 +4484,33 @@ function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
           borderTop: '1px solid #F5F0E8'
         }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '4px' }}>
-            <div style={{ fontSize: '13px', fontWeight: 500, color: '#1B2A4A' }}>{f.route}</div>
-            <div style={{ fontSize: '11px', color: '#A8A39A' }}>{f.d}</div>
+            <div style={{ fontSize: '13px', fontWeight: 500, color: 'var(--color-text-strong)' }}>{f.route}</div>
+            <div style={{ fontSize: '11px', color: 'var(--color-text-muted)' }}>{f.d}</div>
           </div>
-          <div style={{ fontSize: '11px', color: '#6B6760', marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
+          <div style={{ fontSize: '11px', color: 'var(--color-text-soft)', marginTop: '4px', display: 'flex', alignItems: 'baseline', gap: '4px', flexWrap: 'wrap' }}>
             <EditableField
               value={f.no}
               onSave={(v) => saveEdit('flight', i, 'no', v)}
               onReset={() => resetEdit('flight', i, 'no')}
               edited={isEdited('flight', i, 'no')}
-              textStyle={{ fontSize: '11px', color: '#6B6760' }}
+              textStyle={{ fontSize: '11px', color: 'var(--color-text-soft)' }}
             />
-            <span style={{ color: '#CCC' }}>·</span>
+            <span style={{ color: 'var(--color-border-strong)' }}>·</span>
             <EditableField
               value={f.t}
               onSave={(v) => saveEdit('flight', i, 't', v)}
               onReset={() => resetEdit('flight', i, 't')}
               edited={isEdited('flight', i, 't')}
-              textStyle={{ fontSize: '11px', color: '#6B6760' }}
+              textStyle={{ fontSize: '11px', color: 'var(--color-text-soft)' }}
             />
           </div>
-          <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '4px' }}>
+          <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '4px' }}>
             <EditableField
               value={f.note}
               onSave={(v) => saveEdit('flight', i, 'note', v)}
               onReset={() => resetEdit('flight', i, 'note')}
               edited={isEdited('flight', i, 'note')}
-              textStyle={{ fontSize: '10px', color: '#A8A39A' }}
+              textStyle={{ fontSize: '10px', color: 'var(--color-text-muted)' }}
             />
           </div>
         </div>
@@ -3911,9 +4522,20 @@ function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
 // =================== EXCHANGE RATES ===================
 const FX_CURRENCIES = [
   { code: 'EUR', label: '유로', flag: '🇪🇺', unit: 1 },
+  { code: 'GBP', label: '파운드', flag: '🇬🇧', unit: 1 },
   { code: 'CHF', label: '스위스 프랑', flag: '🇨🇭', unit: 1 },
   { code: 'AED', label: 'UAE 디르함', flag: '🇦🇪', unit: 1 },
   { code: 'JPY', label: '일본 엔', flag: '🇯🇵', unit: 100 },
+];
+
+// Reference prices in KRW for the "이 정도면 ~" comparison
+const KRW_BENCHMARKS = [
+  { id: 'coffee', icon: '☕', label: '스타벅스 아메리카노', krw: 4500 },
+  { id: 'kimbap', icon: '🍙', label: '편의점 김밥', krw: 3500 },
+  { id: 'lunch',  icon: '🍜', label: '직장인 점심 한 끼', krw: 12000 },
+  { id: 'pizza',  icon: '🍕', label: '도미노 라지피자', krw: 28000 },
+  { id: 'movie',  icon: '🎬', label: '영화 1편 (CGV)', krw: 15000 },
+  { id: 'taxi',   icon: '🚕', label: '강남 단거리 택시', krw: 8000 },
 ];
 
 function ExchangeRates() {
@@ -3921,6 +4543,8 @@ function ExchangeRates() {
   const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stale, setStale] = useState(false);
+  const [calcAmt, setCalcAmt] = useState('');
+  const [calcCur, setCalcCur] = useState('EUR');
 
   const load = async (force) => {
     setLoading(true);
@@ -3972,12 +4596,12 @@ function ExchangeRates() {
           onClick={() => load(true)}
           disabled={loading}
           style={{
-            background: '#FAF6EF',
+            background: 'var(--color-bg-page)',
             border: '1px solid #E8E2D5',
             borderRadius: '8px',
             padding: '6px 10px',
             fontSize: '12px',
-            color: '#1B2A4A',
+            color: 'var(--color-text-strong)',
             cursor: loading ? 'default' : 'pointer',
             opacity: loading ? 0.5 : 1
           }}
@@ -3987,7 +4611,7 @@ function ExchangeRates() {
       </div>
 
       {!rates && loading && (
-        <div style={{ fontSize: '12px', color: '#A8A39A', padding: '12px 0' }}>환율 불러오는 중…</div>
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '12px 0' }}>환율 불러오는 중…</div>
       )}
 
       {rates && (
@@ -3996,12 +4620,12 @@ function ExchangeRates() {
             const v = toKRW(c.code, c.unit);
             return (
               <div key={c.code} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '11px 0', borderBottom: '1px solid #F0EBE0' }}>
-                <span style={{ fontSize: '13px', color: '#1B2A4A' }}>
+                <span style={{ fontSize: '13px', color: 'var(--color-text-strong)' }}>
                   <span style={{ marginRight: '8px' }}>{c.flag}</span>
                   {c.unit > 1 ? c.unit + ' ' : '1 '}{c.code}
-                  <span style={{ color: '#A8A39A', marginLeft: '6px', fontSize: '11px' }}>{c.label}</span>
+                  <span style={{ color: 'var(--color-text-muted)', marginLeft: '6px', fontSize: '11px' }}>{c.label}</span>
                 </span>
-                <span style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: '#1B2A4A', fontWeight: 500 }}>
+                <span style={{ fontFamily: 'Georgia, serif', fontSize: '16px', color: 'var(--color-text-strong)', fontWeight: 500 }}>
                   {v != null ? v.toLocaleString() + '원' : '—'}
                 </span>
               </div>
@@ -4011,12 +4635,91 @@ function ExchangeRates() {
       )}
 
       {!rates && !loading && (
-        <div style={{ fontSize: '12px', color: '#A8A39A', padding: '12px 0' }}>
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '12px 0' }}>
           환율을 불러오지 못했습니다. 네트워크 확인 후 ↻ 새로고침을 눌러주세요.
         </div>
       )}
 
-      <div style={{ fontSize: '10px', color: '#A8A39A', marginTop: '14px', lineHeight: 1.6 }}>
+      {/* Calculator + benchmarks */}
+      {rates && (() => {
+        const amt = parseFloat(calcAmt);
+        const rate = rates[calcCur];
+        const krw = (!isNaN(amt) && amt > 0 && rate) ? Math.round(amt / rate) : null;
+        return (
+          <div style={{ marginTop: '18px', padding: '14px', background: 'var(--color-bg-page)', borderRadius: '10px', border: '1px solid #E8E2D5' }}>
+            <div style={{ fontSize: '10px', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
+              💸 계산기 · 이 정도면?
+            </div>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={calcAmt}
+                onChange={(e) => setCalcAmt(e.target.value)}
+                placeholder="금액 입력"
+                style={{
+                  flex: 1, padding: '10px 12px', fontSize: '15px',
+                  border: '1px solid #E8E2D5', borderRadius: '8px',
+                  background: 'var(--color-bg-surface)',
+                  fontFamily: 'inherit', fontVariantNumeric: 'tabular-nums',
+                  boxSizing: 'border-box', minWidth: 0,
+                }}
+              />
+              <select
+                value={calcCur}
+                onChange={(e) => setCalcCur(e.target.value)}
+                style={{
+                  padding: '10px 12px', fontSize: '13px',
+                  border: '1px solid #E8E2D5', borderRadius: '8px',
+                  background: 'var(--color-bg-surface)', cursor: 'pointer',
+                  fontFamily: 'inherit',
+                }}
+              >
+                {FX_CURRENCIES.map(c => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.code}</option>
+                ))}
+              </select>
+            </div>
+
+            {krw != null ? (
+              <div>
+                <div className="gt-serif" style={{ fontSize: '22px', fontWeight: 500, color: 'var(--color-text-strong)', marginBottom: '12px', fontVariantNumeric: 'tabular-nums' }}>
+                  ≈ {krw.toLocaleString()}원
+                </div>
+                <div style={{ fontSize: '10px', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '8px', fontWeight: 600 }}>
+                  한국에서 이만큼 살 수 있어요
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+                  {KRW_BENCHMARKS.map(b => {
+                    const count = krw / b.krw;
+                    if (count < 0.1) return null;
+                    const display = count >= 10 ? Math.round(count) : (count >= 1 ? count.toFixed(1) : count.toFixed(2));
+                    return (
+                      <div key={b.id} style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '7px 10px', background: 'var(--color-bg-surface)', borderRadius: '6px',
+                      }}>
+                        <span style={{ fontSize: '12px', color: 'var(--color-text-strong)' }}>
+                          {b.icon} {b.label} <span style={{ color: 'var(--color-text-muted)', fontSize: '10px' }}>({b.krw.toLocaleString()}원)</span>
+                        </span>
+                        <span style={{ fontSize: '13px', color: 'var(--color-accent-primary)', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
+                          × {display}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ) : (
+              <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', fontStyle: 'italic' }}>
+                현지 금액을 입력하면 원화 환산과 한국 비교 가격이 나옵니다.
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '14px', lineHeight: 1.6 }}>
         {updatedAt ? new Date(updatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 기준' : ''}
         {stale ? ' · 오프라인 캐시' : ''}
         <br />KRW 기준 · open.er-api.com (1시간 캐시)
@@ -4030,7 +4733,7 @@ function CostsSummary() {
   return (
     <Card>
       <SectionTitle>💰 비용 요약</SectionTitle>
-      <div style={{ fontSize: '12px', lineHeight: 2, color: '#6B6760' }}>
+      <div style={{ fontSize: '12px', lineHeight: 2, color: 'var(--color-text-soft)' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>숙박 (25박)</span><span>~1,000만</span>
         </div>
@@ -4046,9 +4749,303 @@ function CostsSummary() {
         <div style={{ display: 'flex', justifyContent: 'space-between' }}>
           <span>예비비</span><span>~300만</span>
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8E2D5', marginTop: '8px', paddingTop: '8px', fontWeight: 500, color: '#1B2A4A' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #E8E2D5', marginTop: '8px', paddingTop: '8px', fontWeight: 500, color: 'var(--color-text-strong)' }}>
           <span>합계 (항공 별도)</span><span>~2,400만</span>
         </div>
+      </div>
+    </Card>
+  );
+}
+
+// =================== WEATHER WIDGET ===================
+function wmoInfo(code) {
+  if (code === 0) return { e: '☀️', t: '맑음' };
+  if (code <= 3) return { e: '⛅', t: '구름 조금' };
+  if (code <= 48) return { e: '🌫️', t: '안개' };
+  if (code <= 55) return { e: '🌦️', t: '이슬비' };
+  if (code <= 65) return { e: '🌧️', t: '비' };
+  if (code <= 75) return { e: '🌨️', t: '눈' };
+  if (code <= 82) return { e: '🌦️', t: '소나기' };
+  if (code <= 99) return { e: '⛈️', t: '뇌우' };
+  return { e: '🌡️', t: '—' };
+}
+
+function WeatherWidget() {
+  const WEATHER_CITIES = CHAPTERS.filter(c => c.coords);
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [stale, setStale] = useState(false);
+  const [updatedAt, setUpdatedAt] = useState(null);
+  const [selected, setSelected] = useState(WEATHER_CITIES[0].id);
+
+  const load = async (force) => {
+    setLoading(true);
+    const cache = await storage.get('weather_cache');
+    const fresh = cache && cache.savedAt && (Date.now() - cache.savedAt < 1800000);
+    if (cache && cache.data && fresh && !force) {
+      setData(cache.data);
+      setUpdatedAt(cache.savedAt);
+      setStale(false);
+      setLoading(false);
+      return;
+    }
+    try {
+      const results = await Promise.all(
+        WEATHER_CITIES.map(async (city) => {
+          try {
+            const { lat, lng } = city.coords;
+            const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&timezone=auto&forecast_days=16`;
+            const ctrl = new AbortController();
+            const timer = setTimeout(() => ctrl.abort(), 10000);
+            const res = await fetch(url, { signal: ctrl.signal });
+            clearTimeout(timer);
+            const json = await res.json();
+            return [city.id, json.daily || null];
+          } catch (e) {
+            return [city.id, null];
+          }
+        })
+      );
+      const newData = {};
+      results.forEach(([id, daily]) => { newData[id] = daily; });
+      const hasAny = Object.values(newData).some(v => v !== null);
+      if (hasAny) {
+        setData(newData);
+        setUpdatedAt(Date.now());
+        setStale(false);
+        await storage.set('weather_cache', { data: newData, savedAt: Date.now() });
+      } else {
+        throw new Error('all failed');
+      }
+    } catch (e) {
+      if (cache && cache.data) {
+        setData(cache.data);
+        setUpdatedAt(cache.savedAt);
+        setStale(true);
+      }
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => { load(false); }, []);
+
+  const cityData = data && data[selected];
+  const selectedChapter = WEATHER_CITIES.find(c => c.id === selected);
+  const TODAY = new Date().toISOString().slice(0, 10);
+  const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+
+  return (
+    <Card>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <SectionTitle>🌤️ 날씨 예보</SectionTitle>
+        <button
+          onClick={() => load(true)}
+          disabled={loading}
+          style={{
+            background: 'var(--color-bg-page)',
+            border: '1px solid #E8E2D5',
+            borderRadius: '8px',
+            padding: '6px 10px',
+            fontSize: '12px',
+            color: 'var(--color-text-strong)',
+            cursor: loading ? 'default' : 'pointer',
+            opacity: loading ? 0.5 : 1
+          }}
+        >
+          {loading ? '…' : '↻ 새로고침'}
+        </button>
+      </div>
+
+      {/* City selector */}
+      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', marginBottom: '14px', paddingBottom: '4px' }}>
+        {WEATHER_CITIES.map(city => {
+          const active = selected === city.id;
+          return (
+            <button
+              key={city.id}
+              onClick={() => setSelected(city.id)}
+              style={{
+                padding: '5px 12px',
+                borderRadius: '20px',
+                border: '1px solid ' + (active ? city.accent : 'var(--color-border-default)'),
+                background: active ? city.color : 'var(--color-bg-surface)',
+                color: active ? city.accent : 'var(--color-text-soft)',
+                fontSize: '12px',
+                whiteSpace: 'nowrap',
+                cursor: 'pointer',
+                flexShrink: 0,
+                fontWeight: active ? 600 : 400
+              }}
+            >
+              {city.flag} {city.name}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* City dates + theme */}
+      {selectedChapter && (
+        <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
+          {selectedChapter.dates} · {selectedChapter.theme}
+        </div>
+      )}
+
+      {/* Loading skeleton */}
+      {loading && !data && (
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '16px 0' }}>날씨 불러오는 중…</div>
+      )}
+
+      {/* Daily forecast rows */}
+      {cityData && cityData.time && (
+        <div>
+          {cityData.time.map((date, i) => {
+            const wmo = wmoInfo(cityData.weathercode[i]);
+            const max = Math.round(cityData.temperature_2m_max[i]);
+            const min = Math.round(cityData.temperature_2m_min[i]);
+            const precip = cityData.precipitation_probability_mean[i];
+            const d = new Date(date + 'T12:00:00');
+            const dayStr = DAY_NAMES[d.getDay()];
+            const monthDay = (d.getMonth() + 1) + '/' + d.getDate();
+            const isToday = date === TODAY;
+            return (
+              <div key={date} style={{
+                display: 'flex',
+                alignItems: 'center',
+                padding: isToday ? '10px 8px' : '10px 0',
+                borderBottom: '1px solid #F0EBE0',
+                borderRadius: isToday ? '6px' : '0',
+                background: isToday ? 'var(--color-bg-page)' : 'transparent'
+              }}>
+                <div style={{ width: '54px', flexShrink: 0 }}>
+                  <div style={{ fontSize: '12px', color: isToday ? 'var(--color-accent-primary)' : 'var(--color-text-muted)', fontWeight: isToday ? 600 : 400 }}>
+                    {monthDay} {dayStr}
+                  </div>
+                  {isToday && <div style={{ fontSize: '9px', color: 'var(--color-accent-primary)', letterSpacing: '0.5px', marginTop: '1px' }}>TODAY</div>}
+                </div>
+                <div style={{ fontSize: '22px', marginRight: '10px', flexShrink: 0, lineHeight: 1 }}>{wmo.e}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', color: 'var(--color-text-soft)' }}>{wmo.t}</div>
+                  {precip > 20 && (
+                    <div style={{ fontSize: '10px', color: '#0369A1', marginTop: '1px' }}>💧 {precip}%</div>
+                  )}
+                </div>
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <span style={{ fontSize: '15px', fontFamily: 'Georgia, serif', color: 'var(--color-text-strong)', fontWeight: 600 }}>{max}°</span>
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-muted)', marginLeft: '5px' }}>{min}°</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* City fetched but no daily data */}
+      {data && !cityData && (
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '12px 0' }}>이 도시의 날씨 데이터를 불러오지 못했습니다.</div>
+      )}
+
+      {/* Total failure */}
+      {!data && !loading && (
+        <div style={{ fontSize: '12px', color: 'var(--color-text-muted)', padding: '12px 0' }}>
+          날씨를 불러오지 못했습니다. 네트워크 확인 후 ↻ 새로고침을 눌러주세요.
+        </div>
+      )}
+
+      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '14px', lineHeight: 1.6 }}>
+        {updatedAt ? new Date(updatedAt).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' 기준' : ''}
+        {stale ? ' · 오프라인 캐시' : ''}
+        <br />open-meteo.com (30분 캐시)
+      </div>
+    </Card>
+  );
+}
+
+// =================== RESTAURANT TRACKER ===================
+function RestaurantTracker() {
+  const SPOTS = [
+    { id: 'R1', name: 'Le Jules Verne', ch: 'paris', date: '6/17', note: '미슐랭 2성 · 에펠탑 내 · 재킷 필수' },
+    { id: 'R2', name: 'Septime', ch: 'paris', date: '6/16~18', note: '미슐랭 1성 · 모던 비스트로 · 예약 難' },
+    { id: 'R3', name: 'Anna Stuben', ch: 'dol', date: '6/24', note: '미슐랭 · 알피니 전통 요리' },
+    { id: 'R4', name: 'La Pergola', ch: 'rom', date: '6/27~30', note: '미슐랭 3성 · 로마 유일 · Cavalieri 옥상' },
+    { id: 'R5', name: 'Selene (Pyrgos)', ch: 'san', date: '7/4', note: '미슐랭 + 와인 페어링 · 산토리니 정상' },
+    { id: 'R6', name: 'At.mosphere', ch: 'dxb', date: '7/8~10', note: 'Burj 122층 · 미슐랭급 · 드레스 코드 必' },
+  ];
+
+  const STATUS_CYCLE = ['pending', 'confirmed', 'visited'];
+  const STATUS_LABEL = { pending: '대기', confirmed: '확정 ✓', visited: '방문 ✓' };
+  const STATUS_COLOR = { pending: 'var(--color-text-muted)', confirmed: '#065F46', visited: '#92400E' };
+  const STATUS_BG   = { pending: '#F5F5F4', confirmed: '#D1FAE5', visited: '#FEF3C7' };
+
+  const [statuses, setStatuses] = useState({});
+
+  useEffect(() => {
+    storage.get('restaurant_status').then(v => { if (v) setStatuses(v); });
+  }, []);
+
+  const cycle = async (id) => {
+    const current = statuses[id] || 'pending';
+    const next = STATUS_CYCLE[(STATUS_CYCLE.indexOf(current) + 1) % STATUS_CYCLE.length];
+    const updated = { ...statuses, [id]: next };
+    setStatuses(updated);
+    await storage.set('restaurant_status', updated);
+  };
+
+  const confirmedCount = SPOTS.filter(s => statuses[s.id] === 'confirmed' || statuses[s.id] === 'visited').length;
+
+  return (
+    <Card>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+        <SectionTitle>🍽️ 미슐랭 예약</SectionTitle>
+        <span style={{ fontSize: '12px', color: '#065F46', fontWeight: 600 }}>{confirmedCount}/{SPOTS.length} 확정</span>
+      </div>
+
+      {SPOTS.map(spot => {
+        const ch = C(spot.ch);
+        const status = statuses[spot.id] || 'pending';
+        return (
+          <div key={spot.id} style={{ padding: '12px 0', borderBottom: '1px solid #F0EBE0' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+              <div style={{
+                flexShrink: 0,
+                padding: '3px 8px',
+                borderRadius: '6px',
+                background: ch.color,
+                color: ch.accent,
+                fontSize: '10px',
+                fontWeight: 600,
+                whiteSpace: 'nowrap',
+                marginTop: '3px'
+              }}>
+                {ch.flag} {spot.date}
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: '13px', color: 'var(--color-text-strong)', fontWeight: 500 }}>{spot.name}</div>
+                <div style={{ fontSize: '11px', color: 'var(--color-text-muted)', marginTop: '2px', lineHeight: 1.4 }}>{spot.note}</div>
+              </div>
+              <button
+                onClick={() => cycle(spot.id)}
+                style={{
+                  flexShrink: 0,
+                  padding: '5px 11px',
+                  borderRadius: '20px',
+                  border: 'none',
+                  background: STATUS_BG[status],
+                  color: STATUS_COLOR[status],
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                {STATUS_LABEL[status]}
+              </button>
+            </div>
+          </div>
+        );
+      })}
+
+      <div style={{ fontSize: '10px', color: 'var(--color-text-muted)', marginTop: '12px' }}>
+        탭하면 대기 → 확정 → 방문 순으로 전환
       </div>
     </Card>
   );
@@ -4183,7 +5180,7 @@ function BottomNav({ view, setView }) {
       bottom: 0,
       left: 0,
       right: 0,
-      background: '#FFF',
+      background: 'var(--color-bg-surface)',
       borderTop: '1px solid #E8E2D5',
       display: 'flex',
       justifyContent: 'space-around',
@@ -4213,7 +5210,7 @@ function BottomNav({ view, setView }) {
           <div className="gt-tab-icon" style={{ fontSize: '18px', opacity: view === t.id ? 1 : 0.45 }}>{t.icon}</div>
           <div style={{
             fontSize: '10px',
-            color: view === t.id ? '#1B2A4A' : '#999',
+            color: view === t.id ? '#1B2A4A' : 'var(--color-text-muted)',
             fontWeight: view === t.id ? 500 : 400,
             letterSpacing: '0.3px',
           }}>

@@ -1,10 +1,10 @@
 # Grand Tour 2026 — 개발 현 상태 리뷰
 
 > 대상: `~/Desktop/grandtour/` (단일 HTML 앱, Vercel 배포)
-> 정리일: **2026-05-28** · 정리자: Claude (Opus 4.7)
+> 정리일: **2026-05-29** · 정리자: Claude (Sonnet 4.6)
 > 라이브: https://grandtour-lilac.vercel.app/
 > 저장소: https://github.com/rarehotdog/grandtour
-> 출발: **2026-06-15** (D−18)
+> 출발: **2026-06-15** (D−17)
 
 ---
 
@@ -12,9 +12,8 @@
 
 | 지표 | 값 |
 |---|---|
-| **index.html** | 4,241줄 · 192KB |
-| **React 컴포넌트** | 39개 (App 포함) |
-| **React 훅 (useState/useEffect)** | 55개 |
+| **index.html** | 5,238줄 · ~210KB |
+| **React 컴포넌트** | 47개 (App 포함) |
 | **디자인 토큰** | 63개 (atomic + semantic + space + radius + type + shadow) |
 | **Service Worker** | `grandtour-v2` · network-first HTML · cache-first 라이브러리 |
 | **PWA** | manifest 정상 · 192/512 SVG 아이콘 · 단축키 2개 |
@@ -28,17 +27,19 @@
 
 | 단계 | 커밋 | 한 줄 요약 |
 |---|---|---|
-| **Phase 0** | `bc2f1c2` | Source of truth = `index.html` 확정. `companion_app.jsx`+`build_html.py` deprecated. Git 복구 (grandtour-old 백업 보존). |
-| **Phase 1** | `6110952` | `tx` 챕터 데이터 버그 수정 · D-Day 자동 갱신 (60초 + visibilitychange) · 환율 fetch 8초 타임아웃 |
-| **Phase 2** | `e6c31e3` | 일정 펼친 화면 상단에 헤로 테마 이미지 추가 · 이미지 깨지면 ChapterFallback 자동 전환 |
-| **Phase 3** | `56bfe96` | 체크리스트 저장 stale-closure 버그 수정 · 백업 `_meta` + 사진 포함 토글 · 데드코드 −157줄 |
-| **Phase A** | `c16ccba` | Visual Polish — CSS 디자인 토큰 · 글래스 헤더 · 페이지 fade · 스켈레톤 · BottomNav 인디케이터 |
-| (cleanup) | `d9d4bce` | `.gitignore` 추가 + `.DS_Store`/`.omc`/`grand-tour-app`/`grandtour-old` 추적 제거 |
+| **Phase 0** | `bc2f1c2` | Source of truth = `index.html` 확정. `companion_app.jsx`+`build_html.py` deprecated. Git 복구. |
+| **Phase 1** | `6110952` | `tx` 챕터 데이터 버그 수정 · D-Day 자동 갱신 · 환율 fetch 타임아웃 |
+| **Phase 2** | `e6c31e3` | 일정 펼친 화면 상단 헤로 테마 이미지 · ChapterFallback 자동 전환 |
+| **Phase 3** | `56bfe96` | 체크리스트 stale-closure 버그 수정 · 백업 토글 · 데드코드 −157줄 |
+| **Phase A** | `c16ccba` | Visual Polish — CSS 디자인 토큰 · 글래스 헤더 · 페이지 fade · BottomNav 인디케이터 |
+| (cleanup) | `d9d4bce` | `.gitignore` 추가 + 불필요 파일 추적 제거 |
 | **Phase B** | `992e62f` | Storytelling — HeroCountdown · TimelineStrip · ChapterProgress · OutputsProgress |
 | **Phase C** | `ab2938a` | In-trip utility — CopyChip · TimezoneWidget · NextFlight · EmergencyContacts |
-| **Phase D** | `c96db9c` | Stability + infra — 사진 **IndexedDB 마이그레이션** · BackupReminder · GT 모노그램 앱 아이콘 |
-| **Wanted DS** | `011dec0` | Pretendard 폰트 + Atomic/Semantic 토큰 구조 · spacing/radius/type 스케일 · Quiet Luxury 유지 |
-| **Font fix** | `20c5d15` | dynamic-subset → 풀 variable CSS · SW v1→v2 cache bump · jsdelivr cacheable origin 추가 |
+| **Phase D** | `c96db9c` | Stability — 사진 IndexedDB 마이그레이션 · BackupReminder · GT 모노그램 아이콘 |
+| **Wanted DS** | `011dec0` | Pretendard 폰트 + Atomic/Semantic 토큰 구조 · spacing/radius/type 스케일 |
+| **Font fix** | `20c5d15` | dynamic-subset → 풀 variable CSS · SW v1→v2 cache bump |
+| **REVIEW refresh** | `ef66db1` | REVIEW.md 갱신 — D-18 기준 |
+| **Phase E** | _(미커밋)_ | HeroCountdown 3단 날씨 대시보드 · Hero 배경 WMO 동적 그래디언트 · 디자인 QA 전수 수정 |
 
 ---
 
@@ -53,7 +54,7 @@ Atomic (raw values)
   ├─ --color-atomic-cream-{50,100,200}
   └─ --color-atomic-{white, warm-600, warm-400, red-700, amber-700, amber-50}
 
-Semantic (intent mapping — 향후 다크모드 토대)
+Semantic (intent mapping)
   ├─ --color-bg-{page, surface, surface-alt, inverse}
   ├─ --color-text-{strong, default, soft, muted, inverse}
   ├─ --color-border-{default, soft, strong}
@@ -72,11 +73,7 @@ Typography stacks
 
 Utility classes
   ├─ .gt-eyebrow / .gt-section-title / .gt-body / .gt-body-soft / .gt-caption
-  ├─ .gt-num (tabular-nums)
-  ├─ .gt-serif (force serif family)
-  ├─ .gt-card (shadow-sm baseline + hover lift)
-  ├─ .gt-view (page fade-in animation)
-  ├─ .gt-skel (skeleton shimmer)
+  ├─ .gt-num / .gt-serif / .gt-card / .gt-view / .gt-skel (skeleton shimmer — CSS var 기반)
   ├─ .gt-tab / .gt-tab-bar / .gt-tab-icon (BottomNav active indicator)
   └─ .gt-header (sticky + backdrop-blur glass)
 ```
@@ -91,11 +88,10 @@ localStorage                      IndexedDB ('grandtour' / 'photos')
   ├─ packing / packing_custom / packing_edits
   ├─ edits (day/hotel/flight inline edits)
   ├─ fx_cache (환율 1h)
+  ├─ weather_cache (날씨 30분)
   ├─ pin (PIN — 백업/복원 시 의도적으로 제외)
   └─ lastBackupAt (BackupReminder 트리거)
 ```
-
-**자동 마이그레이션**: 앱 시작 시 `storage.get('photos')`에 데이터가 있으면 IndexedDB로 자동 이전 후 localStorage 정리. (5MB 한도 사실상 제거)
 
 ### 2.3 주요 컴포넌트
 
@@ -105,22 +101,20 @@ App (status, 모든 state + 저장 액션)
 ├── main (key={view} fade-in 전환)
 │   ├── Home
 │   │   ├── BackupReminder (14일 이상 백업 없으면 배너)
-│   │   ├── HeroCountdown (pre phase: D-day 풀히어로)
-│   │   ├── Trip Philosophy 인용
+│   │   ├── HeroCountdown (pre: D-day 3단 대시보드 + 날씨 오늘/내일)
+│   │   │     └─ wxBg() — WMO 코드 → Apple 스타일 동적 배경 그래디언트
 │   │   ├── TimelineStrip (28일 가로 스와이프)
-│   │   ├── TimezoneWidget (during phase: 현지+KST)
+│   │   ├── TimezoneWidget (during: 현지+KST)
 │   │   ├── NextFlight (다음 이동 카운트다운)
 │   │   ├── Today's Card (during phase)
-│   │   ├── StatCard × 2 (체크리스트 / 여행까지)
 │   │   ├── ChapterProgress (9 챕터 dots + Maps 링크)
 │   │   ├── OutputsProgress (Lifetime/Major/Working 3티어)
-│   │   ├── EmergencyContacts (대사관 × 6 + Amex + 응급)
-│   │   ├── Quick Links 4개
+│   │   ├── EmergencyContacts (대사관 × 5국 + Amex + 응급)
 │   │   └── 백업 / 복원 (사진 포함 토글)
-│   ├── Days (28일 리스트 → 펼치면 DayHero+PhotoSlot+InlineMap+EditableDayDetail)
+│   ├── Days (28일 리스트 → DayHero+PhotoSlot+InlineMap+EditableDayDetail)
 │   ├── Checklist (D-30~D-3 체크 + Packing 3인용 탭)
-│   ├── Private (PIN 잠금 → NotesInner + OutputsInner)
-│   └── Logistics (MapView + HotelsList + FlightsList + Restaurants + Realtime + Costs)
+│   ├── Private (PIN 잠금 → NotesInner[검색 포함] + OutputsInner)
+│   └── Logistics (MapView + HotelsList + FlightsList + WeatherWidget + ExchangeRates + RestaurantTracker + CostsSummary)
 ├── BottomNav (5탭, 골드 인디케이터 슬라이드)
 └── ErrorBoundary (앱 어디서든 throw → 복구 안내 화면)
 ```
@@ -152,30 +146,43 @@ App (status, 모든 state + 저장 액션)
 - [x] **럭셔리 타이포** — Cormorant Garamond italic (Latin) + Pretendard Variable (Hangul)
 - [x] **BottomNav 인디케이터** — 활성 탭 골드 언더라인 슬라이드
 - [x] **햅틱 피드백** — 탭 전환, 체크박스, 복사 시 8ms vibrate
-- [x] **시각적 카운트다운** — HeroCountdown 76px 골드 진행바
+- [x] **HeroCountdown 3단 대시보드** — D-Day · 지금 있는 곳 · 다음 행선지 날씨(오늘→내일)
+- [x] **Hero 배경 동적 그래디언트** — WMO 코드 → 맑음/흐림/비/눈/천둥 7단계 Apple 스타일
 - [x] **28일 타임라인** — 가로 스와이프, 오늘 강조
 - [x] **챕터별/산물별 진행률** — dots + 진행바
 - [x] **현지+KST 듀얼 시계** — 30초 자동 갱신
 - [x] **다음 비행 카운트다운** — 오늘이면 골드 강조
 - [x] **클립보드 복사** — 호텔 conf, 비상 연락처 한 탭 + 시각 ✓ 피드백
 - [x] **비상 연락처 9개** — 한국대사관 × 5국 + Amex + 응급, tel: 링크 + 복사
+- [x] **WeatherWidget** — 9 도시 16일 예보, 도시 셀렉터, 30분 캐시, 오프라인 fallback
+- [x] **메모 전체 검색** — NotesInner 검색바 (메모·질문·도시·날짜 매칭)
+
+### ✅ 완료 (Phase E — 디자인 QA 전수 수정 · 2026-05-29)
+
+- [x] **인라인 스타일 → CSS 토큰** — `#E8E2D5`(35곳), `#F5F0E8`(13곳), `#F0EBE0`(6곳), `#FFF8E1`(6곳), `#FFFEF9`(4곳), `#FAF6EF`(2곳) 전부 변수화
+- [x] **하드코딩 텍스트 색상 제거** — `#999`→`var(--color-text-muted)`, `#333`→`var(--color-text-strong)`, `#666`→`var(--color-text-soft)`, `#CCC`→`var(--color-border-strong)` 전수 치환
+- [x] **배경 `#FFF` 치환** — 비활성 버튼·카드 배경 8곳 → `var(--color-bg-surface)`
+- [x] **`minWidth: 0` 누락 수정** — flex:1 텍스트 컨테이너 3곳 (NotesInner summary, Checklist item, MapView city detail) + `overflow: hidden; text-overflow: ellipsis` 추가
+- [x] **CopyChip 터치 타겟** — `3px 8px` → `7px 10px` (약 20px → 34px+)
+- [x] **호텔 상태 버튼 터치 타겟** — `4px 8px` → `7px 10px`
+- [x] **skeleton shimmer CSS 변수화** — `#EFEAE0`/`#F5F0E8` → `var(--color-atomic-cream-*)`
+- [x] **경로 텍스트 구체화** — `ICN → CDG` → `인천국제공항 → 파리 CDG / 경유 홍콩 HKG · Cathay`
 
 ### 🟡 알려진 제약 (의도된 설계)
 
-- **PIN은 가림막** — localStorage 평문 저장. 실보안 아님. README/CLAUDE.md에 명시됨.
+- **PIN은 가림막** — localStorage 평문 저장. 실보안 아님.
 - **사진은 base64 IndexedDB** — 1장당 ~100KB (1000px max, JPEG 0.7). 28장 ~2.8MB.
 - **백업 사진 포함 시** — JSON 수 MB. 기본 OFF (사진 제외), 토글로 ON 가능.
-- **외부 API** — 환율 (open.er-api.com), 날씨 (open-meteo.com), 지도 (openstreetmap). 모두 무료/CORS OK/키 불필요. 캐시 fallback 보유.
+- **외부 API** — 환율·날씨·지도 모두 무료/CORS OK/키 불필요. 캐시 fallback 보유.
+- **비표준 font-size 일부 잔존** — 15/16/20px 하드코딩 (7단계 스케일 외). 작동에 영향 없음.
 
 ### ⚪ 잔여 백로그 (출발 후/필요 시)
 
-- [ ] **인라인 스타일 정리** — 아직 263+ 위치. Logistics/Recommendations 등 토큰화 가능. (시간 시)
-- [ ] **다크 모드** — 시맨틱 토큰 레이어만 갈아끼우면 됨. 출발 후 검토.
-- [ ] **Supabase 동기화** — 주연과 데이터 공유. 풀스택 마이그레이션 필요. 미루기.
+- [ ] **Supabase 동기화** — 주연과 데이터 공유. 풀스택 마이그레이션 필요.
 - [ ] **사진 갤러리 영상** — 메모리/IDB 한도 검토 필요.
-- [ ] **메모 전체 검색** — 28일 메모 전체 텍스트 검색.
 - [ ] **PWA 푸시 알림** — "오늘의 질문" 매일 저녁 알림.
-- [ ] **WeatherWidget 구현** — Open-Meteo API 사용, 9 도시 일주일.
+- [ ] **인라인 스타일 전수 토큰화** — 아직 잔존하는 곳 (Logistics/Recommendations 등). 여행 후 정리.
+- [ ] **비표준 font-size 정리** — 15/16/20px → type scale 변수. 여행 후 정리.
 
 ---
 
@@ -190,22 +197,20 @@ index.html / sw.js / manifest.webmanifest 직접 편집
   → Vercel이 30초 이내 자동 배포
 ```
 
-빌드 단계 없음. `companion_app.jsx` + `build_html.py`는 `grandtour-old/` 로컬 백업에만 존재 (절대 main 폴더로 복원 금지).
-
 ### 4.2 SW 캐시 정책
 
 - **HTML (`/`, `/index.html`)** — network-first. 새 코드 항상 우선, 오프라인이면 캐시.
 - **라이브러리 (React/Babel)** — cache-first. 한 번 받으면 안정.
 - **Pretendard CSS** — `grandtour-v2` PRECACHE에 포함.
-- **외부 API (er-api, open-meteo, openstreetmap, google maps)** — 캐시 안 함, 항상 네트워크 (passthrough).
-- **버전 bump** — SW 자체를 수정할 때만 `CACHE` 상수 v2 → v3로 올림. HTML 수정만으로는 bump 불필요.
+- **외부 API** — 캐시 안 함, 항상 네트워크 (passthrough).
+- **버전 bump** — SW 자체를 수정할 때만 `CACHE` 상수 v2 → v3로 올림.
 
 ### 4.3 백업/복원
 
 - **백업**: 홈 하단 "📦 백업 다운로드" → JSON 파일. 사진 포함 토글 (기본 OFF).
 - **자동 알림**: 14일 이상 백업 없으면 Home 상단 골드 배너.
 - **복원**: "📂 백업 복원" → JSON 선택 → confirm → alert (PIN은 별도 재설정 필요 안내).
-- **권장 주기**: 출발 직전 (사진 포함) + 여행 중 주 1회 (사진 제외, 가벼움).
+- **권장 주기**: 출발 직전 (사진 포함) + 여행 중 주 1회 (사진 제외).
 
 ### 4.4 PWA 설치 (Tyler/주연용)
 
@@ -218,20 +223,18 @@ index.html / sw.js / manifest.webmanifest 직접 편집
 ### 4.5 폰트 문제가 또 생기면
 
 - 브라우저 캐시: Safari → 설정 → 고급 → 웹사이트 데이터 → `grandtour-lilac.vercel.app` 삭제
-- SW 캐시: 코드 수정 후 `sw.js`의 `CACHE` 상수만 bump (`v2` → `v3`)
-- 검증: DevTools (데스크탑) → Elements → Computed → Font → "Rendered Font: Pretendard Variable" 확인
+- SW 캐시: `sw.js`의 `CACHE` 상수 bump (`v2` → `v3`)
+- 검증: DevTools → Elements → Computed → Font → "Rendered Font: Pretendard Variable"
 
 ---
 
-## 5. 다음 후보 작업 (사용자 선택)
+## 5. 다음 후보 작업
 
-| 후보 | 임팩트 | 시간 | 비고 |
-|---|---|---|---|
-| 인라인 스타일 → 토큰 마이그레이션 (Logistics/Days 등) | 코드 품질 ↑ · 다크모드 토대 | ~45분 | 안전 |
-| **다크 모드 토글** | 야간 사용성 ↑ | ~40분 | 시맨틱 토큰 준비됨 |
-| WeatherWidget 구현 (9 도시) | 여행 실용 ↑ | ~50분 | API 무료 |
-| 메모 전체 검색 | 회고 단계 가치 | ~30분 | localStorage 인덱싱 |
-| 챕터 첫날 시네마틱 인트로 | 감성 ↑↑ | ~60분 | 헤로 이미지 활용 |
-| Supabase 동기화 | 주연과 공유 | ~3시간 | 풀스택 도입 (큰 변화) |
+| 후보 | 임팩트 | 비고 |
+|---|---|---|
+| PWA 푸시 알림 | 여행 중 "오늘의 질문" 매일 저녁 | Service Worker push API |
+| Supabase 동기화 | 주연과 실시간 공유 | 풀스택 도입 필요 (~3h) |
+| 사진 갤러리 영상 | 추억 보존 강화 | IDB 용량 검토 필요 |
+| 인라인 스타일 전수 정리 | 코드 품질 ↑ | 여행 후 권장 |
 
-> 다음 항목을 지정해 주면 바로 반영합니다. 출발 1주 전(6/8)부터는 **코드 동결** 권장.
+> 출발 1주 전(6/8)부터는 **코드 동결** 권장. 안정성 > 신기능.
