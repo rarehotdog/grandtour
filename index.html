@@ -2854,19 +2854,6 @@ function EmergencyContacts() {
 
 // =================== STORYTELLING WIDGETS ===================
 
-// Premium D-Day hero — pre-trip cinematic countdown
-function wxBg(code) {
-  if (code == null) return { bg: 'linear-gradient(135deg, var(--color-atomic-navy-900) 0%, var(--color-atomic-navy-700) 50%, var(--color-atomic-navy-900) 100%)', glow: 'rgba(201,169,97,0.12)' };
-  if (code === 0)             return { bg: 'linear-gradient(135deg, #0f2a50 0%, #1a4a80 45%, var(--color-atomic-navy-900) 100%)', glow: 'rgba(100,160,255,0.18)' }; // 맑음 — 투명한 파란 하늘
-  if (code <= 2)              return { bg: 'linear-gradient(135deg, var(--color-atomic-navy-900) 0%, #2A4060 45%, var(--color-atomic-navy-900) 100%)', glow: 'rgba(201,169,97,0.14)' }; // 구름 조금
-  if (code === 3)             return { bg: 'linear-gradient(135deg, #1a2535 0%, #28384A 45%, #1a2535 100%)', glow: 'rgba(150,170,200,0.10)' }; // 흐림
-  if (code <= 48)             return { bg: 'linear-gradient(135deg, #1e2838 0%, #2a3848 45%, #1e2838 100%)', glow: 'rgba(180,190,210,0.08)' }; // 안개
-  if (code <= 67 || (code >= 80 && code <= 82)) return { bg: 'linear-gradient(135deg, #0a1828 0%, #102038 45%, #0a1828 100%)', glow: 'rgba(80,120,200,0.18)' }; // 비
-  if (code <= 77 || (code >= 85 && code <= 86)) return { bg: 'linear-gradient(135deg, #162035 0%, #243255 45%, #162035 100%)', glow: 'rgba(180,210,255,0.15)' }; // 눈
-  if (code >= 95)             return { bg: 'linear-gradient(135deg, #12102a 0%, #1e1a40 45%, #12102a 100%)', glow: 'rgba(130,80,200,0.18)' }; // 천둥
-  return { bg: 'linear-gradient(135deg, var(--color-atomic-navy-900) 0%, var(--color-atomic-navy-700) 50%, var(--color-atomic-navy-900) 100%)', glow: 'rgba(201,169,97,0.12)' };
-}
-
 // Post-trip retrospective hero — shown after return (phase === 'post')
 function RetrospectHero({ status, notes, photos, outputs, setView }) {
   const noteCount = Object.values(notes || {}).filter(n => n && n.content && n.content.trim()).length;
@@ -3051,14 +3038,11 @@ function HeroCountdown({ status, setView }) {
       <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-eyebrow)', color: 'var(--color-accent-primary)', textTransform: 'uppercase', marginBottom: '10px' }}>
         ⊹ The Grand Tour · 2026 ⊹
       </div>
-      <div style={{ display: 'flex', alignItems: 'stretch', gap: '0' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* ── Block 1: D-Day ── */}
+        {/* ── Block 1: D-Day (full-width row) ── */}
         <div style={{
-          flex: '0 0 auto',
-          display: 'flex', flexDirection: 'column', justifyContent: 'center',
-          paddingRight: '18px', marginRight: '18px',
-          borderRight: '1px solid var(--hairline)',
+          display: 'flex', flexDirection: 'column',
         }}>
           <div className="gt-serif" style={{
             fontSize: '50px', fontWeight: 500, lineHeight: 1,
@@ -3081,7 +3065,7 @@ function HeroCountdown({ status, setView }) {
 
         {/* ── Block 2 & 3: Weather ── */}
         {wxCities.length > 0 && (
-          <div style={{ flex: 1, display: 'flex', gap: '0' }}>
+          <div style={{ display: 'flex', gap: '16px', borderTop: '1px solid var(--hairline)', paddingTop: '16px' }}>
             {wxCities.map((city, idx) => {
               const w = wx[city.id];
               const wmoT = w ? wmoInfo(w.today.code) : null;
@@ -3092,14 +3076,13 @@ function HeroCountdown({ status, setView }) {
                 : '다음 행선지';
               return (
                 <div key={city.id} style={{
-                  flex: 1,
-                  paddingLeft: '18px',
-                  paddingRight: isLast ? '0' : '18px',
-                  borderRight: isLast ? 'none' : '1px solid rgba(255,255,255,0.10)',
-                  display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                  flex: 1, minWidth: 0,
+                  paddingRight: isLast ? '0' : '16px',
+                  borderRight: isLast ? 'none' : '1px solid var(--hairline)',
+                  display: 'flex', flexDirection: 'column',
                 }}>
                   {/* City label */}
-                  <div style={{ fontSize: 'var(--type-nano)', letterSpacing: '1.8px', color: 'rgba(201,169,97,0.85)', textTransform: 'uppercase', fontWeight: 700, marginBottom: '7px' }}>
+                  <div style={{ fontSize: 'var(--type-nano)', letterSpacing: '0.4px', color: 'rgba(201,169,97,0.85)', fontWeight: 700, marginBottom: '8px' }}>
                     {label}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
@@ -3117,7 +3100,7 @@ function HeroCountdown({ status, setView }) {
                         padding: '8px 10px',
                         minWidth: 0,
                       }}>
-                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.9)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
+                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.9)', letterSpacing: '0.3px', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
                         <div style={{ fontSize: 'var(--type-h1)', lineHeight: 1, marginBottom: '4px' }}>{wmoT ? wmoT.e : '—'}</div>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--type-h2)', fontWeight: 700, color: 'var(--color-accent-primary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {w.today.max}°
@@ -3134,7 +3117,7 @@ function HeroCountdown({ status, setView }) {
                         padding: '8px 10px',
                         minWidth: 0,
                       }}>
-                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.65)', letterSpacing: '1px', fontWeight: 700, marginBottom: '5px' }}>내일</div>
+                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.65)', letterSpacing: '0.3px', fontWeight: 700, marginBottom: '5px' }}>내일</div>
                         <div style={{ fontSize: 'var(--type-h1)', lineHeight: 1, marginBottom: '4px' }}>{wmoN ? wmoN.e : '—'}</div>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--type-h2)', fontWeight: 700, color: 'rgba(201,169,97,0.75)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {wmoN ? w.tomorrow.max + '°' : '—'}
@@ -4744,26 +4727,55 @@ function TranslateWidget() {
 function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
   const [subTab, setSubTab] = useState('map');
 
+  const SUBTABS = [
+    { id: 'map', icon: '🗺️', label: '지도' },
+    { id: 'hotels', icon: '🏨', label: '호텔' },
+    { id: 'flights', icon: '✈️', label: '항공' },
+    { id: 'fx', icon: '💱', label: '환율' },
+    { id: 'weather', icon: '🌤️', label: '날씨' },
+    { id: 'food', icon: '🍽️', label: '미식' },
+    { id: 'costs', icon: '💰', label: '비용' },
+    { id: 'expense', icon: '🧾', label: '가계부' },
+    { id: 'translate', icon: '🌐', label: '번역' },
+    { id: 'spotify', icon: '🎵', label: '음악' },
+    { id: 'dress', icon: '👗', label: '복장' },
+    { id: 'tips', icon: '💡', label: '꿀팁' },
+  ];
+
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>🧭 여정 정보</h2>
-      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '16px' }}>
-        지도 · 호텔 · 항공+기차+렌터카 · 환율 · 날씨 · 미식 · 비용 · 번역 · 음악 · 복장
-      </div>
 
-      {/* Sub-tab nav */}
-      <div className="gt-chips" style={{ marginBottom: '20px' }}>
-        <SubTab active={subTab === 'map'} onClick={() => setSubTab('map')}>🗺️ 지도</SubTab>
-        <SubTab active={subTab === 'hotels'} onClick={() => setSubTab('hotels')}>🏨 호텔</SubTab>
-        <SubTab active={subTab === 'flights'} onClick={() => setSubTab('flights')}>✈️ 항공</SubTab>
-        <SubTab active={subTab === 'fx'} onClick={() => setSubTab('fx')}>💱 환율</SubTab>
-        <SubTab active={subTab === 'weather'} onClick={() => setSubTab('weather')}>🌤️ 날씨</SubTab>
-        <SubTab active={subTab === 'food'} onClick={() => setSubTab('food')}>🍽️ 미식</SubTab>
-        <SubTab active={subTab === 'costs'} onClick={() => setSubTab('costs')}>💰 비용</SubTab>
-        <SubTab active={subTab === 'expense'} onClick={() => setSubTab('expense')}>🧾 가계부</SubTab>
-        <SubTab active={subTab === 'translate'} onClick={() => setSubTab('translate')}>🌐 번역</SubTab>
-        <SubTab active={subTab === 'spotify'} onClick={() => setSubTab('spotify')}>🎵 음악</SubTab>
-        <SubTab active={subTab === 'dress'} onClick={() => setSubTab('dress')}>👗 복장</SubTab>
+      {/* Sub-tab grid — all options visible at once (no horizontal scroll) */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(4, 1fr)',
+        gap: '8px',
+        marginTop: '16px',
+        marginBottom: '20px',
+      }}>
+        {SUBTABS.map(t => {
+          const active = subTab === t.id;
+          return (
+            <button
+              key={t.id}
+              onClick={() => { setSubTab(t.id); if (navigator.vibrate) navigator.vibrate(8); }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
+                padding: '11px 4px',
+                background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
+                color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
+                border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer', fontFamily: 'inherit',
+                transition: 'background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease)',
+              }}
+            >
+              <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
+              <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: '0.2px' }}>{t.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {subTab === 'map' && <MapView />}
@@ -4777,6 +4789,7 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
       {subTab === 'translate' && <TranslateWidget />}
       {subTab === 'spotify' && <SpotifyWidget />}
       {subTab === 'dress' && <DressCodeWidget />}
+      {subTab === 'tips' && <LocalTipsWidget />}
     </div>
   );
 }
@@ -4860,22 +4873,22 @@ function MapView() {
       </div>
 
       {/* Chapter selector tabs */}
-      <div className="gt-chips" style={{ marginBottom: '16px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
         {points.map(p => (
           <button
             key={p.id}
-            onClick={() => setSelectedId(p.id)}
+            onClick={() => { setSelectedId(p.id); if (navigator.vibrate) navigator.vibrate(8); }}
             style={{
               padding: '8px 14px',
               fontSize: 'var(--type-caption)',
               background: selectedId === p.id ? p.accent : 'var(--color-bg-surface)',
               color: selectedId === p.id ? 'var(--color-atomic-white)' : 'var(--color-text-soft)',
               border: `1px solid ${selectedId === p.id ? p.accent : 'var(--color-border-default)'}`,
-              borderRadius: '20px',
+              borderRadius: 'var(--radius-pill)',
               cursor: 'pointer',
               fontWeight: 500,
               whiteSpace: 'nowrap',
-              flexShrink: 0
+              transition: 'background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease)',
             }}
           >
             {p.flag} {p.name}
@@ -4900,6 +4913,46 @@ function MapView() {
           <div className="gt-serif" style={{ fontSize: 'var(--type-h3)', color: 'var(--color-text-soft)', marginBottom: '14px', lineHeight: 1.55, letterSpacing: '0.2px' }}>
             "{selected.tag}"
           </div>
+
+          {/* 우리 일정 요약 — 이 도시에서 실제로 뭘 보는지 */}
+          {(() => {
+            const chapterDays = DAYS_DEFAULT.filter(d => d.c === selectedId);
+            if (chapterDays.length === 0) return null;
+            return (
+              <div style={{ marginBottom: '16px' }}>
+                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.4px', marginBottom: '10px' }}>
+                  📍 우리 일정 · {chapterDays.length}일
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {chapterDays.map(d => (
+                    <div key={d.n} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <div style={{
+                        flexShrink: 0, minWidth: '32px', textAlign: 'center',
+                        padding: '3px 6px', borderRadius: 'var(--radius-sm)',
+                        background: selected.color, color: selected.accent,
+                        fontSize: 'var(--type-micro)', fontWeight: 700,
+                        fontVariantNumeric: 'tabular-nums',
+                      }}>D{d.n}</div>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '1px' }}>
+                          {d.d}({d.w}) · {d.city}
+                        </div>
+                        <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 500, lineHeight: 1.45 }}>
+                          {d.hl}
+                        </div>
+                        {d.food && (
+                          <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginTop: '2px' }}>
+                            🍽️ {d.food}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })()}
+
           <InlineMap
             lat={selected.coords.lat}
             lng={selected.coords.lng}
@@ -5024,6 +5077,19 @@ const TRANSPORT_META = {
   ferry:    { icon: '⛴️', label: '페리',     bg: 'rgba(56,189,248,0.12)',  color: '#0369A1' },
 };
 
+// City-level transit: ride-hailing apps + local transport per chapter city
+const CITY_TRANSIT = [
+  { flag: '🇫🇷', city: '파리', apps: 'Uber · Bolt · G7(택시 콜)', local: 'Metro·RER · Navigo Easy 카드 충전식' },
+  { flag: '🇬🇧', city: '런던', apps: 'Uber · Bolt · Black Cab', local: 'Tube·버스 · 컨택리스 카드 그냥 탭' },
+  { flag: '🇮🇹', city: '돌로미티', apps: '렌터카 필수 (택시앱 거의 없음)', local: '케이블카·곤돌라 · 산길 운전 주의' },
+  { flag: '🇮🇹', city: '피렌체', apps: 'itTaxi 앱 · 길에서 택시 안 잡힘', local: '구시가 도보 중심 · ZTL 차량 진입제한' },
+  { flag: '🇮🇹', city: '로마', apps: 'FreeNow · Uber(Black만)', local: 'Metro A/B선·버스 · 중심부 도보' },
+  { flag: '🇮🇹', city: '포지타노', apps: 'SITA 버스 · 페리 · 호텔 셔틀', local: '계단 매우 많음 · 편한 신발 필수' },
+  { flag: '🇬🇷', city: '산토리니', apps: 'ATV 렌트 · 로컬 버스', local: '택시 적음 → 호텔 통해 미리 예약' },
+  { flag: '🇬🇷', city: '아테네', apps: 'Uber(택시 호출) · Beat', local: 'Metro 3개 노선 · 공항선 직결' },
+  { flag: '🇦🇪', city: '두바이·아부다비', apps: 'Careem · Uber', local: 'Dubai Metro · 도시 간 택시 1.5h' },
+];
+
 function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
   const total = FLIGHTS.length;
   const byType = FLIGHTS.reduce((acc, f) => {
@@ -5122,6 +5188,30 @@ function FlightsList({ FLIGHTS, saveEdit, resetEdit, isEdited }) {
             </div>
           );
         })}
+      </div>
+
+      {/* 도시 내 이동 · 택시앱 */}
+      <div style={{ marginTop: '22px' }}>
+        <SectionTitle>🚕 도시 내 이동 · 택시앱</SectionTitle>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {CITY_TRANSIT.map((c, i) => (
+            <div key={i} style={{
+              padding: '10px 12px',
+              background: 'var(--color-bg-surface)',
+              border: '1px solid var(--color-border-default)',
+              borderRadius: 'var(--radius-md)',
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '5px' }}>
+                <span style={{ fontSize: 'var(--type-body)' }}>{c.flag}</span>
+                <span style={{ fontSize: 'var(--type-body-sm)', fontWeight: 700, color: 'var(--color-text-strong)' }}>{c.city}</span>
+              </div>
+              <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7 }}>
+                <div>🚕 {c.apps}</div>
+                <div>🚇 {c.local}</div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -5772,6 +5862,76 @@ function DressCodeWidget() {
 
       <div style={{ marginTop: '10px', padding: '10px 12px', background: 'rgba(201,169,97,0.08)', borderRadius: 'var(--radius-md)', fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.6 }}>
         💡 <strong>공통 팁:</strong> 얇은 스카프 1장을 가방에 항상 보관하면 성당·모스크 입장 시 어깨 커버로 즉시 활용 가능합니다.
+      </div>
+    </div>
+  );
+}
+
+// =================== LOCAL TIPS (현지 꿀팁) ===================
+const LOCAL_TIPS = [
+  { flag: '🇫🇷', country: '프랑스', items: [
+    { icon: '🔌', label: '전압·플러그', value: '230V · Type C/E (유럽 멀티 어댑터 1개로 충분)' },
+    { icon: '💶', label: '팁', value: '서비스료 포함(service compris). 만족 시 동전~5%만' },
+    { icon: '🕐', label: '영업·휴무', value: '상점 10–19시. 일요일·월요일 오전 휴무 잦음' },
+    { icon: '💧', label: '식수', value: '수돗물 음용 가능. 식당서 무료 카라프 요청 가능' },
+    { icon: '🙇', label: '매너', value: '입장·인사 시 "Bonjour" 필수. 생략하면 무례로 봄' },
+  ]},
+  { flag: '🇬🇧', country: '영국', items: [
+    { icon: '🔌', label: '전압·플러그', value: '230V · Type G (3핀, 별도 어댑터 필요)' },
+    { icon: '💷', label: '팁', value: '식당 12.5% 자주 자동 청구 — 중복 팁 주의. 펍은 팁 X' },
+    { icon: '🕐', label: '영업·휴무', value: '상점 9–18시. 일요일 단축 영업(보통 11–17시)' },
+    { icon: '💧', label: '식수', value: '수돗물 음용 가능. 식당서 tap water 무료' },
+    { icon: '🚶', label: '매너', value: '줄서기(queue) 철저. 에스컬레이터는 우측 정지' },
+  ]},
+  { flag: '🇮🇹', country: '이탈리아', items: [
+    { icon: '🔌', label: '전압·플러그', value: '230V · Type F/L (Type C 어댑터 대체로 호환)' },
+    { icon: '💶', label: '팁', value: 'coperto(자릿세) 청구되면 팁 불필요. 만족 시 반올림' },
+    { icon: '🕐', label: '영업·휴무', value: '남부·소도시 13–16시 시에스타 휴무. 일요일 휴무 많음' },
+    { icon: '💧', label: '식수', value: '수돗물 대체로 OK. 로마 길거리 분수(nasone) 식수 가능' },
+    { icon: '🚗', label: '주의', value: 'ZTL(차량 진입제한) 위반 벌금. 렌터카 시 필수 확인' },
+  ]},
+  { flag: '🇬🇷', country: '그리스', items: [
+    { icon: '🔌', label: '전압·플러그', value: '230V · Type C/F (유럽 공통 어댑터)' },
+    { icon: '💶', label: '팁', value: '5–10% 환영(필수 아님). 현금 팁 선호' },
+    { icon: '🕐', label: '영업·휴무', value: '섬 상점은 늦게 오픈. 오후 휴식 후 저녁에 활기' },
+    { icon: '💧', label: '식수', value: '섬(산토리니)은 생수 권장. 본토는 대체로 음용 가능' },
+    { icon: '🕰️', label: '매너', value: '시간은 여유롭게. 저녁 식사는 21시 이후가 일반적' },
+  ]},
+  { flag: '🇦🇪', country: 'UAE', items: [
+    { icon: '🔌', label: '전압·플러그', value: '230V · Type G (영국식 3핀)' },
+    { icon: '💵', label: '팁', value: '10–15% 일반. 호텔·기사에 소액 현금 팁' },
+    { icon: '🕐', label: '영업·휴무', value: '주말은 금~토. 금요일 기도 시간 일부 단축' },
+    { icon: '💧', label: '식수', value: '수돗물 가능하나 생수가 일반적' },
+    { icon: '🕌', label: '주의', value: '공공장소 보수적 복장·행동. 라마단 낮 음식·음료 자제' },
+  ]},
+];
+
+function LocalTipsWidget() {
+  return (
+    <div>
+      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginBottom: '14px', lineHeight: 1.6 }}>
+        나라별 전압·팁·영업시간·식수·매너 한눈에. 첫 방문 실수 방지용.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        {LOCAL_TIPS.map(c => (
+          <Card key={c.country}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+              <span style={{ fontSize: 'var(--type-h2)' }}>{c.flag}</span>
+              <span style={{ fontSize: 'var(--type-h3)', fontWeight: 700, color: 'var(--color-text-strong)' }}>{c.country}</span>
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+              {c.items.map((it, i) => (
+                <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: 'var(--type-body)', flexShrink: 0, width: '20px', textAlign: 'center' }}>{it.icon}</span>
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', fontWeight: 600, marginBottom: '1px' }}>{it.label}</div>
+                    <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>{it.value}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+        ))}
       </div>
     </div>
   );
