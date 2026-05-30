@@ -1,10 +1,10 @@
 # Grand Tour 2026 — 개발 현 상태 리뷰
 
 > 대상: `~/Desktop/grandtour/` (단일 HTML 앱, Vercel 배포)
-> 정리일: **2026-05-30** (4차 갱신) · 정리자: Claude (Opus 4.8)
-> 라이브: https://grandtour-lilac.vercel.app/  · **추억 바이트·추천 worth·산물 desc 푸시 완료(`51a8e86`) · 여정 지도 비행기 애니메이션 구현(미커밋, 시각 확인 대기)**
+> 정리일: **2026-05-31** (6차 갱신) · 정리자: Claude (Opus 4.8)
+> 라이브: https://grandtour-lilac.vercel.app/  · 인터랙티브 여정 지도 배포 완료(`4d5eeda`) · **"여정의 GitHub" 씨앗 = Publish→Fork 루프 추가(이번 커밋, 푸시)**
 > 저장소: https://github.com/rarehotdog/grandtour
-> 출발: **2026-06-15** (D−16) · 코드 동결 권장: **2026-06-08**
+> 출발: **2026-06-15** (D−15) · 코드 동결 권장: **2026-06-08**
 
 ---
 
@@ -12,13 +12,14 @@
 
 | 지표 | 값 |
 |---|---|
-| **index.html** | 6,791줄 · ~324KB |
-| **React 컴포넌트** | 56개 (App 포함, 함수형) |
+| **index.html** | 7,115줄 · ~425KB (실제 지리 베이스맵 path 포함) |
+| **React 컴포넌트** | 61개 (App 포함, 함수형) |
 | **디자인 토큰** | 100개 (atomic + semantic + scale) |
 | **체크리스트** | 주제별 8카테고리 · 36항목(전 항목 한 줄 desc) |
 | **일정 사진** | 검증 Unsplash 21장 + 7개 day는 챕터 그래디언트 폴백(검정박스 0) |
+| **도시 히어로 사진** | `CITY_HERO` 9도시 — 육안 검증 Unsplash(피렌체 두오모 포함) · 실패 시 챕터 파스텔 폴백 |
 | **일정 사색 레이어** | 🍪 추억 바이트 — 28일 전부 `why`+`qchain`(꼬리질문 3) · 추천 `worth` 9도시 108개 (친근체·공동 톤) · OUTPUTS 19개 desc |
-| **여정 지도** | 🛫 곡선 항로 draw 애니메이션 + ✈️ SMIL 순회(16s) + 현재위치 펄스(during) — `MapView` (미커밋) |
+| **여정 지도** | 🗺️ 실제 지리 베이스맵(Natural Earth 110m 해안선·국가경계, equirect 투영 인라인 SVG) + 핀치/휠/드래그/버튼 줌·팬(RAF 트윈) + 핀·도시 탭→그 도시 확대 + 도시 몰입 히어로 — `MapView`/`CityMomentHero` (커밋·배포 완료) |
 | **Service Worker** | `grandtour-v4` · push/notificationclick 핸들러 · 설치 PWA 강제 갱신 bump |
 | **PWA** | manifest 정상 · 192/512 SVG 아이콘 · 단축키 2개 |
 | **저장소** | localStorage + IndexedDB (사진) + spotify_urls |
@@ -57,9 +58,10 @@
 | **Checklist** | `96d48f7` | **예약 항목 확장+예약 딥링크**(36개 url)·영국 체험·공연 섹션(해리포터/West End/Soane) |
 | **레스토랑 정밀화** | `288efc2` | 미식 트래커 6곳 예약 칩+체크리스트 r1~r8 URL을 공식 플랫폼으로(SevenRooms 4·자체 4·호텔 1)·Selene 피르고스→피라 정정·SW `v4` bump |
 | **UI 정비** | `288efc2` | **일정 사진 폴백**(깨진/엉뚱 11장 정리→DayHero onError→ChapterFallback, 검정박스 0)·**체크리스트 주제별 8카테고리 재편**(D-day→주제, id 전부 보존+desc 한 줄)·**이동(moves) 7개 날짜 상세화**·**.gt-chips 좌측 잘림 수정**·한글 라벨 자간 토큰화 |
-| **콘텐츠: 추억 바이트** | _(로컬 미푸시)_ | **일정 사색 레이어** — ASI 라벨 `🍪 오늘의 추억 바이트`로 변경·DAYS 28일 전부 `why`(철학/역사/경제 맥락)+`qchain`(꼬리 질문 3개) 추가, `EditableDayDetail` 접힘 토글 노출·RECOMMENDATIONS 9도시 108개 `worth`(왜 하면 좋을지) 추가. 톤=친근체+공동(주연 공유, GSB 등 개인 커리어 표현 제거) |
+| **콘텐츠: 추억 바이트** | `f21e52f` | **일정 사색 레이어** — ASI 라벨 `🍪 오늘의 추억 바이트`로 변경·DAYS 28일 전부 `why`(철학/역사/경제 맥락)+`qchain`(꼬리 질문 3개) 추가, `EditableDayDetail` 접힘 토글 노출·RECOMMENDATIONS 9도시 108개 `worth`(왜 하면 좋을지) 추가. 톤=친근체+공동(주연 공유, GSB 등 개인 커리어 표현 제거) _(origin 푸시 완료)_ |
 | **콘텐츠: 산물 디벨롭** | `51a8e86` | **OUTPUTS 19개 `desc`** 친근체+맥락으로 디벨롭(추억 바이트 톤 연결). Private 영역이라 1인칭 사색 유지, 제목·storage 키 불변. _(`f21e52f`와 함께 origin 푸시 완료)_ |
-| **여정 지도 애니메이션** | _(미커밋)_ | `MapView` 직선→**곡선 항로**+draw-on(`gtMapDraw`)·**✈️ SMIL `animateMotion` 순회**·during 시 **현재위치 펄스**+"✈️ 현재 OO". 시각 확인 후 커밋 예정 |
+| **인터랙티브 여정 지도** | `4d5eeda` | **실제 지리 베이스맵**(Natural Earth 110m 해안선·국가경계를 `project()`와 동일 equirect 투영으로 인라인 SVG 정적 임베드, 의존성 0)·**비행기 SMIL 순회 제거** → 핀치/휠/드래그/버튼 **줌·팬**(RAF 트윈, 1~8배)·핀/도시 탭→**그 도시로 확대**(핀·라벨은 transform 밖 렌더로 상수 크기)·**`CityMomentHero`** 도시별 검증 사진 배경+연한 스크림(**피렌체 두오모 포함 9도시 육안 검증**, 실패 시 챕터 파스텔 폴백)·지도 가로폭 본문 정렬·여정 자간/간격 **디자인 토큰 정렬**(`--track-*`/`--space-*`)·전역 `-0.02em`→`var(--track-tight)`. **푸시·배포·라이브 마커 검증 완료** |
+| **Publish→Fork 씨앗** | _(이번 커밋)_ | **"여정의 GitHub" 1차** — `journeyShare` 헬퍼(`gt_state` 재사용: trip_id=publish코드, k='journey'\|'counters')·**Publish**(일정·비용·관점만, allowlist 3키로 사적 데이터 구조적 차단)·**Fork**(`?j=` 자동감지 + 코드 입력 → `ForkPreview` 읽기전용 → "내 앱으로 가져오기" 병합/덮어쓰기)·`JourneyShareCard`(기록 탭)·view/fork 카운터(vanity). esbuild 파싱 0·프라이버시 불변식 단위 증명 완료 |
 
 ---
 
@@ -231,16 +233,40 @@ BackupReminder    ← 최하단 (이동됨)
 
 > 콘텐츠 후속은 대부분 P2~P3급. **출발 전 최우선은 여전히 아래 P1**(실데이터·실기기 QA·오프라인 지도 타일·문서 금고).
 
-#### 2026-05-30 (4차) — 여정 지도 "비행기 항로" 애니메이션
+#### 2026-05-30 (4차) — 여정 지도 "비행기 항로" 애니메이션 _(→ 5차에서 대체됨)_
 
 > 사용자 요청: 여정 중간 지도를 실제 비행기 이동처럼 실감나게. (이 여정은 파리→런던 유로스타만 빼면 실제로 대부분 항공편)
 
-**완료 (미커밋 — 시각 확인 후 커밋 예정)**
-- `MapView`(line ~5164) SVG 항로를 직선 점선 → **위로 볼록한 곡선 항로**로 교체. 9개 도시를 잇는 단일 `path`(quadratic Bézier, `arcD`) 생성.
-- **draw-on**: 지도 진입 시 경로가 1.8초에 그려짐(`pathLength=100` + `stroke-dashoffset` keyframes `gtMapDraw`). `prefers-reduced-motion` 시 비활성.
-- **✈️ 비행기 순회**: SMIL `<animateMotion>`(dur 16s, `rotate="auto"`)으로 전 항로를 따라 비행.
-- **현재 위치 펄스**: `getCurrentStatus().phase==='during'`이면 오늘 도시에 SMIL 펄스 링 + 상단 "✈️ 현재 OO". 출발(6/15) 후 자동 활성.
-- ⚠️ 미해결 후보: ✈️ 이모지 회전각이 곡선 구간에서 어색할 수 있음 → 피드백 시 `rotate` off 또는 점+꼬리 마커로 대체.
+**완료했으나 5차에서 제거/대체** — 곡선 항로 draw-on(`gtMapDraw`)은 정적 점선으로 유지, **✈️ SMIL 순회는 제거**(사용자 피드백: "비행기 움직이는 건 굳이"), 펄스는 유지. 아래 5차의 인터랙티브 지도로 대체됨.
+
+#### 2026-05-31 (5차) — 인터랙티브 여정 지도 + 도시 몰입 히어로 (`4d5eeda`, 푸시·배포 완료)
+
+> 사용자 요청 흐름: ① 지도 배경이 가짜 덩어리라 밋밋 → 실제 지도 ② 비행기 이동 빼고 **확대 가능 + 도시 누르면 그 순간으로** ③ 대시보드 색 연하게·배경을 그 나라 사진으로·지도 약간 축소 ④ 사진 검증(피렌체 포함)·지도 가로폭 정렬·자간/간격 점검.
+
+**완료**
+- **실제 지리 베이스맵**: Natural Earth 110m 해안선(`MAP_LAND_D`)·국가경계(`MAP_BORDER_D`)를 `project()`와 동일 equirect 투영으로 변환해 인라인 SVG 상수로 정적 임베드. 런타임 의존성 0·오프라인 유지. 핀·항로가 실제 지형 위에 정확히 안착.
+- **줌·팬**: 핀치(2지점, 중점 고정)·휠(커서 고정)·드래그·`+/−/⤢` 버튼. `requestAnimationFrame` 트윈(480ms ease-out), 스케일 1~8배 클램프. `touchAction:none`으로 페이지 스크롤 충돌 차단.
+- **도시 진입**: 핀 번호/챕터 탭 탭 → 그 도시로 3.6배 확대. 핀·라벨은 `<g transform>` **밖에서 화면좌표로 렌더**해 확대해도 상수 크기, 해안선/경계/항로는 `non-scaling-stroke`.
+- **`CityMomentHero`**: 도시별 대표 사진 배경(`CITY_HERO`) + 가벼운 중성 스크림(연한 톤) + 챕터 색/철학 태그. 사진 실패 시 `onError`→챕터 파스텔 폴백. **9도시 전부 이미지 다운로드 후 육안 검증**(피렌체 두오모 `1476362174823` 추가, 돌로미티는 일반 알프스 계곡 유지).
+- **정리**: 지도 가로폭 본문 정렬 · 여정 섹션 자간/간격을 DS 토큰(`--track-eyebrow`/`--track-tight`/`--space-*`)으로 통일 · 전역 인라인 `-0.02em`→`var(--track-tight)`.
+- **검증**: esbuild로 인라인 JSX 전체 파싱(구문 오류 0) · 9사진 HTTP 200+피사체 육안 확인 · 푸시 후 **라이브에서 새 마커(`CityMomentHero`/`MAP_LAND_D`/피렌체 URL/`onTouchStart`) 검증, `animateMotion` 0**.
+
+**후속(선택)**
+- 돌로미티 히어로를 실제 돌로미티(세체다/트레치메) 사진으로 교체 — 사용자가 사진 지정 시 검증 후 반영.
+- 앱 전역 자간/간격 전수 재정렬은 미착수(시각 회귀 위험·헤드리스 검증 제약). 화면 단위로 요청 시 정밀 진행.
+- 지도 인터랙션 확장(핀 탭→갤러리 연결, 홈 미니 진행바)은 P3급.
+
+#### 2026-05-31 (6차) — "여정의 GitHub" 씨앗: Publish → Fork
+
+> 사용자 비전: 기록/관점 탭을 "여정의 GitHub"로 진화 — 과정·노트를 공개하고 남이 그대로 포크해 편집, 더 좋게 만들면 원작자가 당겨옴. 공유할수록 내가 업그레이드. (전체는 별도 제품 규모 → 지금은 비전 문서 + 씨앗 1개.)
+
+**완료 (미푸시→이번 커밋)**
+- `journeyShare` 헬퍼: 기존 `gt_state` 재사용(새 테이블/마이그레이션 없음). `buildSnapshot`(allowlist `edits{day,hotel,flight}`·`expenses`·`outputs.content`만 — `notes`/`mo`/`pin`/`done` 구조적 차단)·`publish`(journey+counters 2행)·`shareUrl(?j=)`·`fetch`·`incView/incFork`(vanity, 위조가능 주석).
+- `?j=` 자동감지(App) + 코드 입력(`JourneyShareCard`, 기록 탭) → `ForkPreview` 읽기전용(관점·비용·일정) → "⬇️ 내 앱으로 가져오기"(병합/덮어쓰기 confirm, `importData` 패턴, expenses id 재생성 + `gt:remote` 갱신, `forked_from` 계보).
+- 검증: esbuild 인라인 JSX 파싱 0 오류·프래그먼트 0·프라이버시 불변식 node 단위 증명(적대 입력에도 사적 키 전부 탈락).
+- 결정: 공개=일정·비용·관점만. 비목표=auth·upstream PR·커밋 타임라인·디스커버리.
+
+**다음(승인됨, 구현 중)**: 공동작업 실시간 공유(메모 동기화 합류)·친구 초대 링크(`?trip=`)·"옆으로 밀면 누가 언제 수정"(이름+swipe 감사). → 7차에 기록 예정.
 
 ### 🎯 다음 개선 — 통합 우선순위 (2026-05-30 기준)
 
@@ -309,8 +335,9 @@ BackupReminder    ← 최하단 (이동됨)
 2026-05-29 발견된 로컬↔GitHub 갈라짐은 **해소되어 현재 선형 히스토리**다.
 - 이번 세션 변경 직전 기준 `main` == `origin/main` == `96d48f7` (working tree clean).
 - 로컬 전용이던 `042bf0f`(Phase H·I)·`4af3f21`(가계부)는 **`0788e47`(GitHub 웹 통합)으로 대체** — 두 해시는 더 이상 조상이 아니나 **코드 내용은 보존**(`git merge-base --is-ancestor` 확인: 둘 다 "히스토리에 없음").
-- 이후 `87840cd → df28a1f → 89270e3 → f31de3e → c9ce0e6 → 96d48f7`까지 origin 위에 선형 적층. **유실 작업 없음.**
-- 푸시는 여전히 Tyler 수동(사내망 차단으로 Claude는 푸시 안 함). 이번 세션 변경(index.html·sw.js·REVIEW.md)은 워킹트리 미커밋 → 한 번에 커밋·푸시 권장.
+- 이후 `87840cd → df28a1f → 89270e3 → f31de3e → c9ce0e6 → 96d48f7 → 288efc2 → … → f21e52f → 51a8e86 → fd6e8be → 4d5eeda`까지 origin 위에 선형 적층. **유실 작업 없음.**
+- **2026-05-31 현재 `main` == `origin/main` == `4d5eeda`** (push 성공·Vercel 배포·라이브 마커 검증 완료, working tree에 본 REVIEW.md 갱신만 미커밋).
+- 평소엔 Tyler 수동 푸시(사내망 차단)지만, 이번엔 사용자 명시 요청으로 Claude가 커밋·푸시 수행(`4d5eeda`)했고 정상 푸시됨. 기본 규칙(요청 시에만 푸시)은 유지.
 
 ### 배포
 

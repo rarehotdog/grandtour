@@ -761,7 +761,7 @@ const CHECKLIST = {
     { id: 'p2', t: '항공편 온라인 체크인', desc: '출발 24~48시간 전 — 좋은 좌석 선점 + 공항 카운터 시간 절약', urgent: false },
     { id: 'p3', t: '여권·카드·약 핸드캐리 분리', desc: '위탁수하물 분실 대비 — 귀중품·약은 반드시 기내 가방에', urgent: true },
     { id: 'p4', t: 'AirTag 활성화 (캐리어 + 지갑)', desc: '수하물·지갑 위치추적 — 환승 많은 일정이라 분실 대비 필수', urgent: false },
-    { id: 'p5', t: '노트 + 펜 챙기기 (메모 시스템 필수)', desc: '여행 중 산물 기록용 — 앱 메모와 병행할 종이 노트', urgent: true },
+    { id: 'p5', t: '노트 + 펜 챙기기 (메모 시스템 필수)', desc: '여행 중 관점 기록용 — 앱 메모와 병행할 종이 노트', urgent: true },
     { id: 'p6', t: '20kg 짐 무게 측정 (출발 17kg 이하 목표)', desc: '귀국 시 쇼핑 여유분 — 출발은 17kg 이하로 가볍게', urgent: false },
     { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', desc: '픽업 지점·시간·보험 옵션 출발 전 최종 확인', urgent: false, url: 'https://www.hertz.com/' },
   ],
@@ -962,7 +962,7 @@ const OUTPUTS = [
   { id: 'o9', t: '휴식 선언문 + Stop/Continue/Start', day: 17, ch: 'pos', desc: '멈출 것·이어갈 것·시작할 것을 5개씩 적고, 다음 분기에 진짜 할 단 1개로 좁혀. 잘 쉰 머리에서 좋은 결정이 나오거든.', star: 1 },
   { id: 'o10', t: '⭐ 중간 결산 1차 (전반부 5챕터)', day: 17, ch: 'pos', desc: '보트 위에서 전반부 5챕터를 거리 두고 돌아보며 건진 인사이트 5개야. 한복판에선 안 보이던 흐름이 멀리서 보면 비로소 잡혀.', star: 2 },
   { id: 'o11', t: 'Pre-mortem 5개', day: 18, ch: 'pos', desc: '내일 긴 이동을 망칠 위험 5개를 미리 적고 차단 액션까지 짜둬. 좋은 연결은 운이 아니라 여유와 준비에서 나오니까.', star: 1 },
-  { id: 'o12', t: '⭐ 중간 결산 2차 + 후반부 의도', day: 20, ch: 'san', desc: '여행 절반을 조용히 회고하고 후반부 의도를 세우는 산물이야. 가장 아름다운 마을이 가장 큰 파괴 위에 섰듯, 무엇을 끝내고 무엇을 새로 시작할지 정해.', star: 2 },
+  { id: 'o12', t: '⭐ 중간 결산 2차 + 후반부 의도', day: 20, ch: 'san', desc: '여행 절반을 조용히 회고하고 후반부 의도를 세우는 관점이야. 가장 아름다운 마을이 가장 큰 파괴 위에 섰듯, 무엇을 끝내고 무엇을 새로 시작할지 정해.', star: 2 },
   { id: 'o13', t: 'Kill List (멈출 것 10개)', day: 21, ch: 'san', desc: '끝내야 할 것 10개와, 그게 두려운 이유를 함께 적어. 새로 짓기 전에 먼저 무엇을 허물어야 하는지 — 파괴가 곧 재건의 시작이거든.', star: 1 },
   { id: 'o14', t: '⭐⭐ 나의 Nike 1페이지', day: 23, ch: 'ath', desc: '프닉스 언덕에서 적는 "내가 정의하는 나의 승리"야. 남이 정한 성공이 아닌 내 Nike — 시작할 것·함께할 것·멈출 것·1년 뒤를 담아 평생 보관해.', star: 3 },
   { id: 'o15', t: '미래 질문 3개 (10·30·100년)', day: 25, ch: 'dxb', desc: '10년·30년·100년 뒤를 묻는 세 질문이야. 사막에 도시를 세운 두바이처럼, 막연한 미래를 손에 잡히는 청사진으로 바꾸는 첫 입력값.', star: 1 },
@@ -1110,7 +1110,7 @@ const storage = {
 // push: storage.set 래핑으로 전 키 자동 커버. pull: Realtime → 'gt:remote' 이벤트로 UI 재로딩.
 const SUPA_URL = 'https://gjpnaadgzdybeekfiewd.supabase.co';
 const SUPA_KEY = 'sb_publishable_q-IugXVWCMCgBAiBZTSoTA_vW3TpAtO';
-// 메모·산물·사진·캐시(fx/weather)·PIN은 동기화 제외 — 의도적 (주연 가림 + 기기 로컬)
+// 메모·관점·사진·캐시(fx/weather)는 동기화 제외 — 의도적 (용량·기기 로컬, 둘 다 같은 기기에서 보는 전제)
 const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses'];
 
 let _supaClient = null;
@@ -1191,6 +1191,71 @@ storage.set = async function (key, value) {
   return ok;
 };
 
+// =================== JOURNEY SHARE (Publish → Fork) ===================
+// "여정의 GitHub" 씨앗. gt_state 테이블 재사용: trip_id = publish 코드, k='journey'|'counters'.
+// 공개 대상은 일정(edits)·비용(expenses)·관점(outputs.content)뿐. notes·photos·pin·mo는 절대 미포함.
+const journeyShare = {
+  // INVARIANT: allowlist 3종만 읽는다 — notes/photos/pin/mo 누출 차단(통째 스프레드 금지).
+  async buildSnapshot({ edits, outputs, title }) {
+    const exp = (await storage.get('expenses')) || [];
+    const e = edits || {};
+    const safeOutputs = {};
+    Object.keys(outputs || {}).forEach(id => {
+      const c = outputs[id] && outputs[id].content;
+      if (c && c.trim()) safeOutputs[id] = { content: c };
+    });
+    return {
+      v: 1,
+      kind: 'journey',
+      title: (title && title.trim()) || 'Grand Tour 2026',
+      publishedAt: new Date().toISOString(),
+      edits: { day: e.day || {}, hotel: e.hotel || {}, flight: e.flight || {} },
+      expenses: (Array.isArray(exp) ? exp : []).map(x => ({
+        amount: x.amount, cur: x.cur, cat: x.cat, memo: x.memo, at: x.at,
+      })),
+      outputs: safeOutputs,
+    };
+  },
+  async publish(snapshot) {
+    const c = getSupa();
+    if (!c) return null;
+    const code = gtSync.newCode();
+    const at = new Date().toISOString();
+    try {
+      await c.from('gt_state').upsert([
+        { trip_id: code, k: 'journey', v: snapshot, updated_at: at },
+        { trip_id: code, k: 'counters', v: { views: 0, forks: 0 }, updated_at: at },
+      ]);
+      return code;
+    } catch (e) { return null; }
+  },
+  shareUrl(code) {
+    return location.origin + location.pathname + '?j=' + code;
+  },
+  async fetch(code) {
+    const c = getSupa();
+    if (!c || !code) return null;
+    try {
+      const { data } = await c.from('gt_state').select('k,v').eq('trip_id', code);
+      const row = (data || []).find(r => r.k === 'journey');
+      return row ? row.v : null;
+    } catch (e) { return null; }
+  },
+  // best-effort 가시 지표. anon 키라 비원자적·위조 가능 → vanity 전용, 로직 신뢰 금지.
+  async _bump(code, field) {
+    const c = getSupa();
+    if (!c || !code) return;
+    try {
+      const { data } = await c.from('gt_state').select('v').eq('trip_id', code).eq('k', 'counters');
+      const cur = (data && data[0] && data[0].v) || { views: 0, forks: 0 };
+      cur[field] = (cur[field] || 0) + 1;
+      await c.from('gt_state').upsert({ trip_id: code, k: 'counters', v: cur, updated_at: new Date().toISOString() });
+    } catch (e) {}
+  },
+  incView(code) { return this._bump(code, 'views'); },
+  incFork(code) { return this._bump(code, 'forks'); },
+};
+
 // =================== UTILS ===================
 const daysBetween = (a, b) => Math.ceil((b - a) / (1000 * 60 * 60 * 24));
 
@@ -1243,6 +1308,7 @@ class ErrorBoundary extends React.Component {
 // =================== APP ===================
 function App() {
   const [view, setView] = useState('home');
+  const [forkCode, setForkCode] = useState(null);
   const [checks, setChecks] = useState({});
   const [notes, setNotes] = useState({});
   const [outputs, setOutputs] = useState({});
@@ -1303,6 +1369,19 @@ function App() {
       setLoaded(true);
     })();
   }, []);
+
+  // Fork 링크 자동감지 (?j=code) — 있으면 공개 여정 프리뷰로 진입. 없으면 완전 no-op.
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const j = new URLSearchParams(location.search).get('j');
+      if (j) {
+        setForkCode(j.trim().toLowerCase().replace(/[^a-z0-9]/g, ''));
+        setView('forkpreview');
+        history.replaceState(null, '', location.origin + location.pathname);
+      }
+    } catch (e) {}
+  }, [loaded]);
 
   // Supabase 동기화 — trip code 연결 시 초기 pull + Realtime 구독, 원격 변경을 App 상태에 반영
   useEffect(() => {
@@ -1493,7 +1572,7 @@ function App() {
       _meta: {
         exportedAt: new Date().toISOString(),
         includePhotos,
-        note: 'PIN은 보안상 별도 재설정 필요. Photos excluded unless toggled on.',
+        note: 'Photos excluded unless toggled on.',
       },
       exportedAt: new Date().toISOString(),
       tyler: 'Taehyeon · Juyeon Grand Tour 2026',
@@ -1546,14 +1625,58 @@ function App() {
         if (data.expenses) { await storage.set('expenses', data.expenses); }
         if (data.restaurants) { await storage.set('restaurants', data.restaurants); }
         if (data.spotify_urls) { await storage.set('spotify_urls', data.spotify_urls); }
-        // PIN은 의도적으로 복원하지 않음 (보안)
-        alert('복원 완료! 🎉\n\n💡 PIN은 복원되지 않습니다.\n잠금 화면 하단 "비밀번호 초기화"로 다시 설정해주세요.');
+        alert('복원 완료! 🎉');
       } catch (err) {
         alert('복원 실패: 파일 형식이 올바르지 않습니다.');
         console.error(err);
       }
     };
     reader.readAsText(file);
+  };
+
+  // Fork: 공개 여정 스냅샷을 내 앱으로 가져오기 (importData 패턴 — setX + storage.set)
+  const onFork = async (snapshot, code) => {
+    if (!snapshot) return;
+    const hasMine = (edits.day && Object.keys(edits.day).length) ||
+      (edits.hotel && Object.keys(edits.hotel).length) ||
+      (edits.flight && Object.keys(edits.flight).length) ||
+      Object.values(outputs).some(o => o && o.content);
+    let merge = true;
+    if (hasMine) {
+      // 취소 = 덮어쓰기, 확인 = 병합
+      merge = confirm('내 기존 일정·관점과 합칠까요?\n\n[확인] 합치기(병합) · [취소] 내 것을 덮어쓰기');
+    }
+    const inc = snapshot.edits || {};
+    const nextEdits = merge
+      ? {
+          day: { ...edits.day, ...(inc.day || {}) },
+          hotel: { ...edits.hotel, ...(inc.hotel || {}) },
+          flight: { ...edits.flight, ...(inc.flight || {}) },
+        }
+      : { day: inc.day || {}, hotel: inc.hotel || {}, flight: inc.flight || {} };
+    setEdits(nextEdits);
+    await storage.set('edits', nextEdits);
+
+    const nextOutputs = merge ? { ...outputs } : {};
+    Object.keys(snapshot.outputs || {}).forEach(id => {
+      const c = snapshot.outputs[id] && snapshot.outputs[id].content;
+      if (c) nextOutputs[id] = { ...(nextOutputs[id] || {}), content: c };
+    });
+    setOutputs(nextOutputs);
+    await storage.set('outputs', nextOutputs);
+
+    const incExp = (snapshot.expenses || []).map((x, i) => ({
+      id: 'x' + Date.now() + i, amount: x.amount, cur: x.cur, cat: x.cat, memo: x.memo, at: x.at,
+    }));
+    const mineExp = merge ? ((await storage.get('expenses')) || []) : [];
+    const nextExp = [...incExp, ...mineExp];
+    await storage.set('expenses', nextExp);
+    window.dispatchEvent(new CustomEvent('gt:remote', { detail: { key: 'expenses' } }));
+
+    await storage.set('forked_from', { code, at: new Date().toISOString() });
+    journeyShare.incFork(code);
+    setView('private');
+    alert('가져왔어요! 이제 내 앱에서 바로 편집할 수 있어요 🎉');
   };
 
   return (
@@ -1580,7 +1703,8 @@ function App() {
             {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
             {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
-            {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+            {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
+            {view === 'forkpreview' && <ForkPreview code={forkCode} onFork={onFork} onClose={() => setView('home')} />}
             {view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
           </div>
         )}
@@ -2089,261 +2213,194 @@ function Recommendations({ chapterId, chapter }) {
   );
 }
 
-// =================== PRIVATE (PIN-locked Notes + Outputs) ===================
-function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOutputContent }) {
-  const [unlocked, setUnlocked] = useState(false);
-  const [savedPin, setSavedPin] = useState(null);
-  const [pinChecked, setPinChecked] = useState(false);
+// =================== 기록 (메모 + 관점, 공개) ===================
+function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOutputContent, edits, onForkOpen }) {
   const [view, setView] = useState('notes'); // 'notes' or 'outputs'
-  const [pinInput, setPinInput] = useState('');
-  const [setupStep, setSetupStep] = useState(1); // 1: first entry, 2: confirm
-  const [tempPin, setTempPin] = useState('');
-  const [error, setError] = useState('');
-  const [shake, setShake] = useState(false);
 
-  useEffect(() => {
-    (async () => {
-      const stored = await storage.get('pin');
-      setSavedPin(stored || null);
-      setPinChecked(true);
-    })();
-  }, []);
-
-  const handleDigit = (d) => {
-    if (pinInput.length < 4) {
-      const newPin = pinInput + d;
-      setPinInput(newPin);
-      setError('');
-      if (newPin.length === 4) {
-        setTimeout(() => processPinComplete(newPin), 100);
-      }
-    }
-  };
-
-  const handleDelete = () => {
-    setPinInput(pinInput.slice(0, -1));
-    setError('');
-  };
-
-  const processPinComplete = async (pin) => {
-    if (savedPin) {
-      // Verify mode
-      if (pin === savedPin) {
-        setUnlocked(true);
-        setPinInput('');
-      } else {
-        setError('비밀번호가 틀렸어요');
-        setShake(true);
-        setTimeout(() => { setPinInput(''); setShake(false); }, 600);
-      }
-    } else {
-      // Setup mode
-      if (setupStep === 1) {
-        setTempPin(pin);
-        setSetupStep(2);
-        setPinInput('');
-      } else {
-        if (pin === tempPin) {
-          await storage.set('pin', tempPin);
-          setSavedPin(tempPin);
-          setUnlocked(true);
-          setPinInput('');
-        } else {
-          setError('일치하지 않아요. 처음부터 다시');
-          setShake(true);
-          setTimeout(() => {
-            setPinInput('');
-            setTempPin('');
-            setSetupStep(1);
-            setShake(false);
-          }, 800);
-        }
-      }
-    }
-  };
-
-  if (!pinChecked) {
-    return <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>...</div>;
-  }
-
-  // Lock screen
-  if (!unlocked) {
-    const title = !savedPin
-      ? (setupStep === 1 ? '4자리 비밀번호 설정' : '한 번 더 입력')
-      : '비밀번호 입력';
-    const subtitle = !savedPin
-      ? '메모와 산물을 잠글 비밀번호 (Tyler 전용)'
-      : '메모와 산물을 보려면';
-
-    return (
-      <div style={{ padding: '40px 0 24px', maxWidth: '320px', margin: '0 auto', textAlign: 'center' }}>
-        <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.85 }}>🔒</div>
-        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', marginBottom: '6px' }}>
-          {title}
-        </div>
-        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '32px' }}>
-          {subtitle}
-        </div>
-
-        {/* PIN dots */}
-        <div
-          style={{
-            display: 'flex',
-            justifyContent: 'center',
-            gap: '14px',
-            marginBottom: '20px',
-            animation: shake ? 'shake 0.4s' : 'none'
-          }}
-        >
-          {[0, 1, 2, 3].map(i => (
-            <div
-              key={i}
-              style={{
-                width: '14px',
-                height: '14px',
-                borderRadius: '50%',
-                background: i < pinInput.length ? 'var(--color-atomic-navy-900)' : 'transparent',
-                border: '2px solid var(--color-atomic-navy-900)',
-                transition: 'background 0.15s'
-              }}
-            />
-          ))}
-        </div>
-
-        {error && (
-          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-danger)', marginBottom: '16px', minHeight: '14px' }}>
-            {error}
-          </div>
-        )}
-
-        {/* Numeric keypad */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: '10px',
-          marginTop: '20px',
-          maxWidth: '280px',
-          margin: '20px auto 0'
-        }}>
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(d => (
-            <button
-              key={d}
-              onClick={() => handleDigit(d.toString())}
-              style={{
-                padding: '18px',
-                fontSize: 'var(--type-h2)',
-                background: 'var(--color-bg-surface)',
-                border: '1px solid var(--color-border-default)',
-                borderRadius: '50%',
-                width: '60px',
-                height: '60px',
-                margin: '0 auto',
-                cursor: 'pointer',
-                fontFamily: 'var(--font-sans)',
-                color: 'var(--color-text-strong)',
-                fontWeight: 500,
-                fontVariantNumeric: 'tabular-nums'
-              }}
-            >
-              {d}
-            </button>
-          ))}
-          <div></div>
-          <button
-            onClick={() => handleDigit('0')}
-            style={{
-              padding: '18px',
-              fontSize: 'var(--type-h2)',
-              background: 'var(--color-bg-surface)',
-              border: '1px solid var(--color-border-default)',
-              borderRadius: '50%',
-              width: '60px',
-              height: '60px',
-              margin: '0 auto',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-sans)',
-              color: 'var(--color-text-strong)',
-              fontWeight: 500,
-              fontVariantNumeric: 'tabular-nums'
-            }}
-          >0</button>
-          <button
-            onClick={handleDelete}
-            disabled={pinInput.length === 0}
-            style={{
-              padding: '18px',
-              fontSize: 'var(--type-h3)',
-              background: 'transparent',
-              border: 'none',
-              cursor: pinInput.length ? 'pointer' : 'default',
-              color: pinInput.length ? 'var(--color-text-muted)' : 'var(--color-border-default)',
-              margin: '0 auto'
-            }}
-          >⌫</button>
-        </div>
-
-        {savedPin && (
-          <button
-            onClick={async () => {
-              if (confirm('비밀번호를 초기화할까? 모든 메모 + 산물은 그대로 유지됨.')) {
-                await storage.set('pin', null);
-                setSavedPin(null);
-                setSetupStep(1);
-                setPinInput('');
-              }
-            }}
-            style={{
-              marginTop: '24px',
-              fontSize: 'var(--type-eyebrow)',
-              color: 'var(--color-text-muted)',
-              background: 'transparent',
-              border: 'none',
-              cursor: 'pointer',
-              textDecoration: 'underline'
-            }}
-          >
-            비밀번호 초기화
-          </button>
-        )}
-
-        <style>{`@keyframes shake {0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}`}</style>
-      </div>
-    );
-  }
-
-  // Unlocked content
   const writtenCount = Object.keys(notes).filter(k => notes[k]?.content).length;
   const outputDone = Object.values(outputs).filter(o => o.done).length;
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-        <h2 style={pageTitleStyle}>🔓 Tyler</h2>
-        <button
-          onClick={() => setUnlocked(false)}
-          style={{
-            fontSize: 'var(--type-eyebrow)',
-            color: 'var(--color-text-muted)',
-            background: 'transparent',
-            border: '1px solid var(--color-border-default)',
-            borderRadius: 'var(--radius-sm)',
-            padding: '6px 10px',
-            cursor: 'pointer'
-          }}
-        >🔒 잠그기</button>
-      </div>
-      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '20px' }}>
-        메모 {writtenCount}/28 · 산물 {outputDone}/19
+      <h2 style={pageTitleStyle}>📖 기록</h2>
+      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', lineHeight: 1.6 }}>
+        둘이 함께 남기는 사색 · 메모 {writtenCount}/28 · 관점 {outputDone}/19
       </div>
 
+      <JourneyShareCard edits={edits} outputs={outputs} onForkOpen={onForkOpen} />
+
       {/* Sub-tabs */}
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
         <SubTab active={view === 'notes'} onClick={() => setView('notes')}>📝 메모</SubTab>
-        <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 산물</SubTab>
+        <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 관점</SubTab>
       </div>
 
       {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} DAYS={DAYS} />}
       {view === 'outputs' && <OutputsInner outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+    </div>
+  );
+}
+
+// 여정 공개(Publish) + 공개 여정 가져오기(Fork by code) — "여정의 GitHub" 씨앗 UI
+function JourneyShareCard({ edits, outputs, onForkOpen }) {
+  const [title, setTitle] = useState('Grand Tour 2026');
+  const [code, setCode] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [err, setErr] = useState('');
+  const [inCode, setInCode] = useState('');
+
+  const doPublish = async () => {
+    setBusy(true); setErr('');
+    const snap = await journeyShare.buildSnapshot({ edits, outputs, title });
+    const c = await journeyShare.publish(snap);
+    setBusy(false);
+    if (!c) { setErr('네트워크 오류 — 잠시 후 다시 시도해줘'); return; }
+    setCode(c);
+    storage.set('last_publish', { code: c, at: new Date().toISOString() });
+  };
+
+  const url = code ? journeyShare.shareUrl(code) : '';
+
+  return (
+    <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', marginBottom: 'var(--space-5)' }}>
+      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', fontWeight: 700, letterSpacing: 'var(--track-eyebrow)', marginBottom: 'var(--space-1)' }}>🌐 여정 공유</div>
+      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: 'var(--space-3)' }}>
+        일정·비용·관점만 공개돼 — 사적 메모·사진은 절대 포함되지 않아. 남이 링크로 받아 그대로 가져가 편집할 수 있어.
+      </div>
+
+      {/* Publish */}
+      <input
+        type="text" value={title} onChange={e => setTitle(e.target.value)}
+        placeholder="여정 제목"
+        style={{ width: '100%', padding: '9px 11px', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', background: 'var(--color-bg-page)', boxSizing: 'border-box', fontFamily: 'var(--font-sans)', marginBottom: 'var(--space-2)' }}
+      />
+      <button onClick={doPublish} disabled={busy}
+        style={{ width: '100%', padding: '10px', background: 'var(--color-atomic-navy-900)', color: 'var(--color-atomic-white)', border: 'none', borderRadius: 'var(--radius-sm)', fontSize: 'var(--type-caption)', fontWeight: 600, cursor: busy ? 'default' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+        {busy ? '공개 중…' : '이 여정 공개하기'}
+      </button>
+      {err && <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-danger)', marginTop: 'var(--space-2)' }}>{err}</div>}
+      {url && (
+        <div style={{ marginTop: 'var(--space-3)', padding: 'var(--space-3)', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-sm)' }}>
+          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-1)' }}>공개 링크 (복사해서 공유)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)' }}>
+            <code style={{ flex: 1, minWidth: 0, fontSize: 'var(--type-micro)', color: 'var(--color-text-strong)', wordBreak: 'break-all' }}>{url}</code>
+            <CopyChip text={url} label="링크" icon="🔗" />
+          </div>
+        </div>
+      )}
+
+      {/* Fork by code */}
+      <div style={{ borderTop: '1px solid var(--color-border-soft)', marginTop: 'var(--space-4)', paddingTop: 'var(--space-3)' }}>
+        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)' }}>공개 여정 코드로 가져오기</div>
+        <div style={{ display: 'flex', gap: 'var(--space-2)' }}>
+          <input
+            type="text" value={inCode} onChange={e => setInCode(e.target.value)}
+            placeholder="공개 코드 붙여넣기"
+            style={{ flex: 1, minWidth: 0, padding: '9px 11px', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', background: 'var(--color-bg-page)', boxSizing: 'border-box', fontFamily: 'var(--font-sans)' }}
+          />
+          <button
+            onClick={() => { const c = inCode.trim().toLowerCase().replace(/[^a-z0-9]/g, ''); if (c.length >= 8) onForkOpen(c); }}
+            style={{ flexShrink: 0, padding: '9px 14px', background: 'var(--color-bg-surface)', color: 'var(--color-accent-primary)', border: '1px solid var(--color-accent-primary)', borderRadius: 'var(--radius-sm)', fontSize: 'var(--type-caption)', fontWeight: 600, cursor: 'pointer' }}>
+            가져오기
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// 공개 여정 프리뷰 (읽기 전용) → "내 앱으로 가져오기"
+function ForkPreview({ code, onFork, onClose }) {
+  const [state, setState] = useState('loading'); // loading | ok | notfound | error
+  const [snap, setSnap] = useState(null);
+
+  useEffect(() => {
+    let alive = true;
+    (async () => {
+      if (!code) { setState('notfound'); return; }
+      const c = getSupa();
+      if (!c) { setState('error'); return; }
+      const v = await journeyShare.fetch(code);
+      if (!alive) return;
+      if (!v) { setState('notfound'); return; }
+      setSnap(v); setState('ok');
+      journeyShare.incView(code);
+    })();
+    return () => { alive = false; };
+  }, [code]);
+
+  const dayEdits = (snap && snap.edits && snap.edits.day) || {};
+  const hotelEdits = (snap && snap.edits && snap.edits.hotel) || {};
+  const expenses = (snap && snap.expenses) || [];
+  const outs = (snap && snap.outputs) || {};
+  const outList = Object.keys(outs).map(id => {
+    const meta = OUTPUTS.find(o => o.id === id);
+    return { id, content: outs[id].content, t: meta ? meta.t : id, ch: meta ? meta.ch : null };
+  });
+  const expTotal = expenses.reduce((s, x) => s + (Number(x.amount) || 0), 0);
+
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 'var(--space-4)' }}>
+        <h2 style={pageTitleStyle}>🌐 공개 여정</h2>
+        <button onClick={onClose} style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', background: 'transparent', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)', padding: '6px 10px', cursor: 'pointer' }}>닫기</button>
+      </div>
+
+      {state === 'loading' && <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>불러오는 중…</div>}
+      {state === 'notfound' && <Card><div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>이 코드의 공개 여정을 찾지 못했어요.</div></Card>}
+      {state === 'error' && <Card><div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>네트워크 오류 — 잠시 후 다시 열어줘.</div></Card>}
+
+      {state === 'ok' && snap && (
+        <div>
+          <div className="gt-serif" style={{ fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', marginBottom: 'var(--space-1)' }}>{snap.title}</div>
+          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)' }}>
+            일정 편집 {Object.keys(dayEdits).length + Object.keys(hotelEdits).length}건 · 비용 {expenses.length}건 · 관점 {outList.length}개
+          </div>
+
+          {outList.length > 0 && (
+            <Card>
+              <SectionTitle>🎯 관점</SectionTitle>
+              {outList.map(o => (
+                <div key={o.id} style={{ borderTop: '1px solid var(--color-border-soft)', padding: 'var(--space-3) 0' }}>
+                  <div style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-text-strong)', marginBottom: 'var(--space-1)' }}>{o.t}</div>
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>{o.content}</div>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {expenses.length > 0 && (
+            <Card>
+              <SectionTitle>💰 비용 · 합계 {expTotal.toLocaleString()}</SectionTitle>
+              {expenses.slice(0, 30).map((x, i) => (
+                <div key={i} style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid var(--color-border-soft)', padding: 'var(--space-2) 0', fontSize: 'var(--type-caption)' }}>
+                  <span style={{ color: 'var(--color-text-soft)' }}>{x.cat || '기타'} {x.memo ? '· ' + x.memo : ''}</span>
+                  <span style={{ color: 'var(--color-text-strong)', fontWeight: 500 }}>{(Number(x.amount) || 0).toLocaleString()} {x.cur || ''}</span>
+                </div>
+              ))}
+            </Card>
+          )}
+
+          {Object.keys(dayEdits).length > 0 && (
+            <Card>
+              <SectionTitle>🗓️ 일정 편집</SectionTitle>
+              {Object.keys(dayEdits).map(n => (
+                <div key={n} style={{ borderTop: '1px solid var(--color-border-soft)', padding: 'var(--space-2) 0', fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)' }}>
+                  <strong style={{ color: 'var(--color-text-strong)' }}>Day {n}</strong> · {Object.keys(dayEdits[n] || {}).map(f => `${f}: ${dayEdits[n][f]}`).join(' · ')}
+                </div>
+              ))}
+            </Card>
+          )}
+
+          <button onClick={() => onFork(snap, code)}
+            style={{ width: '100%', padding: '14px', marginTop: 'var(--space-4)', background: 'var(--color-atomic-navy-900)', color: 'var(--color-atomic-white)', border: 'none', borderRadius: 'var(--radius-md)', fontSize: 'var(--type-body)', fontWeight: 700, cursor: 'pointer' }}>
+            ⬇️ 내 앱으로 가져오기
+          </button>
+          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: 'var(--space-2)' }}>
+            일정·비용·관점이 내 앱으로 복제돼 — 가져온 뒤 자유롭게 바꿔도 원본엔 영향 없어.
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -2360,6 +2417,8 @@ function NotesInner({ notes, saveNote, DAYS }) {
         return (
           noteContent.includes(q) ||
           day.q.toLowerCase().includes(q) ||
+          (day.why || '').toLowerCase().includes(q) ||
+          (day.qchain || []).join(' ').toLowerCase().includes(q) ||
           ch.name.toLowerCase().includes(q) ||
           (day.city || '').toLowerCase().includes(q) ||
           day.d.includes(q)
@@ -2437,10 +2496,32 @@ function NotesInner({ notes, saveNote, DAYS }) {
               </div>
               <div style={{ fontSize: 'var(--type-body)' }}>{noteContent ? '✏️' : '○'}</div>
             </summary>
-            <div style={{ paddingTop: '14px', borderTop: '1px solid var(--color-border-soft)', marginTop: '12px' }}>
-              <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: 'var(--radius-sm)', marginBottom: '10px' }}>
-                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '4px' }}>💭 질문</div>
-                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+            <div style={{ paddingTop: 'var(--space-4)', borderTop: '1px solid var(--color-border-soft)', marginTop: 'var(--space-3)' }}>
+              {/* Seed question */}
+              <div style={{ background: 'var(--color-bg-page)', padding: 'var(--space-3)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-3)' }}>
+                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', letterSpacing: 'var(--track-eyebrow)', marginBottom: 'var(--space-1)' }}>💭 오늘의 질문</div>
+                <div className="gt-serif" style={{ fontSize: 'var(--type-body)', color: 'var(--color-text-strong)', fontStyle: 'italic', lineHeight: 1.6 }}>{day.q}</div>
+              </div>
+              {/* Context — why this question (역사·문명·인간 근원의 맥락) */}
+              {day.why && (
+                <div style={{ padding: '0 2px', marginBottom: 'var(--space-3)' }}>
+                  <div style={{ fontSize: 'var(--type-eyebrow)', color: ch.accent, fontWeight: 700, letterSpacing: 'var(--track-eyebrow)', marginBottom: 'var(--space-1)' }}>🍪 왜 이 질문인가</div>
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7 }}>{day.why}</div>
+                </div>
+              )}
+              {/* Tail questions — 꼬리의 꼬리를 무는 질문 */}
+              {day.qchain && day.qchain.length > 0 && (
+                <div style={{ background: ch.color, padding: 'var(--space-3) var(--space-4)', borderRadius: 'var(--radius-sm)', marginBottom: 'var(--space-3)' }}>
+                  <div style={{ fontSize: 'var(--type-eyebrow)', color: ch.accent, fontWeight: 700, letterSpacing: 'var(--track-eyebrow)', marginBottom: 'var(--space-2)' }}>↳ 꼬리를 무는 질문</div>
+                  <ol style={{ margin: 0, paddingLeft: '18px', display: 'flex', flexDirection: 'column', gap: 'var(--space-2)' }}>
+                    {day.qchain.map((qq, i) => (
+                      <li key={i} style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', lineHeight: 1.65 }}>{qq}</li>
+                    ))}
+                  </ol>
+                </div>
+              )}
+              <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)', letterSpacing: 'var(--track-label)' }}>
+                ✍️ 위 질문들에서 떠오른 생각을 자유롭게 — 정답은 없어, 꼬리를 따라가 봐
               </div>
               <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
             </div>
@@ -2457,7 +2538,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
     <div>
       <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
         <div style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 500, color: 'var(--color-warning-text)', marginBottom: '4px' }}>
-          ⭐⭐⭐ 평생 보관 산물 4개
+          ⭐⭐⭐ 평생 간직할 관점 4개
         </div>
         <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>
           Seceda 정상 · Pantheon · Nike · "우리, 이제 시작이다" 봉인
@@ -2509,7 +2590,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
               </div>
             </div>
             <textarea
-              placeholder="여기 산물 내용을 적거나 사진을 찍어 메모하세요..."
+              placeholder="이 여정이 남긴 관점을 적어봐 — 무엇을 새로 보게 됐는지…"
               defaultValue={state.content || ''}
               onBlur={(e) => saveOutputContent(o.id, e.target.value)}
               style={{
@@ -3101,7 +3182,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
   const stats = [
     { label: '메모', value: noteCount, total: 28, icon: '📝', action: 'private' },
     { label: '사진', value: photoCount, total: 28, icon: '📸', action: 'days' },
-    { label: '산물', value: outputDone, total: OUTPUTS.length, icon: '✦', action: 'private' },
+    { label: '관점', value: outputDone, total: OUTPUTS.length, icon: '✦', action: 'private' },
   ];
 
   return (
@@ -3169,7 +3250,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)',
       }}>
         <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.85)' }}>
-          ⭐⭐⭐ 평생 보관 산물
+          ⭐⭐⭐ 평생 간직할 관점
         </div>
         <div className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
           {lifetimeDone} / {lifetimeTotal} 완성
@@ -3195,7 +3276,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
           padding: 'var(--space-3)', background: 'var(--color-accent-primary)', color: 'var(--color-bg-inverse)',
           border: 'none', borderRadius: 'var(--radius-md)',
           fontSize: 'var(--type-caption)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-        }}>📓 메모·산물 보기</button>
+        }}>📓 메모·관점 보기</button>
       </div>
     </div>
   );
@@ -3522,7 +3603,7 @@ function OutputsProgress({ outputs, setView }) {
   return (
     <Card onClick={() => setView('private')} style={{ cursor: 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-        <SectionTitle>산물 진행</SectionTitle>
+        <SectionTitle>관점 진행</SectionTitle>
         <div className="gt-serif" style={{ fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', fontStyle: 'italic' }}>
           {doneAll}<span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--type-body)' }}>/{totalAll}</span>
         </div>
@@ -3947,7 +4028,7 @@ function SyncPanel() {
       </div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
         체크 · 패킹 · 미식 예약 · 가계부 · 일정편집이 두 기기에 실시간 공유돼요.<br/>
-        <span style={{ color: 'var(--color-accent-primary)' }}>메모 · 산물 · 사진은 공유되지 않습니다.</span>
+        <span style={{ color: 'var(--color-accent-primary)' }}>메모 · 관점 · 사진은 공유되지 않습니다.</span>
       </div>
 
       {connected ? (
@@ -4127,8 +4208,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
         <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-          체크 · 메모 · 편집 · 산물 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.<br/>
-          <span style={{ color: 'var(--color-accent-primary)' }}>⚠️ PIN은 복원되지 않으니 이전 후 재설정 필요.</span>
+          체크 · 메모 · 편집 · 관점 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>
           <input
@@ -6968,7 +7048,7 @@ function BottomNav({ view, setView }) {
     { id: 'days', label: '일정', icon: '📅' },
     { id: 'check', label: '체크', icon: '✓' },
     { id: 'logi', label: '여정', icon: '🧭' },
-    { id: 'private', label: '🔒', icon: '🔒' },
+    { id: 'private', label: '기록', icon: '📖' },
   ];
 
   return (
