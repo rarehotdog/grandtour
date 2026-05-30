@@ -313,6 +313,7 @@
   </style>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 </head>
 <body>
@@ -1076,6 +1077,91 @@ const storage = {
   }
 };
 
+// =================== SYNC LAYER (Supabase, 공유 trip code) ===================
+// push: storage.set 래핑으로 전 키 자동 커버. pull: Realtime → 'gt:remote' 이벤트로 UI 재로딩.
+const SUPA_URL = 'https://gjpnaadgzdybeekfiewd.supabase.co';
+const SUPA_KEY = 'sb_publishable_q-IugXVWCMCgBAiBZTSoTA_vW3TpAtO';
+// 메모·산물·사진·캐시(fx/weather)·PIN은 동기화 제외 — 의도적 (주연 가림 + 기기 로컬)
+const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses'];
+
+let _supaClient = null;
+function getSupa() {
+  if (!window.supabase || !window.supabase.createClient) return null;
+  if (!_supaClient) {
+    try { _supaClient = window.supabase.createClient(SUPA_URL, SUPA_KEY); } catch (e) { return null; }
+  }
+  return _supaClient;
+}
+
+const gtSync = {
+  tripId() { try { return localStorage.getItem('trip_id') || null; } catch (e) { return null; } },
+  setTripId(id) { try { id ? localStorage.setItem('trip_id', id) : localStorage.removeItem('trip_id'); } catch (e) {} },
+  newCode() {
+    // 추측 불가능한 20-hex 코드 (anon 키 공개이므로 코드가 비밀번호 역할)
+    const b = new Uint8Array(10);
+    (window.crypto || {}).getRandomValues?.(b);
+    return Array.from(b, x => x.toString(16).padStart(2, '0')).join('');
+  },
+  _applying: false,        // 원격 적용 중 push 에코 방지
+  _lastPushAt: {},         // 키별 마지막 push 시각 (자기 에코 무시용)
+  // 로컬 변경 → 원격 upsert
+  async push(key, value) {
+    if (this._applying) return;
+    const tid = this.tripId();
+    if (!tid || !SYNC_KEYS.includes(key)) return;
+    const c = getSupa();
+    if (!c) return;
+    const at = new Date().toISOString();
+    this._lastPushAt[key] = at;
+    try {
+      await c.from('gt_state').upsert({ trip_id: tid, k: key, v: value, updated_at: at });
+    } catch (e) { /* 오프라인 등 — 다음 변경 때 재반영 */ }
+  },
+  // 원격 값 → 로컬 적용 (storage.set 우회로 에코 방지 + UI 알림)
+  applyRemote(key, value) {
+    if (!SYNC_KEYS.includes(key)) return;
+    this._applying = true;
+    try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {}
+    this._applying = false;
+    window.dispatchEvent(new CustomEvent('gt:remote', { detail: { key } }));
+  },
+  // 접속 시 전체 당겨오기
+  async pullAll() {
+    const tid = this.tripId();
+    const c = getSupa();
+    if (!tid || !c) return;
+    try {
+      const { data } = await c.from('gt_state').select('k,v').eq('trip_id', tid);
+      (data || []).forEach(row => this.applyRemote(row.k, row.v));
+    } catch (e) {}
+  },
+  // Realtime 구독 — 다른 기기 변경 수신
+  subscribe() {
+    const tid = this.tripId();
+    const c = getSupa();
+    if (!tid || !c) return null;
+    const ch = c.channel('gt_state_' + tid)
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'gt_state', filter: 'trip_id=eq.' + tid },
+        (payload) => {
+          const row = payload.new;
+          if (!row || !row.k) return;
+          if (this._lastPushAt[row.k] && row.updated_at <= this._lastPushAt[row.k]) return; // 자기 에코 무시
+          this.applyRemote(row.k, row.v);
+        })
+      .subscribe();
+    return ch;
+  },
+};
+
+// storage.set 래핑 — 모든 로컬 저장이 한 곳을 통과하므로 push 자동 커버
+const _storageSet = storage.set.bind(storage);
+storage.set = async function (key, value) {
+  const ok = await _storageSet(key, value);
+  gtSync.push(key, value);
+  return ok;
+};
+
 // =================== UTILS ===================
 const daysBetween = (a, b) => Math.ceil((b - a) / (1000 * 60 * 60 * 24));
 
@@ -1188,6 +1274,29 @@ function App() {
       setLoaded(true);
     })();
   }, []);
+
+  // Supabase 동기화 — trip code 연결 시 초기 pull + Realtime 구독, 원격 변경을 App 상태에 반영
+  useEffect(() => {
+    if (!loaded || !gtSync.tripId()) return;
+    const map = {
+      check: setChecks,
+      packing: setPacking,
+      packing_custom: setPackingCustom,
+      packing_edits: setPackingEdits,
+      edits: setEdits,
+    };
+    const onRemote = (e) => {
+      const k = e.detail?.key;
+      if (map[k]) storage.get(k).then(v => { if (v != null) map[k](v); });
+    };
+    window.addEventListener('gt:remote', onRemote);
+    gtSync.pullAll();
+    const ch = gtSync.subscribe();
+    return () => {
+      window.removeEventListener('gt:remote', onRemote);
+      if (ch) { try { getSupa()?.removeChannel(ch); } catch (e) {} }
+    };
+  }, [loaded]);
 
   // Merged data getters
   const getDay = (day) => ({ ...day, ...(edits.day?.[day.n] || {}) });
@@ -3772,6 +3881,87 @@ function NotifSetup() {
   );
 }
 
+// 기기 간 동기화 패널 — 공유 trip code 입력/생성, 연결 상태 표시
+function SyncPanel() {
+  const [tripId, setTrip] = useState(gtSync.tripId());
+  const [input, setInput] = useState('');
+  const connected = !!tripId;
+
+  const connect = (code) => {
+    const c = (code || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (c.length < 8) { alert('코드가 너무 짧아요. 20자리 코드를 정확히 입력해주세요.'); return; }
+    gtSync.setTripId(c);
+    location.reload(); // 깨끗한 구독 시작
+  };
+  const create = () => {
+    if (!confirm('새 동기화 코드를 만들어 이 기기를 연결할까요?\n같은 코드를 주연 기기에도 입력하면 공유됩니다.')) return;
+    connect(gtSync.newCode());
+  };
+  const disconnect = () => {
+    if (!confirm('동기화를 끊을까요? 데이터는 기기에 그대로 남고, 더 이상 공유되지 않습니다.')) return;
+    gtSync.setTripId(null);
+    location.reload();
+  };
+
+  return (
+    <Card>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+        <SectionTitle>💑 기기 간 동기화</SectionTitle>
+        {connected && (
+          <span style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-success)', fontWeight: 600 }}>● 연결됨</span>
+        )}
+      </div>
+      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
+        체크 · 패킹 · 미식 예약 · 가계부 · 일정편집이 두 기기에 실시간 공유돼요.<br/>
+        <span style={{ color: 'var(--color-accent-primary)' }}>메모 · 산물 · 사진은 공유되지 않습니다.</span>
+      </div>
+
+      {connected ? (
+        <div>
+          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>공유 코드 (주연 기기에 입력)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+            <code style={{
+              fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: '0.5px',
+              background: 'var(--color-bg-page)', padding: '8px 10px', borderRadius: 'var(--radius-sm)',
+              border: '1px solid var(--color-border-default)', wordBreak: 'break-all', flex: 1, minWidth: '160px'
+            }}>{tripId}</code>
+            <CopyChip text={tripId} label="코드 복사" />
+          </div>
+          <button onClick={disconnect} style={{
+            padding: '10px 12px', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)',
+            border: '1px solid var(--color-border-default)', borderRadius: '8px',
+            fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 500, width: '100%'
+          }}>연결 끊기</button>
+        </div>
+      ) : (
+        <div>
+          <button onClick={create} style={{
+            padding: '12px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
+            border: 'none', borderRadius: '8px', fontSize: 'var(--type-caption)', cursor: 'pointer',
+            fontWeight: 500, width: '100%', marginBottom: '10px'
+          }}>✨ 새 동기화 코드 만들기</button>
+          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', textAlign: 'center', marginBottom: '8px' }}>또는 받은 코드로 연결</div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <input
+              value={input}
+              onChange={e => setInput(e.target.value)}
+              placeholder="공유 코드 붙여넣기"
+              style={{
+                flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-default)',
+                fontSize: 'var(--type-caption)', background: 'var(--color-bg-surface)', color: 'var(--color-text-strong)'
+              }}
+            />
+            <button onClick={() => connect(input)} style={{
+              padding: '10px 16px', background: 'var(--color-accent-primary)', color: '#fff',
+              border: 'none', borderRadius: '8px', fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 600
+            }}>연결</button>
+          </div>
+        </div>
+      )}
+    </Card>
+  );
+}
+
 function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
@@ -3895,6 +4085,9 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
           <button onClick={() => setView('check')} style={btnLightStyle}>👔 패킹 리스트</button>
         </div>
       </Card>
+
+      {/* 기기 간 동기화 */}
+      <SyncPanel />
 
       {/* JSON Backup / Restore */}
       <Card>
@@ -5553,6 +5746,11 @@ function ExpenseTracker() {
       if (fx && fx.rates) setRates(fx.rates);
       setLoaded(true);
     })();
+    const onRemote = (ev) => {
+      if (ev.detail?.key === 'expenses') storage.get('expenses').then(e => setItems(Array.isArray(e) ? e : []));
+    };
+    window.addEventListener('gt:remote', onRemote);
+    return () => window.removeEventListener('gt:remote', onRemote);
   }, []);
 
   const persist = async (next) => { setItems(next); await storage.set('expenses', next); };
@@ -6279,7 +6477,11 @@ function RestaurantTracker() {
   const [statuses, setStatuses] = useState({});
 
   useEffect(() => {
-    storage.get('restaurant_status').then(v => { if (v) setStatuses(v); });
+    const load = () => storage.get('restaurant_status').then(v => { if (v) setStatuses(v); });
+    load();
+    const onRemote = (e) => { if (e.detail?.key === 'restaurant_status') load(); };
+    window.addEventListener('gt:remote', onRemote);
+    return () => window.removeEventListener('gt:remote', onRemote);
   }, []);
 
   const cycle = async (id) => {
