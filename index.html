@@ -1423,6 +1423,7 @@ function App() {
       paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
     }}>
       <Header status={status} />
+      <OfflineBanner />
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
         {!loaded && (
           <div style={{ padding: '32px 0' }}>
@@ -1726,10 +1727,54 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
 }
 
 // =================== INLINE MAP ===================
+// online/offline 감지 — 해외 로밍 끊김 대비 (P1: 오프라인 완전 동작)
+function useOnlineStatus() {
+  const [online, setOnline] = useState(typeof navigator !== 'undefined' ? navigator.onLine : true);
+  useEffect(() => {
+    const on = () => setOnline(true);
+    const off = () => setOnline(false);
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => {
+      window.removeEventListener('online', on);
+      window.removeEventListener('offline', off);
+    };
+  }, []);
+  return online;
+}
+
+// 전역 오프라인 배너 — 연결 끊김을 명확히 알림 (지도·환율·날씨는 캐시로 동작)
+function OfflineBanner() {
+  const online = useOnlineStatus();
+  if (online) return null;
+  return (
+    <div style={{
+      maxWidth: '720px',
+      margin: '0 auto 4px',
+      padding: '7px 16px',
+      background: 'var(--color-warning-bg-deep, #4a3a1b)',
+      color: 'var(--color-text-inverse)',
+      fontSize: 'var(--type-eyebrow)',
+      fontWeight: 500,
+      display: 'flex',
+      alignItems: 'center',
+      gap: '8px',
+      letterSpacing: '0.3px'
+    }}>
+      <span>📡</span>
+      <span>오프라인 — 저장된 일정·메모·사진·캐시는 그대로 사용할 수 있어요</span>
+    </div>
+  );
+}
+
 function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
+  const online = useOnlineStatus();
   if (!lat || !lng) return null;
   const bbox = `${lng - zoom},${lat - zoom},${lng + zoom},${lat + zoom}`;
   const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
+  const coordStr = `${Number(lat).toFixed(5)}, ${Number(lng).toFixed(5)}`;
+  // Apple/Google 지도 앱 딥링크 — 네이티브 앱은 오프라인 캐시 지도 사용 가능
+  const appleUrl = `https://maps.apple.com/?ll=${lat},${lng}&q=${encodeURIComponent(label || 'Location')}`;
 
   return (
     <div style={{
@@ -1739,14 +1784,57 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
       background: 'var(--color-bg-surface)',
       marginBottom: '12px'
     }}>
-      <iframe
-        src={src}
-        width="100%"
-        height={height}
-        style={{ border: 0, display: 'block' }}
-        title={`Map of ${label}`}
-        loading="lazy"
-      />
+      {online ? (
+        <iframe
+          src={src}
+          width="100%"
+          height={height}
+          style={{ border: 0, display: 'block' }}
+          title={`Map of ${label}`}
+          loading="lazy"
+        />
+      ) : (
+        // 오프라인 폴백 — iframe 타일은 네트워크 필수라 못 뜸. 좌표·딥링크·복사로 대체.
+        <div style={{
+          height,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          padding: '16px',
+          textAlign: 'center',
+          background: 'repeating-linear-gradient(45deg, var(--color-bg-muted, #f3f1ed), var(--color-bg-muted, #f3f1ed) 12px, var(--color-bg-surface) 12px, var(--color-bg-surface) 24px)'
+        }}>
+          <span style={{ fontSize: '28px', lineHeight: 1 }}>🗺️</span>
+          <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', maxWidth: '220px' }}>
+            오프라인 상태 — 네트워크 연결 시 지도가 표시됩니다
+          </span>
+          <span style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 600 }}>
+            📍 {coordStr}
+          </span>
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <CopyChip text={coordStr} label="좌표 복사" icon="📋" />
+            <a
+              href={appleUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                fontSize: 'var(--type-eyebrow)',
+                padding: '7px 10px',
+                background: 'rgba(27,42,74,0.06)',
+                color: 'var(--color-text-strong)',
+                borderRadius: 'var(--radius-sm)',
+                textDecoration: 'none',
+                fontWeight: 500,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              🧭 지도 앱에서 열기
+            </a>
+          </div>
+        </div>
+      )}
       <div style={{
         background: 'var(--color-bg-inverse)',
         color: 'var(--color-text-inverse)',
@@ -1758,12 +1846,12 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
       }}>
         <span>📍 {label}</span>
         <a
-          href={mapsUrl(label)}
+          href={online ? mapsUrl(label) : appleUrl}
           target="_blank"
           rel="noopener noreferrer"
           style={{ color: 'var(--color-accent-primary)', textDecoration: 'none', fontWeight: 500 }}
         >
-          Google Maps →
+          {online ? 'Google Maps →' : '지도 앱 →'}
         </a>
       </div>
     </div>
