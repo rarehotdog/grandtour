@@ -673,46 +673,56 @@ const FLIGHTS_DEFAULT = [
 const CHECKLIST = {
   'D-30 · 즉시 처리': [
     { id: 'c1', t: '✅ 호텔 10건 전부 확정 (X ALP, Palazzo Talamo, Cavalieri, Park Hyatt AD 등)', urgent: false },
-    { id: 'c2', t: '귀국편 DXB→HKG→ICN 시간 확정 (Cathay)', urgent: true },
-    { id: 'c3', t: '포지타노→FCO 새벽 4시 프라이빗 트랜스퍼 예약', urgent: true },
-    { id: 'c4', t: '돌로미티 운전 IDP 발급 (Tyler)', urgent: true },
-    { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', urgent: false },
+    { id: 'c2', t: '귀국편 DXB→HKG→ICN 시간 확정 (Cathay)', urgent: true, url: 'https://www.cathaypacific.com/' },
+    { id: 'c3', t: '포지타노→FCO 새벽 4시 프라이빗 트랜스퍼 예약', urgent: true, url: 'https://www.google.com/search?q=Positano+to+Rome+FCO+private+transfer+booking' },
+    { id: 'c4', t: '돌로미티 운전 IDP 발급 (Tyler)', urgent: true, url: 'https://www.safedriving.or.kr/' },
+    { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', urgent: false, url: 'https://www.hertz.com/' },
     { id: 'c6', t: 'MFA 100% 활성화 (금융+메일+클라우드)', urgent: true },
     { id: 'c7', t: '복구코드 백업 USB · 양가 공유', urgent: false },
-    { id: 'c8', t: '여행자보험 가입 (28일 분량)', urgent: true },
+    { id: 'c8', t: '여행자보험 가입 (28일 분량)', urgent: true, url: 'https://www.google.com/search?q=해외여행자보험+장기+28일+가입' },
   ],
   'D-30 · 레스토랑 예약': [
-    { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너 (4주 전)', urgent: true },
-    { id: 'r2', t: 'La Sponda 포지타노 6/30 캔들 400개 디너', urgent: true },
-    { id: 'r3', t: 'Anna Stuben 돌로미티 6/24 미슐랭', urgent: false },
-    { id: 'r4', t: 'La Pergola 로마 6/28 3⭐', urgent: false },
-    { id: 'r5', t: 'Selene 산토리니 7/4 미슐랭', urgent: false },
-    { id: 'r6', t: 'At.mosphere 두바이 7/9 (Burj 122층)', urgent: false },
-    { id: 'r7', t: 'Da Adolfo 포지타노 7/1 점심 (보트 셔틀)', urgent: false },
-    { id: 'r8', t: 'GB Roof Garden 아테네 7/6', urgent: false },
+    { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너 (4주 전)', urgent: true, url: 'https://www.lejulesverne-paris.com/' },
+    { id: 'r2', t: 'La Sponda 포지타노 6/30 캔들 400개 디너', urgent: true, url: 'https://www.sirenuse.it/' },
+    { id: 'r3', t: 'Anna Stuben 돌로미티 6/24 미슐랭', urgent: false, url: 'https://www.gardena.it/' },
+    { id: 'r4', t: 'La Pergola 로마 6/28 3⭐', urgent: false, url: 'https://romecavalieri.com/' },
+    { id: 'r5', t: 'Selene 산토리니 7/4 미슐랭', urgent: false, url: 'https://www.selene.gr/' },
+    { id: 'r6', t: 'At.mosphere 두바이 7/9 (Burj 122층)', urgent: false, url: 'https://www.atmosphereburjkhalifa.com/' },
+    { id: 'r7', t: 'Da Adolfo 포지타노 7/1 점심 (보트 셔틀)', urgent: false, url: 'https://www.daadolfo.com/' },
+    { id: 'r8', t: 'GB Roof Garden 아테네 7/6', urgent: false, url: 'https://www.grandebretagne.gr/' },
   ],
   'D-30 · 입장권 / 투어': [
-    { id: 't1', t: 'Uffizi Gallery 6/26 (사전예약 30일)', urgent: true },
-    { id: 't2', t: 'Vatican 가이드 투어 6/29 06:30', urgent: true },
-    { id: 't3', t: 'Colosseum 언더그라운드 6/28', urgent: true },
-    { id: 't4', t: 'Burj Khalifa SKY 일몰 7/9', urgent: true },
-    { id: 't5', t: 'Museum of the Future 두바이', urgent: false },
-    { id: 't6', t: 'Duomo 돔 등반 6/26', urgent: false },
-    { id: 't7', t: 'Acropolis 08:00 입장 7/7', urgent: false },
-    { id: 't8', t: 'British Museum 시간슬롯 6/19', urgent: false },
+    { id: 't1', t: 'Uffizi Gallery 6/26 (사전예약 30일)', urgent: true, url: 'https://www.uffizi.it/en/tickets' },
+    { id: 't2', t: 'Vatican 가이드 투어 6/29 06:30', urgent: true, url: 'https://tickets.museivaticani.va/' },
+    { id: 't3', t: 'Colosseum 언더그라운드 6/28', urgent: true, url: 'https://ticketing.colosseo.it/en/' },
+    { id: 't4', t: 'Burj Khalifa SKY 일몰 7/9', urgent: true, url: 'https://www.burjkhalifa.ae/en/tickets/' },
+    { id: 't5', t: 'Museum of the Future 두바이', urgent: false, url: 'https://museumofthefuture.ae/en' },
+    { id: 't6', t: 'Duomo 돔 등반 6/26', urgent: false, url: 'https://duomo.firenze.it/en' },
+    { id: 't7', t: 'Acropolis 08:00 입장 7/7', urgent: false, url: 'https://etickets.tap.gr/' },
+    { id: 't8', t: 'British Museum 시간슬롯 6/19', urgent: false, url: 'https://www.britishmuseum.org/visit' },
+    { id: 't9', t: '🏛️ Pantheon 로마 6/28·6/29 (유료 €5 · 주말·공휴일 예약제)', urgent: true, url: 'https://www.google.com/search?q=Pantheon+Rome+official+tickets+booking' },
+    { id: 't10', t: 'Galleria Borghese 로마 (2시간 슬롯 예약 필수)', urgent: false, url: 'https://www.galleriaborghese.it/en/' },
+    { id: 't11', t: 'Seceda 케이블카 6/24 (온라인 티켓)', urgent: false, url: 'https://www.seceda.it/en/' },
+    { id: 't12', t: 'Akrotiri 유적 산토리니 7/5', urgent: false, url: 'https://etickets.tap.gr/' },
+  ],
+  '🎭 영국 체험 · 공연 (매진 임박 🔴)': [
+    { id: 'uk1', t: '해리포터 워너브라더스 스튜디오 투어 (런던, 날짜지정·매진 빠름)', urgent: true, url: 'https://www.wbstudiotour.co.uk/' },
+    { id: 'uk2', t: 'West End 공연 6/18~21 (Hamilton/Six/Cabaret)', urgent: true, url: 'https://www.todaytix.com/london' },
+    { id: 'uk3', t: '〈해리포터와 저주받은 아이〉 연극 (Palace Theatre)', urgent: false, url: 'https://www.harrypottertheplay.com/uk/' },
+    { id: 'uk4', t: 'Sir John Soane 야간 촛불투어 (월·금 밤만)', urgent: false, url: 'https://www.soane.org/' },
   ],
   'D-21 · 교통 / 행정': [
-    { id: 'a1', t: '렌터카 VCE 픽업 / Florence 반납 (ZTL 사전등록)', urgent: true },
-    { id: 'a2', t: '프라이빗 트랜스퍼: 로마→포지타노 6/30', urgent: true },
-    { id: 'a3', t: '프라이빗 트랜스퍼: 포지타노→FCO 7/2 17:00', urgent: true },
-    { id: 'a4', t: 'Frecciarossa 피렌체→로마 6/27 (Executive)', urgent: false },
-    { id: 'a5', t: 'Eurostar 파리→런던 6/18', urgent: false },
-    { id: 'a6', t: '국제운전면허증 발급', urgent: true },
+    { id: 'a1', t: '렌터카 VCE 픽업 / Florence 반납 (ZTL 사전등록)', urgent: true, url: 'https://www.hertz.com/' },
+    { id: 'a2', t: '프라이빗 트랜스퍼: 로마→포지타노 6/30', urgent: true, url: 'https://www.google.com/search?q=Rome+to+Positano+private+transfer+booking' },
+    { id: 'a3', t: '프라이빗 트랜스퍼: 포지타노→FCO 7/2 17:00', urgent: true, url: 'https://www.google.com/search?q=Positano+to+FCO+airport+private+transfer' },
+    { id: 'a4', t: 'Frecciarossa 피렌체→로마 6/27 (Executive)', urgent: false, url: 'https://www.trenitalia.com/en.html' },
+    { id: 'a5', t: 'Eurostar 파리→런던 6/18', urgent: false, url: 'https://www.eurostar.com/' },
+    { id: 'a6', t: '국제운전면허증 발급', urgent: true, url: 'https://www.safedriving.or.kr/' },
     { id: 'a7', t: '여행자보험 가입 (Amex Plat 자동보장 확인)', urgent: true },
     { id: 'a8', t: '두바이 비자 확인 (한국 무비자 30일)', urgent: false },
   ],
   'D-14 · 통신 / 금융': [
-    { id: 'f1', t: 'eSIM 또는 로밍 (Airalo 권역 단일 권장)', urgent: false },
+    { id: 'f1', t: 'eSIM 또는 로밍 (Airalo 권역 단일 권장)', urgent: false, url: 'https://www.airalo.com/' },
     { id: 'f2', t: '환전 €500 + GBP £200 + AED 500', urgent: false },
     { id: 'f3', t: '카드사 해외 사용 등록 (Amex Plat + 백업 2장)', urgent: false },
     { id: 'f4', t: 'VPN 앱 설치·테스트', urgent: false },
@@ -4788,51 +4798,77 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
       {items.map(item => {
         const checked = !!checks[item.id];
         return (
-          <button
-            key={item.id}
-            onClick={() => toggle(item.id)}
-            style={{
-              width: '100%',
-              padding: '12px 16px',
-              background: 'transparent',
-              border: 'none',
-              borderTop: '1px solid var(--color-border-soft)',
-              textAlign: 'left',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'flex-start',
-              gap: '12px'
-            }}
-          >
-            <div style={{
-              width: '20px',
-              height: '20px',
-              borderRadius: 'var(--radius-xs)',
-              border: `2px solid ${checked ? 'var(--color-atomic-navy-900)' : 'var(--color-border-strong)'}`,
-              background: checked ? 'var(--color-atomic-navy-900)' : 'transparent',
-              color: 'var(--color-text-inverse)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: 'var(--type-body)',
-              flexShrink: 0,
-              marginTop: '1px'
-            }}>
-              {checked && '✓'}
-            </div>
-            <div style={{ flex: 1, minWidth: 0, fontSize: 'var(--type-body-sm)', lineHeight: 1.5 }}>
+          <div key={item.id} style={{ position: 'relative', borderTop: '1px solid var(--color-border-soft)' }}>
+            <button
+              onClick={() => toggle(item.id)}
+              style={{
+                width: '100%',
+                padding: '12px 16px',
+                paddingRight: item.url ? '76px' : '16px',
+                background: 'transparent',
+                border: 'none',
+                textAlign: 'left',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px'
+              }}
+            >
               <div style={{
-                color: checked ? 'var(--color-text-muted)' : 'var(--color-text-strong)',
-                textDecoration: checked ? 'line-through' : 'none'
+                width: '20px',
+                height: '20px',
+                borderRadius: 'var(--radius-xs)',
+                border: `2px solid ${checked ? 'var(--color-atomic-navy-900)' : 'var(--color-border-strong)'}`,
+                background: checked ? 'var(--color-atomic-navy-900)' : 'transparent',
+                color: 'var(--color-text-inverse)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: 'var(--type-body)',
+                flexShrink: 0,
+                marginTop: '1px'
               }}>
-                {item.urgent && !checked && <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>🔴 </span>}
-                {item.t}
+                {checked && '✓'}
               </div>
-              {showSource && item.src && (
-                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginTop: '4px' }}>{item.src}</div>
-              )}
-            </div>
-          </button>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 'var(--type-body-sm)', lineHeight: 1.5 }}>
+                <div style={{
+                  color: checked ? 'var(--color-text-muted)' : 'var(--color-text-strong)',
+                  textDecoration: checked ? 'line-through' : 'none'
+                }}>
+                  {item.urgent && !checked && <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>🔴 </span>}
+                  {item.t}
+                </div>
+                {showSource && item.src && (
+                  <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginTop: '4px' }}>{item.src}</div>
+                )}
+              </div>
+            </button>
+            {item.url && (
+              <a
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={e => e.stopPropagation()}
+                style={{
+                  position: 'absolute',
+                  right: '12px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  fontSize: 'var(--type-eyebrow)',
+                  fontWeight: 600,
+                  color: 'var(--color-atomic-navy-900)',
+                  background: 'var(--color-bg-subtle, rgba(27,42,74,0.06))',
+                  border: '1px solid var(--color-border-default)',
+                  borderRadius: 'var(--radius-xs)',
+                  padding: '5px 9px',
+                  textDecoration: 'none',
+                  whiteSpace: 'nowrap'
+                }}
+              >
+                예약 ↗
+              </a>
+            )}
+          </div>
         );
       })}
     </div>
