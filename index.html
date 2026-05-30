@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="var(--color-atomic-navy-900)">
+  <meta name="theme-color" content="#1B2A4A">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Grand Tour">
@@ -1104,7 +1104,7 @@ class ErrorBoundary extends React.Component {
       return (
         <div style={{ minHeight: '100vh', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', fontFamily: '-apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", sans-serif' }}>
           <div style={{ fontSize: '40px', marginBottom: '16px' }}>🧭</div>
-          <div style={{ fontFamily: 'Georgia, serif', fontSize: 'var(--type-h2)', marginBottom: '10px' }}>잠시 길을 잃었어요</div>
+          <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--type-h2)', marginBottom: '10px' }}>잠시 길을 잃었어요</div>
           <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
             화면을 그리는 중 문제가 생겼어요. 저장된 데이터(메모·사진·체크리스트)는 그대로 있으니 안심하세요. 새로고침하면 대부분 해결됩니다.
           </div>
@@ -1470,7 +1470,7 @@ function Header({ status }) {
       <div style={{ maxWidth: '720px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px' }}>
         <div>
           <div style={{
-            fontFamily: 'Georgia, "Times New Roman", serif',
+            fontFamily: 'var(--font-serif)',
             fontSize: 'var(--type-h2)',
             fontWeight: 400,
             letterSpacing: '0.5px',
@@ -1571,7 +1571,7 @@ function ChapterIntro({ chapter }) {
       <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: '2px', fontWeight: 700, marginBottom: '8px', opacity: 0.65 }}>
         CHAPTER · {chapter.dates}
       </div>
-      <div style={{ fontSize: '26px', fontFamily: 'Cormorant Garamond, Georgia, serif', fontWeight: 600, color: chapter.accent, lineHeight: 1.1, marginBottom: '5px' }}>
+      <div style={{ fontSize: '26px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: chapter.accent, lineHeight: 1.1, marginBottom: '5px' }}>
         {chapter.flag} {chapter.name}
       </div>
       <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, fontWeight: 600, marginBottom: '10px', opacity: 0.75 }}>
@@ -1637,7 +1637,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
             borderRadius: 'var(--radius-xs)',
             fontSize: 'var(--type-micro)',
             color: 'var(--color-text-soft)',
-            fontFamily: 'Georgia, serif',
+            fontFamily: 'var(--font-serif)',
             fontStyle: 'italic'
           }}>
             📸 Today's Frame
@@ -2031,7 +2031,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
     return (
       <div style={{ padding: '40px 0 24px', maxWidth: '320px', margin: '0 auto', textAlign: 'center' }}>
         <div style={{ fontSize: '40px', marginBottom: '16px', opacity: 0.85 }}>🔒</div>
-        <div style={{ fontFamily: 'Georgia, serif', fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', marginBottom: '6px' }}>
+        <div style={{ fontFamily: 'var(--font-serif)', fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', marginBottom: '6px' }}>
           {title}
         </div>
         <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '32px' }}>
@@ -2549,7 +2549,7 @@ function EveningReminder({ status }) {
       <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', letterSpacing: '2px', fontWeight: 700, marginBottom: '8px' }}>
         🌙 오늘의 질문 · Day {status.current.n}
       </div>
-      <div style={{ fontSize: 'var(--type-body)', fontFamily: 'Cormorant Garamond, Georgia, serif', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
+      <div style={{ fontSize: 'var(--type-body)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
         "{status.current.q}"
       </div>
       {'Notification' in window && notifPerm !== 'granted' && (
