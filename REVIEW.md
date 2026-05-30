@@ -1,8 +1,8 @@
 # Grand Tour 2026 — 개발 현 상태 리뷰
 
 > 대상: `~/Desktop/grandtour/` (단일 HTML 앱, Vercel 배포)
-> 정리일: **2026-05-31** (6차 갱신) · 정리자: Claude (Opus 4.8)
-> 라이브: https://grandtour-lilac.vercel.app/  · 인터랙티브 여정 지도 배포 완료(`4d5eeda`) · **"여정의 GitHub" 씨앗 = Publish→Fork 루프 추가(이번 커밋, 푸시)**
+> 정리일: **2026-05-31** (7차 갱신) · 정리자: Claude (Opus 4.8)
+> 라이브: https://grandtour-lilac.vercel.app/  · Publish→Fork 씨앗(`9b1b821`) · **공동작업 실시간 공유(메모 합류)+친구 초대 링크(`?trip=`)+옆으로 밀어 "누가 언제 수정"(이번 커밋, 푸시)**
 > 저장소: https://github.com/rarehotdog/grandtour
 > 출발: **2026-06-15** (D−15) · 코드 동결 권장: **2026-06-08**
 
@@ -12,8 +12,8 @@
 
 | 지표 | 값 |
 |---|---|
-| **index.html** | 7,115줄 · ~425KB (실제 지리 베이스맵 path 포함) |
-| **React 컴포넌트** | 61개 (App 포함, 함수형) |
+| **index.html** | 7,239줄 · ~430KB (실제 지리 베이스맵 path 포함) |
+| **React 컴포넌트** | 62개 (App 포함, 함수형) |
 | **디자인 토큰** | 100개 (atomic + semantic + scale) |
 | **체크리스트** | 주제별 8카테고리 · 36항목(전 항목 한 줄 desc) |
 | **일정 사진** | 검증 Unsplash 21장 + 7개 day는 챕터 그래디언트 폴백(검정박스 0) |
@@ -61,7 +61,8 @@
 | **콘텐츠: 추억 바이트** | `f21e52f` | **일정 사색 레이어** — ASI 라벨 `🍪 오늘의 추억 바이트`로 변경·DAYS 28일 전부 `why`(철학/역사/경제 맥락)+`qchain`(꼬리 질문 3개) 추가, `EditableDayDetail` 접힘 토글 노출·RECOMMENDATIONS 9도시 108개 `worth`(왜 하면 좋을지) 추가. 톤=친근체+공동(주연 공유, GSB 등 개인 커리어 표현 제거) _(origin 푸시 완료)_ |
 | **콘텐츠: 산물 디벨롭** | `51a8e86` | **OUTPUTS 19개 `desc`** 친근체+맥락으로 디벨롭(추억 바이트 톤 연결). Private 영역이라 1인칭 사색 유지, 제목·storage 키 불변. _(`f21e52f`와 함께 origin 푸시 완료)_ |
 | **인터랙티브 여정 지도** | `4d5eeda` | **실제 지리 베이스맵**(Natural Earth 110m 해안선·국가경계를 `project()`와 동일 equirect 투영으로 인라인 SVG 정적 임베드, 의존성 0)·**비행기 SMIL 순회 제거** → 핀치/휠/드래그/버튼 **줌·팬**(RAF 트윈, 1~8배)·핀/도시 탭→**그 도시로 확대**(핀·라벨은 transform 밖 렌더로 상수 크기)·**`CityMomentHero`** 도시별 검증 사진 배경+연한 스크림(**피렌체 두오모 포함 9도시 육안 검증**, 실패 시 챕터 파스텔 폴백)·지도 가로폭 본문 정렬·여정 자간/간격 **디자인 토큰 정렬**(`--track-*`/`--space-*`)·전역 `-0.02em`→`var(--track-tight)`. **푸시·배포·라이브 마커 검증 완료** |
-| **Publish→Fork 씨앗** | _(이번 커밋)_ | **"여정의 GitHub" 1차** — `journeyShare` 헬퍼(`gt_state` 재사용: trip_id=publish코드, k='journey'\|'counters')·**Publish**(일정·비용·관점만, allowlist 3키로 사적 데이터 구조적 차단)·**Fork**(`?j=` 자동감지 + 코드 입력 → `ForkPreview` 읽기전용 → "내 앱으로 가져오기" 병합/덮어쓰기)·`JourneyShareCard`(기록 탭)·view/fork 카운터(vanity). esbuild 파싱 0·프라이버시 불변식 단위 증명 완료 |
+| **Publish→Fork 씨앗** | `9b1b821` | **"여정의 GitHub" 1차** — `journeyShare` 헬퍼(`gt_state` 재사용: trip_id=publish코드, k='journey'\|'counters')·**Publish**(일정·비용·관점만, allowlist 3키로 사적 데이터 구조적 차단)·**Fork**(`?j=` 자동감지 + 코드 입력 → `ForkPreview` 읽기전용 → "내 앱으로 가져오기" 병합/덮어쓰기)·`JourneyShareCard`(기록 탭)·view/fork 카운터(vanity). esbuild 파싱 0·프라이버시 불변식 단위 증명 완료 |
+| **공동작업 실시간** | _(이번 커밋)_ | **친구 초대 → 체크리스트·메모 실시간 공유 + "누가 언제 수정"** — `notes`+`check_meta`+`notes_meta`를 `SYNC_KEYS`/realtime map에 합류(메모는 연결 시에만 공유, 솔로는 로컬)·표시 이름 `actor_name`(기기 로컬)·`toggleCheck`/`saveNote`가 `{by,at}` 도장·`<SwipeRow>`(포인터 드래그·pan-y·스냅+햅틱)로 항목 옆으로 밀면 `👤 이름 · n분 전`·`?trip=` 초대 링크 자동참여·SyncPanel "🤝 공동작업"(이름·초대링크). 검증: esbuild 0·`getRelativeTime` 경계값·**Supabase REST 왕복 스모크(notes/check_meta upsert·read·delete 201/200/204)** |
 
 ---
 
@@ -266,7 +267,18 @@ BackupReminder    ← 최하단 (이동됨)
 - 검증: esbuild 인라인 JSX 파싱 0 오류·프래그먼트 0·프라이버시 불변식 node 단위 증명(적대 입력에도 사적 키 전부 탈락).
 - 결정: 공개=일정·비용·관점만. 비목표=auth·upstream PR·커밋 타임라인·디스커버리.
 
-**다음(승인됨, 구현 중)**: 공동작업 실시간 공유(메모 동기화 합류)·친구 초대 링크(`?trip=`)·"옆으로 밀면 누가 언제 수정"(이름+swipe 감사). → 7차에 기록 예정.
+#### 2026-05-31 (7차) — 공동작업 실시간 공유 + "누가 언제 수정"(swipe)
+
+> 사용자 요청: 친구를 초대하면 체크리스트·메모가 실시간 공유, 항목을 옆으로 밀면 누가 언제 고쳤는지.
+
+**완료 (미푸시→이번 커밋)** — 결정: ① 참여 시 표시 이름 입력 ② 메모 LWW+누가·언제 ③ 마지막 수정자만.
+- 메모 실시간: `SYNC_KEYS`에 `notes` 합류(연결 시에만 공유, 솔로는 기기 로컬 유지) + realtime map `notes:setNotes`.
+- 신원: `actor_name`(기기 로컬, 동기화 제외) + `actorName()`. SyncPanel에서 편집, 연결/초대 시 prompt.
+- 메타: `check_meta`/`notes_meta` = `{id:{by,at}}` 동기화 키. `toggleCheck`/`saveNote`가 도장.
+- `<SwipeRow>`: 포인터 드래그(터치+마우스)·`touchAction:pan-y`로 세로 스크롤 보존·가로 우세 판정·임계 절반 스냅+햅틱. 뒤 패널 `👤 이름 · n분 전`(없으면 "수정 기록 없음"). 체크 항목·메모 카드에 적용. `getRelativeTime()` 신규.
+- 초대: `?trip=code` 자동감지(참여 confirm→이름→연결). SyncPanel "🤝 공동작업 (친구 초대)" + 🔗 초대 링크/코드 복사. 공유 범위 안내 갱신(메모 포함).
+- 한계(문서화): 전체 키 LWW(동시 같은 날 메모/다른 항목 토글 시 나중 게 이김, realtime이 창 좁힘) · 관점·사진 미동기화 유지.
+- 검증: esbuild JSX 0오류·프래그먼트 0·`getRelativeTime` 경계값·**Supabase REST 왕복 스모크**(notes/check_meta 201·read 200·delete 204). 실시간 UI 두 탭 확인은 사용자 몫(헤드리스 금지).
 
 ### 🎯 다음 개선 — 통합 우선순위 (2026-05-30 기준)
 

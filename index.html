@@ -1111,7 +1111,7 @@ const storage = {
 const SUPA_URL = 'https://gjpnaadgzdybeekfiewd.supabase.co';
 const SUPA_KEY = 'sb_publishable_q-IugXVWCMCgBAiBZTSoTA_vW3TpAtO';
 // 메모·관점·사진·캐시(fx/weather)는 동기화 제외 — 의도적 (용량·기기 로컬, 둘 다 같은 기기에서 보는 전제)
-const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses'];
+const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses', 'notes', 'check_meta', 'notes_meta'];
 
 let _supaClient = null;
 function getSupa() {
@@ -1259,6 +1259,22 @@ const journeyShare = {
 // =================== UTILS ===================
 const daysBetween = (a, b) => Math.ceil((b - a) / (1000 * 60 * 60 * 24));
 
+// 공동작업 표시 이름 — 기기 로컬(동기화 제외). 모든 수정 메타에 도장.
+const actorName = () => { try { return localStorage.getItem('actor_name') || '익명'; } catch (e) { return '익명'; } };
+
+// 상대 시간 ("방금 전" / "n분 전" / "어제" …)
+const getRelativeTime = (iso) => {
+  if (!iso) return '';
+  const diff = Date.now() - new Date(iso).getTime();
+  const m = Math.floor(diff / 60000), h = Math.floor(diff / 3600000), d = Math.floor(diff / 86400000);
+  if (m < 1) return '방금 전';
+  if (m < 60) return m + '분 전';
+  if (h < 24) return h + '시간 전';
+  if (d === 1) return '어제';
+  if (d < 7) return d + '일 전';
+  try { return new Date(iso).toLocaleDateString('ko-KR'); } catch (e) { return ''; }
+};
+
 const getCurrentStatus = () => {
   const now = new Date();
   if (now < TRIP_START) {
@@ -1310,7 +1326,9 @@ function App() {
   const [view, setView] = useState('home');
   const [forkCode, setForkCode] = useState(null);
   const [checks, setChecks] = useState({});
+  const [checkMeta, setCheckMeta] = useState({});
   const [notes, setNotes] = useState({});
+  const [notesMeta, setNotesMeta] = useState({});
   const [outputs, setOutputs] = useState({});
   const [packing, setPacking] = useState({});
   const [packingCustom, setPackingCustom] = useState({ tyler: {}, juyeon: {}, couple: {} });
@@ -1332,7 +1350,7 @@ function App() {
 
   useEffect(() => {
     (async () => {
-      const [c, n, o, p, e, lsPhotos, pc, pe, idbPhotos] = await Promise.all([
+      const [c, n, o, p, e, lsPhotos, pc, pe, cm, nm, idbPhotos] = await Promise.all([
         storage.get('check'),
         storage.get('notes'),
         storage.get('outputs'),
@@ -1341,6 +1359,8 @@ function App() {
         storage.get('photos'),
         storage.get('packing_custom'),
         storage.get('packing_edits'),
+        storage.get('check_meta'),
+        storage.get('notes_meta'),
         idb.all(),
       ]);
 
@@ -1359,7 +1379,9 @@ function App() {
       }
 
       setChecks(c || {});
+      setCheckMeta(cm || {});
       setNotes(n || {});
+      setNotesMeta(nm || {});
       setOutputs(o || {});
       setPacking(p || {});
       setEdits(e || { day: {}, hotel: {}, flight: {} });
@@ -1383,11 +1405,35 @@ function App() {
     } catch (e) {}
   }, [loaded]);
 
+  // 친구 초대 링크 자동감지 (?trip=code) — 공동 워크스페이스 참여
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const t = new URLSearchParams(location.search).get('trip');
+      if (!t) return;
+      const code = t.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      history.replaceState(null, '', location.origin + location.pathname);
+      if (code.length >= 8 && code !== gtSync.tripId()) {
+        if (confirm('이 공동 워크스페이스에 참여할까요?\n체크리스트·메모·예약·가계부가 실시간 공유됩니다.')) {
+          if (!localStorage.getItem('actor_name')) {
+            const nm = prompt('공동작업에서 보일 내 이름 (예: 태현, 주연)');
+            if (nm && nm.trim()) localStorage.setItem('actor_name', nm.trim());
+          }
+          gtSync.setTripId(code);
+          location.reload();
+        }
+      }
+    } catch (e) {}
+  }, [loaded]);
+
   // Supabase 동기화 — trip code 연결 시 초기 pull + Realtime 구독, 원격 변경을 App 상태에 반영
   useEffect(() => {
     if (!loaded || !gtSync.tripId()) return;
     const map = {
       check: setChecks,
+      check_meta: setCheckMeta,
+      notes: setNotes,
+      notes_meta: setNotesMeta,
       packing: setPacking,
       packing_custom: setPackingCustom,
       packing_edits: setPackingEdits,
@@ -1426,6 +1472,11 @@ function App() {
       storage.set('check', updated);
       return updated;
     });
+    setCheckMeta(prev => {
+      const m = { ...prev, [id]: { by: actorName(), at: new Date().toISOString() } };
+      storage.set('check_meta', m);
+      return m;
+    });
   };
 
   const togglePacking = (id) => {
@@ -1441,6 +1492,9 @@ function App() {
     const updated = { ...notes, [dayId]: { content, updated: new Date().toISOString() } };
     setNotes(updated);
     await storage.set('notes', updated);
+    const m = { ...notesMeta, [dayId]: { by: actorName(), at: new Date().toISOString() } };
+    setNotesMeta(m);
+    await storage.set('notes_meta', m);
   };
 
   const toggleOutput = async (id) => {
@@ -1702,8 +1756,8 @@ function App() {
           <div key={view} className="gt-view">
             {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
             {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
-            {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
-            {view === 'private' && <Private notes={notes} saveNote={saveNote} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
+            {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} checkMeta={checkMeta} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
+            {view === 'private' && <Private notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
             {view === 'forkpreview' && <ForkPreview code={forkCode} onFork={onFork} onClose={() => setView('home')} />}
             {view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
           </div>
@@ -2214,7 +2268,7 @@ function Recommendations({ chapterId, chapter }) {
 }
 
 // =================== 기록 (메모 + 관점, 공개) ===================
-function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOutputContent, edits, onForkOpen }) {
+function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutput, saveOutputContent, edits, onForkOpen }) {
   const [view, setView] = useState('notes'); // 'notes' or 'outputs'
 
   const writtenCount = Object.keys(notes).filter(k => notes[k]?.content).length;
@@ -2235,7 +2289,7 @@ function Private({ notes, saveNote, DAYS, photos, outputs, toggleOutput, saveOut
         <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 관점</SubTab>
       </div>
 
-      {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} DAYS={DAYS} />}
+      {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} />}
       {view === 'outputs' && <OutputsInner outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
     </div>
   );
@@ -2406,7 +2460,7 @@ function ForkPreview({ code, onFork, onClose }) {
 }
 
 // Inner Notes (without the page header)
-function NotesInner({ notes, saveNote, DAYS }) {
+function NotesInner({ notes, saveNote, notesMeta, DAYS }) {
   const [query, setQuery] = useState('');
   const q = query.trim().toLowerCase();
 
@@ -2467,11 +2521,12 @@ function NotesInner({ notes, saveNote, DAYS }) {
         const ch = C(day.c);
         const noteContent = notes[day.n]?.content;
         return (
-          <details key={day.n} open={!!q} style={{
+          <div key={day.n} style={{ marginBottom: '8px', borderRadius: 'var(--radius-md)', overflow: 'hidden' }}>
+          <SwipeRow meta={notesMeta && notesMeta[day.n]}>
+          <details open={!!q} style={{
             background: 'var(--color-bg-surface)',
             border: '1px solid var(--color-border-default)',
             borderRadius: 'var(--radius-md)',
-            marginBottom: '8px',
             padding: '14px 16px'
           }}>
             <summary style={{ cursor: 'pointer', listStyle: 'none', display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -2526,6 +2581,8 @@ function NotesInner({ notes, saveNote, DAYS }) {
               <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
             </div>
           </details>
+          </SwipeRow>
+          </div>
         );
       })}
     </div>
@@ -4000,48 +4057,72 @@ function NotifSetup() {
 function SyncPanel() {
   const [tripId, setTrip] = useState(gtSync.tripId());
   const [input, setInput] = useState('');
+  const [name, setName] = useState(() => { try { return localStorage.getItem('actor_name') || ''; } catch (e) { return ''; } });
   const connected = !!tripId;
 
+  const saveName = (v) => { setName(v); try { localStorage.setItem('actor_name', v); } catch (e) {} };
+  const ensureName = () => {
+    if (name.trim()) return;
+    const n = (prompt('공동작업에서 보일 내 이름 (예: 태현, 주연)') || '').trim();
+    if (n) saveName(n);
+  };
   const connect = (code) => {
     const c = (code || '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
     if (c.length < 8) { alert('코드가 너무 짧아요. 20자리 코드를 정확히 입력해주세요.'); return; }
+    ensureName();
     gtSync.setTripId(c);
     location.reload(); // 깨끗한 구독 시작
   };
   const create = () => {
-    if (!confirm('새 동기화 코드를 만들어 이 기기를 연결할까요?\n같은 코드를 주연 기기에도 입력하면 공유됩니다.')) return;
+    if (!confirm('새 공동작업 코드를 만들어 이 기기를 연결할까요?\n초대 링크를 친구에게 보내면 함께 편집할 수 있어요.')) return;
     connect(gtSync.newCode());
   };
   const disconnect = () => {
-    if (!confirm('동기화를 끊을까요? 데이터는 기기에 그대로 남고, 더 이상 공유되지 않습니다.')) return;
+    if (!confirm('공동작업을 끊을까요? 데이터는 기기에 그대로 남고, 더 이상 공유되지 않습니다.')) return;
     gtSync.setTripId(null);
     location.reload();
+  };
+  const inviteUrl = tripId ? (location.origin + location.pathname + '?trip=' + tripId) : '';
+  const lblStyle = { fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '6px' };
+  const codeStyle = {
+    fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: '0.5px',
+    background: 'var(--color-bg-page)', padding: '8px 10px', borderRadius: 'var(--radius-sm)',
+    border: '1px solid var(--color-border-default)', wordBreak: 'break-all', flex: 1, minWidth: '140px'
   };
 
   return (
     <Card>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <SectionTitle>💑 기기 간 동기화</SectionTitle>
+        <SectionTitle>🤝 공동작업 (친구 초대)</SectionTitle>
         {connected && (
           <span style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-success)', fontWeight: 600 }}>● 연결됨</span>
         )}
       </div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-        체크 · 패킹 · 미식 예약 · 가계부 · 일정편집이 두 기기에 실시간 공유돼요.<br/>
-        <span style={{ color: 'var(--color-accent-primary)' }}>메모 · 관점 · 사진은 공유되지 않습니다.</span>
+        체크 · 패킹 · 미식 예약 · 가계부 · 일정편집 · <strong>메모</strong>가 실시간 공유돼요.<br/>
+        항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-accent-primary)' }}>관점·사진은 기기 로컬.</span>
       </div>
 
       {connected ? (
         <div>
-          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>공유 코드 (주연 기기에 입력)</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-            <code style={{
-              fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: '0.5px',
-              background: 'var(--color-bg-page)', padding: '8px 10px', borderRadius: 'var(--radius-sm)',
-              border: '1px solid var(--color-border-default)', wordBreak: 'break-all', flex: 1, minWidth: '160px'
-            }}>{tripId}</code>
-            <CopyChip text={tripId} label="코드 복사" />
+          <div style={lblStyle}>내 표시 이름 (수정 기록에 표시)</div>
+          <input
+            value={name} onChange={e => saveName(e.target.value)} placeholder="예: 태현"
+            style={{ width: '100%', padding: '9px 11px', marginBottom: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)', fontSize: 'var(--type-caption)', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', boxSizing: 'border-box', fontFamily: 'var(--font-sans)' }}
+          />
+
+          <div style={lblStyle}>🔗 초대 링크 (친구에게 보내기 — 열면 바로 참여)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <code style={codeStyle}>{inviteUrl}</code>
+            <CopyChip text={inviteUrl} label="링크" icon="🔗" />
           </div>
+
+          <div style={lblStyle}>또는 공유 코드 직접 전달</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+            <code style={codeStyle}>{tripId}</code>
+            <CopyChip text={tripId} label="코드" />
+          </div>
+
           <button onClick={disconnect} style={{
             padding: '10px 12px', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)',
             border: '1px solid var(--color-border-default)', borderRadius: '8px',
@@ -4647,7 +4728,47 @@ function NoteEditor({ dayId, note, save }) {
 }
 
 // =================== CHECKLIST ===================
-function Checklist({ checks, toggleCheck, packing, togglePacking, packingCustom, packingEdits, savePackingEdit, resetPackingEdit, addPackingItem, removePackingItem }) {
+// 옆으로 밀면 "누가 언제 수정" 노출 (터치+마우스 pointer 드래그). 메타 없으면 안내.
+function SwipeRow({ meta, children, bg }) {
+  const [dx, setDx] = useState(0);
+  const g = useRef(null);
+  const REVEAL = 112;
+  const label = (meta && meta.by) ? ('👤 ' + meta.by + ' · ' + getRelativeTime(meta.at)) : '수정 기록 없음';
+  const down = (e) => { g.current = { x: e.clientX, y: e.clientY, base: dx, decided: false, horiz: false }; };
+  const move = (e) => {
+    const s = g.current; if (!s) return;
+    const ddx = e.clientX - s.x, ddy = e.clientY - s.y;
+    if (!s.decided) {
+      if (Math.abs(ddx) < 6 && Math.abs(ddy) < 6) return;
+      s.decided = true; s.horiz = Math.abs(ddx) > Math.abs(ddy);
+      if (s.horiz) { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} }
+    }
+    if (!s.horiz) return;
+    setDx(Math.max(-REVEAL, Math.min(0, s.base + ddx)));
+  };
+  const up = () => {
+    const s = g.current; g.current = null;
+    if (!s || !s.horiz) return;
+    const open = dx < -REVEAL / 2;
+    setDx(open ? -REVEAL : 0);
+    if (open) { try { if (navigator.vibrate) navigator.vibrate(8); } catch (x) {} }
+  };
+  return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', right: 0, top: 0, bottom: 0, width: REVEAL + 'px', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 var(--space-2)', fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', textAlign: 'center', lineHeight: 1.4 }}>
+        {label}
+      </div>
+      <div
+        onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}
+        style={{ position: 'relative', transform: `translateX(${dx}px)`, transition: g.current ? 'none' : 'transform 0.25s var(--ease-out)', background: bg || 'var(--color-bg-surface)', touchAction: 'pan-y' }}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, packingCustom, packingEdits, savePackingEdit, resetPackingEdit, addPackingItem, removePackingItem }) {
   const [tab, setTab] = useState('checklist');
   const [packingPerson, setPackingPerson] = useState('tyler');
 
@@ -4685,6 +4806,7 @@ function Checklist({ checks, toggleCheck, packing, togglePacking, packingCustom,
           items={items}
           checks={checks}
           toggle={toggleCheck}
+          checkMeta={checkMeta}
         />
       ))}
 
@@ -4918,7 +5040,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
   );
 }
 
-function ChecklistSection({ title, items, checks, toggle, showSource }) {
+function ChecklistSection({ title, items, checks, toggle, checkMeta, showSource }) {
   const total = items.length;
   const done = items.filter(i => checks[i.id]).length;
 
@@ -4937,7 +5059,8 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
       {items.map(item => {
         const checked = !!checks[item.id];
         return (
-          <div key={item.id} style={{ position: 'relative', borderTop: '1px solid var(--color-border-soft)' }}>
+          <div key={item.id} style={{ borderTop: '1px solid var(--color-border-soft)' }}>
+            <SwipeRow meta={checkMeta && checkMeta[item.id]}>
             <button
               onClick={() => toggle(item.id)}
               style={{
@@ -5010,6 +5133,7 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
                 예약 ↗
               </a>
             )}
+            </SwipeRow>
           </div>
         );
       })}
