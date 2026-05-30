@@ -288,10 +288,10 @@
       overflow-x: auto;
       -webkit-overflow-scrolling: touch;
       scrollbar-width: none;
-      padding-bottom: var(--space-1);
+      /* 좌우 여백 대칭 — 첫/마지막 항목이 가장자리에 붙어 잘려 보이지 않게 */
+      padding: 2px var(--space-1) var(--space-1);
+      scroll-padding-left: var(--space-1);
       scroll-snap-type: x proximity;
-      -webkit-mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%);
-              mask-image: linear-gradient(to right, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%);
     }
     .gt-chips::-webkit-scrollbar { display: none; }
     .gt-chips > * { scroll-snap-align: start; flex-shrink: 0; }
@@ -582,25 +582,25 @@ const RECOMMENDATIONS = {
 const DAYS_DEFAULT = [
   { n: 1, d: '6/15', w: '월', c: 'p', city: 'ICN→HKG→CDG', hotel: '기내', moves: '✈️ ICN 야간 출발', hl: '출국·기내 수면', food: '라운지 + 기내식', asi: 'MFA 100% + 복구코드 백업 + 여행 시작 선언문 1페이지', q: '나는 이번 여행에서 무엇을 비우고 채울 것인가?', mo: '비행기에서 손잡고 선언문 함께 작성', int: 'H' },
   { n: 2, d: '6/16', w: '화', c: 'paris', city: '파리', hotel: 'Hotel Indigo Paris-Opera', moves: 'CDG 07:00 → RER B + Metro', hl: '도착·짐 보관·시차 적응 산책', food: '🥐 비스트로 + 카페', asi: '도시 디자인 관찰 메모', q: '파리의 첫 공기는 어떤 색인가?', mo: '센강 다리에서 첫 사진 (둘이서)', int: 'M' },
-  { n: 3, d: '6/17', w: '수', c: 'paris', city: '파리', hotel: 'Hotel Indigo Paris-Opera', moves: '도보 + Metro', hl: '루브르·판테온·Café de Flore', food: '🌟 Le Jules Verne (예약!)', asi: '취향 원칙 7개 초안 · "시대정신 한 단어"', q: '정보가 무료가 될수록 무엇이 희소해지는가?', mo: '에펠탑 라이트쇼 보며 클링크', int: 'M' },
+  { n: 3, d: '6/17', w: '수', c: 'paris', city: '파리', hotel: 'Hotel Indigo Paris-Opera', moves: '🚇 M7 루브르 / M10 판테온 · 도보 중심 (생제르맹·라탱)', hl: '루브르·판테온·Café de Flore', food: '🌟 Le Jules Verne (예약!)', asi: '취향 원칙 7개 초안 · "시대정신 한 단어"', q: '정보가 무료가 될수록 무엇이 희소해지는가?', mo: '에펠탑 라이트쇼 보며 클링크', int: 'M' },
   { n: 4, d: '6/18', w: '목', c: 'london', city: '파리→런던', hotel: 'Park Hyatt River Thames', moves: '🚄 Eurostar 09:00 → 10:30', hl: '체크인 + Sky Garden 일몰', food: 'Dishoom 또는 호텔', asi: '"이 도시가 표준화한 것" 첫 관찰', q: '국경을 넘는다는 것의 의미는?', mo: 'Sky Garden 일몰 둘이서 와인', int: 'M' },
-  { n: 5, d: '6/19', w: '금', c: 'london', city: '런던', hotel: 'Park Hyatt River Thames', moves: '도보·지하철', hl: 'British Museum + The City + Connaught Bar', food: '🌟 Connaught Bar 마티니', asi: 'British Museum 비즈니스 모델 · 동인도회사→빅테크', q: '제국이 모은 것이 디지털 시대에 어떻게 환생하는가?', mo: '같은 유물 앞 각자 1줄 → 교환', int: 'M+' },
+  { n: 5, d: '6/19', w: '금', c: 'london', city: '런던', hotel: 'Park Hyatt River Thames', moves: '🚇 튜브 Central·Circle선 (Holborn/Bank) · 더시티 도보', hl: 'British Museum + The City + Connaught Bar', food: '🌟 Connaught Bar 마티니', asi: 'British Museum 비즈니스 모델 · 동인도회사→빅테크', q: '제국이 모은 것이 디지털 시대에 어떻게 환생하는가?', mo: '같은 유물 앞 각자 1줄 → 교환', int: 'M+' },
   { n: 6, d: '6/20', w: '토', c: 'london', city: '런던 (호텔 이동)', hotel: 'InterCon Park Lane', moves: '우버 30분', hl: "Speaker's Corner + Hyde Park + Dishoom", food: 'Dishoom Covent Garden', asi: "Speaker's Corner 1분 연설 녹화", q: '광장은 어떻게 혁명을 만드는가?', mo: "Speaker's Corner 1분 연설 (녹화)", int: 'M' },
-  { n: 7, d: '6/21', w: '일', c: 'london', city: '런던 (옵션 Bath)', hotel: 'InterCon Park Lane', moves: '데이트레인 또는 시내', hl: 'Bath 데이트립 또는 V&A · Tower Bridge 일몰', food: '펍 + 와인', asi: '런던 챕터 마무리 1페이지', q: '내가 만들 인프라가 2000년 가려면?', mo: 'Tower Bridge 앞 1분 침묵 → 1줄', int: 'M' },
+  { n: 7, d: '6/21', w: '일', c: 'london', city: '런던 (옵션 Bath)', hotel: 'InterCon Park Lane', moves: '🚆 Paddington→Bath 1h30m 왕복 · 또는 시내 튜브', hl: 'Bath 데이트립 또는 V&A · Tower Bridge 일몰', food: '펍 + 와인', asi: '런던 챕터 마무리 1페이지', q: '내가 만들 인프라가 2000년 가려면?', mo: 'Tower Bridge 앞 1분 침묵 → 1줄', int: 'M' },
   { n: 8, d: '6/22', w: '월', c: 'dol', city: '런던→베니스→Ortisei', hotel: 'X ALP', moves: '🚕 5:00 호텔 ✈️ BA600 08:50→12:05 🚗 3h', hl: '베이스 정착 + 풀·사우나 (강행군 후 회복)', food: 'X ALP 디너', asi: 'Trust Ledger 시작', q: '문명 밖에서 내 OS는 어떻게 리셋되는가?', mo: '풀에서 스파클링 + 별 보기', int: 'H' },
   { n: 9, d: '6/23', w: '화', c: 'dol', city: 'Alpe di Siusi', hotel: 'X ALP', moves: '🚠 케이블카 + 🚗', hl: 'Alpe di Siusi 트레킹 (3h) + Sella Pass 드라이브', food: '산장 점심 + 호텔 디너', asi: '"기술이 못 만들 가치 5개" 검증', q: '높은 곳에 오르면 무엇이 단순해지는가?', mo: '초원 누워 구름 보기 (폰 OFF 30분)', int: 'M' },
   { n: 10, d: '6/24', w: '수', c: 'dol', city: '⭐ Seceda 일출', hotel: 'X ALP', moves: '🌅 05:30 출발 → 케이블카', hl: '⭐ Seceda 정상 일출 + 1원칙 재정의 · 저녁 미슐랭', food: '🌟 Anna Stuben 미슐랭', asi: '⭐ "내가 풀려는 진짜 문제" 1페이지 (평생 보관)', q: '내가 풀려는 문제는 정확히 무엇인가? 핵심 변수는?', mo: '⭐ 일출 보며 둘이 무릎 꿇고 결심 1줄', int: 'H' },
   { n: 11, d: '6/25', w: '목', c: 'flo', city: 'Ortisei→피렌체', hotel: 'FH55 Mediterraneo', moves: '🚗 09:00 → 14:30 (3.5h)', hl: '도착 + Piazzale Michelangelo 일몰', food: '와인+치즈 (피아짤레)', asi: '"내가 후원할 다음 시대" 메모', q: '예술과 자본은 어떻게 만나는가?', mo: '피아짤레 일몰 와인 + 둘만의 30분', int: 'M' },
-  { n: 12, d: '6/26', w: '금', c: 'flo', city: '피렌체', hotel: 'FH55 Mediterraneo', moves: '도보', hl: "Uffizi (09:00) + Duomo 돔 등반 + All'Antico Vinaio", food: '🌟 La Ménagère 또는 Trattoria Sostanza', asi: '메디치 후원 포트폴리오 분석 → 내 LP 기준', q: '나의 보티첼리는 어디에 있는가?', mo: '돔 꼭대기에서 다음 도시 베팅', int: 'M' },
+  { n: 12, d: '6/26', w: '금', c: 'flo', city: '피렌체', hotel: 'FH55 Mediterraneo', moves: '🚶 구시가 전부 도보권 (Uffizi·Duomo 10분 내)', hl: "Uffizi (09:00) + Duomo 돔 등반 + All'Antico Vinaio", food: '🌟 La Ménagère 또는 Trattoria Sostanza', asi: '메디치 후원 포트폴리오 분석 → 내 LP 기준', q: '나의 보티첼리는 어디에 있는가?', mo: '돔 꼭대기에서 다음 도시 베팅', int: 'M' },
   { n: 13, d: '6/27', w: '토', c: 'rom', city: '피렌체→로마', hotel: 'Rome Cavalieri Waldorf', moves: '🚆 Frecciarossa 1h30m', hl: '도착·체크인 · 자정 트레비 분수', food: 'Da Enzo (Trastevere)', asi: '"1000년 시스템 = 내 비즈니스" 가설', q: '왜 모든 길은 로마로 통하는가?', mo: '트레비 동전 → 10년 후 약속', int: 'L' },
-  { n: 14, d: '6/28', w: '일', c: 'rom', city: 'Colosseum 풀데이', hotel: 'Rome Cavalieri Waldorf', moves: '도보', hl: 'Colosseum 07:00 + Forum + Palatine + Pantheon', food: '🌟 La Pergola 3⭐ 또는 Roscioli', asi: '"Colosseum 운영 시스템" → 현대 스포츠 비즈니스', q: '권력은 어떻게 시스템으로 전환되는가?', mo: '아레나에서 검투사 자세 5분', int: 'H' },
-  { n: 15, d: '6/29', w: '월', c: 'rom', city: '⭐ Vatican + Pantheon', hotel: 'Rome Cavalieri Waldorf', moves: '도보', hl: '⭐ Vatican 06:30 가이드 + Cupola + Pantheon (광선)', food: 'Trastevere 산책', asi: '⭐ Pantheon 1페이지: "내 시스템이 1000년 가려면"', q: '내가 만들 회사가 100년 후에도 남으려면 지금 무엇을 결정해야 하나?', mo: '오쿨루스 아래 나란히 사진', int: 'H' },
+  { n: 14, d: '6/28', w: '일', c: 'rom', city: 'Colosseum 풀데이', hotel: 'Rome Cavalieri Waldorf', moves: '🚇 메트로 B선 Colosseo역 · 포로 로마노 도보', hl: 'Colosseum 07:00 + Forum + Palatine + Pantheon', food: '🌟 La Pergola 3⭐ 또는 Roscioli', asi: '"Colosseum 운영 시스템" → 현대 스포츠 비즈니스', q: '권력은 어떻게 시스템으로 전환되는가?', mo: '아레나에서 검투사 자세 5분', int: 'H' },
+  { n: 15, d: '6/29', w: '월', c: 'rom', city: '⭐ Vatican + Pantheon', hotel: 'Rome Cavalieri Waldorf', moves: '🚖 호텔→바티칸 15분 · 이후 도보 (판테온·나보나)', hl: '⭐ Vatican 06:30 가이드 + Cupola + Pantheon (광선)', food: 'Trastevere 산책', asi: '⭐ Pantheon 1페이지: "내 시스템이 1000년 가려면"', q: '내가 만들 회사가 100년 후에도 남으려면 지금 무엇을 결정해야 하나?', mo: '오쿨루스 아래 나란히 사진', int: 'H' },
   { n: 16, d: '6/30', w: '화', c: 'pos', city: '로마→포지타노', hotel: 'Palazzo Talamo', moves: '🚐 프라이빗 트랜스퍼 4h', hl: '⭐ 도착 + ⭐ La Sponda 캔들 400개 디너', food: '🌟 La Sponda (Le Sirenuse)', asi: '메모 잠시 쉼 — 오늘은 1줄만', q: '진짜 휴식은 어떤 결정을 가능하게 하는가?', mo: '⭐ Palazzo Talamo 발코니 + 프로세코', int: 'M' },
   { n: 17, d: '7/1', w: '수', c: 'pos', city: '⭐ 프라이빗 보트', hotel: 'Palazzo Talamo', moves: '⛵ 보트 9-13시', hl: '카프리 보트 + Da Adolfo 점심 + 자쿠지', food: 'Da Adolfo (보트만) + 호텔 디너', asi: '⭐ 중간 결산 1차: 전반부 5챕터 인사이트 5개', q: '바다 위에서 본 절벽은 절벽 위 바다와 어떻게 다른가?', mo: '⭐ 보트 위 5챕터 베스트 1순간 1개씩 교환', int: 'L' },
   { n: 18, d: '7/2', w: '목', c: 'pos', city: '⭐ 포지타노 휴식일', hotel: 'Palazzo Talamo', moves: '호텔 + 산책', hl: '⭐ 신들의 길 일부 또는 완전 휴식 · Le Sirenuse Champagne Bar', food: '🍷 Champagne Bar 칵테일 + 가벼운 디너', asi: '"3박 휴식이 가능하게 한 결정" 메모 + 내일 새벽 준비', q: '느린 시간이 가져다준 명료함은 무엇인가?', mo: '⭐ 발코니 마지막 일몰 + 다음 일정 계획', int: 'L' },
   { n: 19, d: '7/3', w: '금', c: 'san', city: '포지타노→FCO→ATH→JTR', hotel: 'NOŪS Santorini', moves: '🚐 04:00 출발 ✈️ 09:30→12:30 환승 ✈️ 15:05→15:55', hl: '⭐ 새벽 출발 + 산토리니 도착 + NOŪS 발코니 일몰', food: 'NOŪS 다이닝 ($200 F&B 크레딧)', asi: 'ATH 환승 라운지 90분 깊은 메모', q: '왜 어떤 연결은 순조롭고 어떤 것은 어그러지는가?', mo: 'NOŪS 발코니 일몰 클링크', int: 'H' },
   { n: 20, d: '7/4', w: '토', c: 'san', city: '⭐ 의도적 휴식일', hotel: 'NOŪS Santorini', moves: '호텔만', hl: '⭐ 아무것도 안 하기 + Oia 일몰', food: '🌟 Selene (Pyrgos, 미슐랭)', asi: '⭐ 중간 결산 2차: 절반 회고 + 후반부 의도', q: '내 인생의 다음 일몰은 어디일까?', mo: '⭐ Oia 일몰 폰 OFF — 끝까지 보기', int: 'L' },
-  { n: 21, d: '7/5', w: '일', c: 'san', city: 'Akrotiri + 보트', hotel: 'NOŪS Santorini', moves: '🚖 + ⛵', hl: 'Akrotiri 유적 (08:00) + 칼데라 보트 투어', food: "Lucky's Souvlakis", asi: '"파괴 후 다시 짓는다면?" 1페이지', q: '나는 무엇을 부숴야 하는가?', mo: '온천에서 "우리가 부술 것 1개씩"', int: 'M' },
+  { n: 21, d: '7/5', w: '일', c: 'san', city: 'Akrotiri + 보트', hotel: 'NOŪS Santorini', moves: '🚖 호텔→Akrotiri 15분 · ⛵ 오후 칼데라 보트', hl: 'Akrotiri 유적 (08:00) + 칼데라 보트 투어', food: "Lucky's Souvlakis", asi: '"파괴 후 다시 짓는다면?" 1페이지', q: '나는 무엇을 부숴야 하는가?', mo: '온천에서 "우리가 부술 것 1개씩"', int: 'M' },
   { n: 22, d: '7/6', w: '월', c: 'ath', city: 'Santorini→Athens', hotel: 'Athenaeum InterCon', moves: '✈️ A3357 12:30→13:20', hl: 'GB Roof Garden 디너 (Acropolis 야경)', food: '🌟 GB Roof Garden', asi: "Acropolis 보며 'Nike' 키워드 5개", q: '문명의 원형은 무엇을 남겼는가?', mo: '아크로폴리스 야간 조명 보며 클링크', int: 'L' },
   { n: 23, d: '7/7', w: '화', c: 'ath', city: '⭐ Acropolis + Pnyx', hotel: 'Athenaeum InterCon', moves: '도보 + 지하철', hl: '⭐ Acropolis 08:00 + Agora + ⭐ Pnyx Hill Nike 작성', food: 'Mani Mani', asi: '⭐⭐ "나의 Nike 1페이지" (평생 보관)', q: '내 인생의 승리는 어떤 모습인가? 시작할 1가지는?', mo: '⭐⭐ Pnyx Hill 각자의 Nike 1페이지 발표', int: 'M' },
   { n: 24, d: '7/8', w: '수', c: 'dxb', city: 'Athens→Abu Dhabi', hotel: 'Park Hyatt Abu Dhabi', moves: '✈️ A3958 08:05→13:50 · 🚖 1.5h', hl: '도착 + Park Hyatt Saadiyat 비치 (휴식)', food: 'Park Hyatt 비치 다이닝', asi: '"인공섬 + 사막 도시" 첫 인상 메모', q: '인류는 2500년 만에 사막에 도시를 세웠다. 다음 2500년은?', mo: '비치 첫 모래 찍기 + 칵테일', int: 'H' },
@@ -614,30 +614,30 @@ const DAYS_DEFAULT = [
 const THEME_IMAGES = {
   1:  { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '비행기 창문과 구름' },
   2:  { themeImg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=400&fit=crop&q=80', themeAlt: '파리 에펠탑' },
-  3:  { themeImg: 'https://images.unsplash.com/photo-1499856374874-3f4e79af58b5?w=800&h=400&fit=crop&q=80', themeAlt: '파리 야경' },
+  3:  { themeImg: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&h=400&fit=crop&q=80', themeAlt: '파리 야경' },
   4:  { themeImg: 'https://images.unsplash.com/photo-1513635269975-59663e0ac1ad?w=800&h=400&fit=crop&q=80', themeAlt: '런던 스카이라인' },
   5:  { themeImg: 'https://images.unsplash.com/photo-1520986606214-8b456906c813?w=800&h=400&fit=crop&q=80', themeAlt: '런던 빅벤' },
-  6:  { themeImg: 'https://images.unsplash.com/photo-1548345680-f5475ea5df84?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Hyde Park' },
+  6:  { themeAlt: '런던 하이드파크' },
   7:  { themeImg: 'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=800&h=400&fit=crop&q=80', themeAlt: '런던 Tower Bridge' },
-  8:  { themeImg: 'https://images.unsplash.com/photo-1504870712357-65ea720c1af0?w=800&h=400&fit=crop&q=80', themeAlt: '돌로미테 산 전경' },
+  8:  { themeImg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=400&fit=crop&q=80', themeAlt: '돌로미테 산 전경' },
   9:  { themeImg: 'https://images.unsplash.com/photo-1530122037265-a5f1f91d3b99?w=800&h=400&fit=crop&q=80', themeAlt: 'Alpe di Siusi 초원' },
   10: { themeImg: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=800&h=400&fit=crop&q=80', themeAlt: '알프스 일출' },
-  11: { themeImg: 'https://images.unsplash.com/photo-1534445538923-ab38f4978a0d?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 파노라마' },
-  12: { themeImg: 'https://images.unsplash.com/photo-1568797629192-789acf8e4df3?w=800&h=400&fit=crop&q=80', themeAlt: '피렌체 두오모' },
-  13: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 트레비 분수' },
+  11: { themeAlt: '피렌체 파노라마' },
+  12: { themeAlt: '피렌체 두오모' },
+  13: { themeAlt: '로마 트레비 분수' },
   14: { themeImg: 'https://images.unsplash.com/photo-1552832230-c0197dd311b5?w=800&h=400&fit=crop&q=80', themeAlt: '로마 콜로세움' },
-  15: { themeImg: 'https://images.unsplash.com/photo-1587974928442-77dc3e0dba72?w=800&h=400&fit=crop&q=80', themeAlt: '로마 판테온' },
+  15: { themeAlt: '로마 판테온' },
   16: { themeImg: 'https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=800&h=400&fit=crop&q=80', themeAlt: '포지타노 해안' },
   17: { themeImg: 'https://images.unsplash.com/photo-1516483638261-f4dbaf036963?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 보트' },
-  18: { themeImg: 'https://images.unsplash.com/photo-1501426026826-31c667bdf23d?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 일몰' },
+  18: { themeImg: 'https://images.unsplash.com/photo-1612698093158-e07ac200d44e?w=800&h=400&fit=crop&q=80', themeAlt: '아말피 해안 일몰' },
   19: { themeImg: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 일몰' },
   20: { themeImg: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&h=400&fit=crop&q=80', themeAlt: 'Oia 파란 돔' },
-  21: { themeImg: 'https://images.unsplash.com/photo-1601804551895-c75e4a8c7d31?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 칼데라' },
+  21: { themeImg: 'https://images.unsplash.com/photo-1613395877344-13d4a8e0d49e?w=800&h=400&fit=crop&q=80', themeAlt: '산토리니 칼데라' },
   22: { themeImg: 'https://images.unsplash.com/photo-1555993539-1732b0258235?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 아크로폴리스 야경' },
   23: { themeImg: 'https://images.unsplash.com/photo-1503152394-c571994fd383?w=800&h=400&fit=crop&q=80', themeAlt: '아테네 파르테논 신전' },
-  24: { themeImg: 'https://images.unsplash.com/photo-1578894381226-a9cce3a5be1a?w=800&h=400&fit=crop&q=80', themeAlt: '아부다비 해변' },
+  24: { themeAlt: '아부다비 셰이크 자이드 모스크' },
   25: { themeImg: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&h=400&fit=crop&q=80', themeAlt: '두바이 부르즈 할리파' },
-  26: { themeImg: 'https://images.unsplash.com/photo-1548532928-b34e3be62fc6?w=800&h=400&fit=crop&q=80', themeAlt: 'Sheikh Zayed Mosque' },
+  26: { themeAlt: '아부다비 셰이크 자이드 모스크' },
   27: { themeImg: 'https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=800&h=400&fit=crop&q=80', themeAlt: '귀국 기내 창문' },
   28: { themeImg: 'https://images.unsplash.com/photo-1538485399081-7191377e8241?w=800&h=400&fit=crop&q=80', themeAlt: '인천 도착' },
 };
@@ -670,81 +670,83 @@ const FLIGHTS_DEFAULT = [
   { d: '7/10', type: 'air',      route: 'DXB → HKG → ICN',         no: '귀국편 (시간 미정)',            t: 'TBD',              note: '저녁 비행 · Cathay Pacific 예정' },
 ];
 
+// 카테고리는 D-day가 아닌 "주제별"로 구성. 각 항목 desc = 한 줄 설명(무엇/왜).
+// id는 기존 체계 전부 보존 → 사용자 체크 데이터 무손실.
 const CHECKLIST = {
-  'D-30 · 즉시 처리': [
-    { id: 'c1', t: '✅ 호텔 10건 전부 확정 (X ALP, Palazzo Talamo, Cavalieri, Park Hyatt AD 등)', urgent: false },
-    { id: 'c2', t: '귀국편 DXB→HKG→ICN 시간 확정 (Cathay)', urgent: true, url: 'https://www.cathaypacific.com/' },
-    { id: 'c3', t: '포지타노→FCO 새벽 4시 프라이빗 트랜스퍼 예약', urgent: true, url: 'https://www.google.com/search?q=Positano+to+Rome+FCO+private+transfer+booking' },
-    { id: 'c4', t: '돌로미티 운전 IDP 발급 (Tyler)', urgent: true, url: 'https://www.safedriving.or.kr/' },
-    { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', urgent: false, url: 'https://www.hertz.com/' },
-    { id: 'c6', t: 'MFA 100% 활성화 (금융+메일+클라우드)', urgent: true },
-    { id: 'c7', t: '복구코드 백업 USB · 양가 공유', urgent: false },
-    { id: 'c8', t: '여행자보험 가입 (28일 분량)', urgent: true, url: 'https://www.google.com/search?q=해외여행자보험+장기+28일+가입' },
+  '✈️ 항공 · 기차 · 교통 예약': [
+    { id: 'c2', t: '귀국편 DXB→HKG→ICN 시간 확정 (Cathay)', desc: '유일하게 시간 미정인 항공편 — 확정해야 마지막 날 일정이 잠긴다', urgent: true, url: 'https://www.cathaypacific.com/' },
+    { id: 'a5', t: 'Eurostar 파리→런던 6/18', desc: '유로터널 고속열차 — 성수기라 좌석·요금 빨리 오름, 사전 예약 필수', urgent: false, url: 'https://www.eurostar.com/' },
+    { id: 'a4', t: 'Frecciarossa 피렌체→로마 6/27 (Executive)', desc: '이탈리아 고속열차 — Executive석은 조용하고 라운지 포함, 조기 예약 시 반값', urgent: false, url: 'https://www.trenitalia.com/en.html' },
+    { id: 'a1', t: '렌터카 VCE 픽업 / Florence 반납 (ZTL 사전등록)', desc: '돌로미티 자가운전용 — ZTL(차량통제구역) 사전등록 안 하면 벌금 폭탄', urgent: true, url: 'https://www.hertz.com/' },
+    { id: 'c3', t: '포지타노→FCO 새벽 4시 프라이빗 트랜스퍼', desc: '7/3 아침 비행 맞추려면 새벽 이동 필수 — 택시 안 잡히는 시간이라 미리 기사 예약', urgent: true, url: 'https://www.google.com/search?q=Positano+to+Rome+FCO+private+transfer+booking' },
+    { id: 'a2', t: '프라이빗 트랜스퍼: 로마→포지타노 6/30', desc: '대중교통으론 4시간+환승 — 기사 딸린 차로 짐 들고 편하게 해안도로 이동', urgent: true, url: 'https://www.google.com/search?q=Rome+to+Positano+private+transfer+booking' },
+    { id: 'a3', t: '프라이빗 트랜스퍼: 포지타노→FCO 7/2 17:00', desc: '백업 이동편 — 일정 변동 대비 공항 트랜스퍼 미리 잡아두기', urgent: true, url: 'https://www.google.com/search?q=Positano+to+FCO+airport+private+transfer' },
+    { id: 's4', t: '항공 7편 시간·터미널·라운지 재확인', desc: '출발 직전 점검 — 터미널 변경·라운지 위치 확인하면 환승 스트레스 0', urgent: false },
   ],
-  'D-30 · 레스토랑 예약': [
-    { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너 (4주 전)', urgent: true, url: 'https://www.lejulesverne-paris.com/' },
-    { id: 'r2', t: 'La Sponda 포지타노 6/30 캔들 400개 디너', urgent: true, url: 'https://www.sirenuse.it/' },
-    { id: 'r3', t: 'Anna Stuben 돌로미티 6/24 미슐랭', urgent: false, url: 'https://www.gardena.it/' },
-    { id: 'r4', t: 'La Pergola 로마 6/28 3⭐', urgent: false, url: 'https://romecavalieri.com/' },
-    { id: 'r5', t: 'Selene 산토리니 7/4 미슐랭', urgent: false, url: 'https://www.selene.gr/' },
-    { id: 'r6', t: 'At.mosphere 두바이 7/9 (Burj 122층)', urgent: false, url: 'https://www.atmosphereburjkhalifa.com/' },
-    { id: 'r7', t: 'Da Adolfo 포지타노 7/1 점심 (보트 셔틀)', urgent: false, url: 'https://www.daadolfo.com/' },
-    { id: 'r8', t: 'GB Roof Garden 아테네 7/6', urgent: false, url: 'https://www.grandebretagne.gr/' },
+  '🏨 숙소': [
+    { id: 'c1', t: '✅ 호텔 10건 전부 확정 (X ALP, Palazzo Talamo, Cavalieri, Park Hyatt AD 등)', desc: '전 일정 숙소 예약 완료 — 추가 조치 불필요', urgent: false },
+    { id: 's3', t: '호텔 예약번호·체크인 시각 재확인', desc: '도착 당일 헤매지 않게 예약번호·체크인 시간 한 곳에 정리', urgent: false },
+    { id: 's5', t: '허니문 어메니티 요청 (X ALP · Cavalieri · Palazzo Talamo · NOŪS · Park Hyatt)', desc: '신혼여행이라 말하면 샴페인·룸업그레이드·플래터 무료인 곳 많음 — 미리 메일', urgent: false },
   ],
-  'D-30 · 입장권 / 투어': [
-    { id: 't1', t: 'Uffizi Gallery 6/26 (사전예약 30일)', urgent: true, url: 'https://www.uffizi.it/en/tickets' },
-    { id: 't2', t: 'Vatican 가이드 투어 6/29 06:30', urgent: true, url: 'https://tickets.museivaticani.va/' },
-    { id: 't3', t: 'Colosseum 언더그라운드 6/28', urgent: true, url: 'https://ticketing.colosseo.it/en/' },
-    { id: 't4', t: 'Burj Khalifa SKY 일몰 7/9', urgent: true, url: 'https://www.burjkhalifa.ae/en/tickets/' },
-    { id: 't5', t: 'Museum of the Future 두바이', urgent: false, url: 'https://museumofthefuture.ae/en' },
-    { id: 't6', t: 'Duomo 돔 등반 6/26', urgent: false, url: 'https://duomo.firenze.it/en' },
-    { id: 't7', t: 'Acropolis 08:00 입장 7/7', urgent: false, url: 'https://etickets.tap.gr/' },
-    { id: 't8', t: 'British Museum 시간슬롯 6/19', urgent: false, url: 'https://www.britishmuseum.org/visit' },
-    { id: 't9', t: '🏛️ Pantheon 로마 6/28·6/29 (유료 €5 · 주말·공휴일 예약제)', urgent: true, url: 'https://www.google.com/search?q=Pantheon+Rome+official+tickets+booking' },
-    { id: 't10', t: 'Galleria Borghese 로마 (2시간 슬롯 예약 필수)', urgent: false, url: 'https://www.galleriaborghese.it/en/' },
-    { id: 't11', t: 'Seceda 케이블카 6/24 (온라인 티켓)', urgent: false, url: 'https://www.seceda.it/en/' },
-    { id: 't12', t: 'Akrotiri 유적 산토리니 7/5', urgent: false, url: 'https://etickets.tap.gr/' },
+  '🍽️ 레스토랑 예약': [
+    { id: 'r1', t: 'Le Jules Verne 파리 6/17 디너', desc: '에펠탑 안 미슐랭 2성 — 90일 전 예약 오픈, 석양 슬롯은 순삭이라 최우선', urgent: true, url: 'https://booking.lejulesverne-paris.com/en' },
+    { id: 'r2', t: 'La Sponda 포지타노 6/30 디너', desc: 'Le Sirenuse의 촛불 400개 디너 — 아말피 최고 로맨틱 스팟, SevenRooms 예약', urgent: true, url: 'https://www.sevenrooms.com/reservations/lasponda' },
+    { id: 'r3', t: 'Anna Stuben 돌로미티 6/24 미슐랭 1성', desc: '알프스 산장 미슐랭 — Seceda 일출 본 날 저녁, 호텔 통해 예약', urgent: false, url: 'https://www.gardena.it/en/restaurant-anna-stuben.asp' },
+    { id: 'r4', t: 'La Pergola 로마 6/28 미슐랭 3성', desc: '로마 유일 3성 · Cavalieri 옥상 전망 — 가장 격식, 재킷 필수, SevenRooms', urgent: false, url: 'https://www.sevenrooms.com/reservations/lapergola' },
+    { id: 'r5', t: 'Selene 산토리니(피라) 7/4', desc: 'Botrini 셰프의 와인 페어링 — 피르고스→피라 이전, 공식 사이트 예약', urgent: false, url: 'https://selene.gr/' },
+    { id: 'r6', t: 'At.mosphere 두바이 7/9 (Burj 122층)', desc: '세계 최고층 레스토랑 — 드레스코드 엄격, SevenRooms로 창가석 요청', urgent: false, url: 'https://www.sevenrooms.com/explore/atmosphererestaurant/reservations/create/search' },
+    { id: 'r7', t: 'Da Adolfo 포지타노 7/1 점심', desc: '보트로만 가는 해변 식당 — 예약하면 무료 셔틀보트, 현지인 픽 점심', urgent: false, url: 'https://daadolfo.prenota-web.it/prenotazioni/?lang=en' },
+    { id: 'r8', t: 'GB Roof Garden 아테네 7/6', desc: '아크로폴리스 정면 옥상 — 일몰 시간대 예약하면 파르테논 야경, SevenRooms', urgent: false, url: 'https://www.sevenrooms.com/reservations/gbroofgardenrestaurantathlc' },
+  ],
+  '🎫 입장권 · 투어 (사전예약 필수)': [
+    { id: 't1', t: 'Uffizi Gallery 6/26', desc: '피렌체 르네상스 미술 성지 — 당일 줄 2시간+, 30일 전 시간지정 티켓', urgent: true, url: 'https://www.uffizi.it/en/tickets' },
+    { id: 't2', t: 'Vatican 가이드 투어 6/29 06:30', desc: '바티칸·시스티나 — 개장 전 얼리버드 투어라야 인파 없이 천장화 감상', urgent: true, url: 'https://tickets.museivaticani.va/' },
+    { id: 't3', t: 'Colosseum 언더그라운드 6/28', desc: '검투사 지하통로 특별구역 — 일반표론 못 들어감, 별도 슬롯 빨리 매진', urgent: true, url: 'https://ticketing.colosseo.it/en/' },
+    { id: 't9', t: 'Pantheon 로마 6/28·6/29', desc: '판테온 — 주말·공휴일은 €5 예약제로 전환, 해당일이면 미리 끊기', urgent: true, url: 'https://www.google.com/search?q=Pantheon+Rome+official+tickets+booking' },
+    { id: 't4', t: 'Burj Khalifa SKY 일몰 7/9', desc: '148층 최상층 라운지 — 일몰 슬롯 가장 비싸고 빨리 마감, 시간지정', urgent: true, url: 'https://www.burjkhalifa.ae/en/tickets/' },
+    { id: 't6', t: 'Duomo 돔 등반 6/26', desc: '브루넬레스키 쿠폴라 — 463계단 예약제, 피렌체 전경 핵심 뷰포인트', urgent: false, url: 'https://duomo.firenze.it/en' },
+    { id: 't7', t: 'Acropolis 08:00 입장 7/7', desc: '아테네 7월 한낮 40도 — 개장 직후 입장해야 더위·인파 둘 다 피함', urgent: false, url: 'https://etickets.tap.gr/' },
+    { id: 't8', t: 'British Museum 시간슬롯 6/19', desc: '무료지만 시간지정 예약 권장 — 로제타석·파르테논 마블 보유', urgent: false, url: 'https://www.britishmuseum.org/visit' },
+    { id: 't10', t: 'Galleria Borghese 로마', desc: '베르니니 조각 컬렉션 — 2시간 입장 슬롯제, 사실상 예약 안 하면 못 봄', urgent: false, url: 'https://www.galleriaborghese.it/en/' },
+    { id: 't11', t: 'Seceda 케이블카 6/24', desc: '돌로미티 일출 명소행 케이블카 — 온라인 티켓이 현장보다 싸고 빠름', urgent: false, url: 'https://www.seceda.it/en/' },
+    { id: 't12', t: 'Akrotiri 유적 산토리니 7/5', desc: '에게해 폼페이 — 화산재에 묻힌 청동기 도시, 온라인 티켓', urgent: false, url: 'https://etickets.tap.gr/' },
+    { id: 't5', t: 'Museum of the Future 두바이', desc: '두바이 랜드마크 미래박물관 — 시간지정·상시 매진, 일찍 예약', urgent: false, url: 'https://museumofthefuture.ae/en' },
   ],
   '🎭 영국 체험 · 공연 (매진 임박 🔴)': [
-    { id: 'uk1', t: '해리포터 워너브라더스 스튜디오 투어 (런던, 날짜지정·매진 빠름)', urgent: true, url: 'https://www.wbstudiotour.co.uk/' },
-    { id: 'uk2', t: 'West End 공연 6/18~21 (Hamilton/Six/Cabaret)', urgent: true, url: 'https://www.todaytix.com/london' },
-    { id: 'uk3', t: '〈해리포터와 저주받은 아이〉 연극 (Palace Theatre)', urgent: false, url: 'https://www.harrypottertheplay.com/uk/' },
-    { id: 'uk4', t: 'Sir John Soane 야간 촛불투어 (월·금 밤만)', urgent: false, url: 'https://www.soane.org/' },
+    { id: 'uk1', t: '해리포터 워너브라더스 스튜디오 투어', desc: '실제 촬영 세트 — 런던 외곽, 날짜지정에 몇 주 전 매진, 최우선 예약', urgent: true, url: 'https://www.wbstudiotour.co.uk/' },
+    { id: 'uk2', t: 'West End 공연 6/18~21 (Hamilton/Six/Cabaret)', desc: '런던 정통 뮤지컬 — TodayTix로 당일 할인석도 노릴 수 있음', urgent: true, url: 'https://www.todaytix.com/london' },
+    { id: 'uk3', t: '〈해리포터와 저주받은 아이〉 연극 (Palace Theatre)', desc: '원작 후속 무대극 — 런던에서만 볼 수 있는 한정 공연', urgent: false, url: 'https://www.harrypottertheplay.com/uk/' },
+    { id: 'uk4', t: 'Sir John Soane 야간 촛불투어 (월·금 밤만)', desc: '건축가 저택 박물관 촛불 개장 — 주 2회뿐이라 날짜 맞추기 핵심', urgent: false, url: 'https://www.soane.org/' },
   ],
-  'D-21 · 교통 / 행정': [
-    { id: 'a1', t: '렌터카 VCE 픽업 / Florence 반납 (ZTL 사전등록)', urgent: true, url: 'https://www.hertz.com/' },
-    { id: 'a2', t: '프라이빗 트랜스퍼: 로마→포지타노 6/30', urgent: true, url: 'https://www.google.com/search?q=Rome+to+Positano+private+transfer+booking' },
-    { id: 'a3', t: '프라이빗 트랜스퍼: 포지타노→FCO 7/2 17:00', urgent: true, url: 'https://www.google.com/search?q=Positano+to+FCO+airport+private+transfer' },
-    { id: 'a4', t: 'Frecciarossa 피렌체→로마 6/27 (Executive)', urgent: false, url: 'https://www.trenitalia.com/en.html' },
-    { id: 'a5', t: 'Eurostar 파리→런던 6/18', urgent: false, url: 'https://www.eurostar.com/' },
-    { id: 'a6', t: '국제운전면허증 발급', urgent: true, url: 'https://www.safedriving.or.kr/' },
-    { id: 'a7', t: '여행자보험 가입 (Amex Plat 자동보장 확인)', urgent: true },
-    { id: 'a8', t: '두바이 비자 확인 (한국 무비자 30일)', urgent: false },
+  '📱 통신 · 금융': [
+    { id: 'f1', t: 'eSIM 또는 로밍 (Airalo 권역 단일 권장)', desc: '유럽+UAE 한 권역 eSIM이면 나라 바뀔 때마다 안 갈아끼움', urgent: false, url: 'https://www.airalo.com/' },
+    { id: 'f2', t: '환전 €500 + GBP £200 + AED 500', desc: '카드 안 되는 소액·팁용 현금 — 3개 통화 미리 소액 환전', urgent: false },
+    { id: 'f3', t: '카드사 해외 사용 등록 (Amex Plat + 백업 2장)', desc: '해외 첫 결제 막힘 방지 — 사전 등록 + 분실 대비 백업카드 분산 소지', urgent: false },
+    { id: 'f4', t: 'VPN 앱 설치·테스트', desc: 'UAE는 일부 앱(영상통화 등) 차단 — 출국 전 깔고 작동 확인', urgent: false },
+    { id: 'c6', t: 'MFA 100% 활성화 (금융+메일+클라우드)', desc: '해외 로그인은 보안 위험 — 2단계 인증 미리 켜고 백업코드 확보', urgent: true },
+    { id: 'c7', t: '복구코드 백업 USB · 양가 공유', desc: '폰 분실 시 계정 복구 — 복구코드를 USB·가족에게 분산 보관', urgent: false },
   ],
-  'D-14 · 통신 / 금융': [
-    { id: 'f1', t: 'eSIM 또는 로밍 (Airalo 권역 단일 권장)', urgent: false, url: 'https://www.airalo.com/' },
-    { id: 'f2', t: '환전 €500 + GBP £200 + AED 500', urgent: false },
-    { id: 'f3', t: '카드사 해외 사용 등록 (Amex Plat + 백업 2장)', urgent: false },
-    { id: 'f4', t: 'VPN 앱 설치·테스트', urgent: false },
-    { id: 'f5', t: '여권 6개월 유효 확인 (둘 다)', urgent: true },
-    { id: 'f6', t: '예방접종·상비약 확인', urgent: false },
+  '📋 서류 · 행정 · 안전': [
+    { id: 'f5', t: '여권 6개월 유효 확인 (둘 다)', desc: '잔여 유효기간 6개월 미만이면 입국 거부 — 가장 먼저 확인', urgent: true },
+    { id: 'a6', t: '국제운전면허증 발급', desc: '돌로미티 렌터카 운전 필수 — 경찰서·면허시험장에서 당일 발급', urgent: true, url: 'https://www.safedriving.or.kr/' },
+    { id: 'c4', t: '돌로미티 운전 IDP 발급 (Tyler)', desc: '실제 운전자(Tyler) 명의 IDP — 렌터카 인수 시 원본 제시', urgent: true, url: 'https://www.safedriving.or.kr/' },
+    { id: 'a7', t: '여행자보험 가입 (Amex Plat 자동보장 확인)', desc: 'Amex 플래티넘 자동보장 범위부터 확인 후 부족분만 추가 가입', urgent: true },
+    { id: 'c8', t: '여행자보험 가입 (28일 분량)', desc: '28일 장기 플랜 — 의료·휴대품·항공지연 포함 상품으로', urgent: true, url: 'https://www.google.com/search?q=해외여행자보험+장기+28일+가입' },
+    { id: 'a8', t: '두바이 비자 확인 (한국 무비자 30일)', desc: '한국 여권은 UAE 무비자 30일 — 별도 신청 불필요, 조건만 확인', urgent: false },
+    { id: 'f6', t: '예방접종·상비약 확인', desc: '필수 접종 없음 — 개인 상비약·처방약 영문 라벨 챙기기', urgent: false },
+    { id: 's1', t: 'UAE 최종 재판단 (여행경보·항공·호텔 환불)', desc: '출발 D-7 중동 정세 점검 — 경보 시 환불조건 미리 파악', urgent: true },
+    { id: 's2', t: '비상연락처 시트 양가 부모님 공유', desc: '대사관·카드분실·보험 번호 한 장 — 양가 부모님께 공유', urgent: true },
+    { id: 's6', t: '사진·메모 클라우드 자동백업 설정', desc: '기기 분실해도 28일 기록 보존 — iCloud/구글포토 자동업로드 ON', urgent: false },
+    { id: 's7', t: 'Pre-mortem 5개 작성 (비행 망칠 리스크)', desc: '출발 전 "뭐가 잘못될까" 5개 미리 적어 대비책 마련', urgent: false },
   ],
-  'D-7 · 안전 / 정보': [
-    { id: 's1', t: 'UAE 최종 재판단 (여행경보·항공·호텔 환불)', urgent: true },
-    { id: 's2', t: '비상연락처 시트 양가 부모님 공유', urgent: true },
-    { id: 's3', t: '호텔 13개 예약번호·체크인 시각 재확인', urgent: false },
-    { id: 's4', t: '항공 7편 시간·터미널·라운지 확인', urgent: false },
-    { id: 's5', t: '허니문 어메니티 요청 (X ALP · Cavalieri · Palazzo Talamo · NOŪS · Park Hyatt)', urgent: false },
-    { id: 's6', t: '사진·메모 클라우드 자동백업 설정', urgent: false },
-    { id: 's7', t: 'Pre-mortem 5개 작성 (내일 비행 망칠 리스크)', urgent: false },
-  ],
-  'D-3 · 짐 / 출국': [
-    { id: 'p1', t: '미니백 분리 (포지타노 2박 + FCO + 산토리니 3박)', urgent: false },
-    { id: 'p2', t: '항공편 온라인 체크인', urgent: false },
-    { id: 'p3', t: '여권·카드·약 핸드캐리 분리', urgent: true },
-    { id: 'p4', t: 'AirTag 활성화 (캐리어 + 지갑)', urgent: false },
-    { id: 'p5', t: '노트 + 펜 챙기기 (메모 시스템 필수)', urgent: true },
-    { id: 'p6', t: '20kg 짐 무게 측정 (출발 17kg 이하 목표)', urgent: false },
+  '🧳 짐 · 출국 (D-3)': [
+    { id: 'p1', t: '미니백 분리 (포지타노 2박 + FCO + 산토리니 3박)', desc: '큰 캐리어 두고 작은 가방만 들고 이동하는 구간 미리 패킹', urgent: false },
+    { id: 'p2', t: '항공편 온라인 체크인', desc: '출발 24~48시간 전 — 좋은 좌석 선점 + 공항 카운터 시간 절약', urgent: false },
+    { id: 'p3', t: '여권·카드·약 핸드캐리 분리', desc: '위탁수하물 분실 대비 — 귀중품·약은 반드시 기내 가방에', urgent: true },
+    { id: 'p4', t: 'AirTag 활성화 (캐리어 + 지갑)', desc: '수하물·지갑 위치추적 — 환승 많은 일정이라 분실 대비 필수', urgent: false },
+    { id: 'p5', t: '노트 + 펜 챙기기 (메모 시스템 필수)', desc: '여행 중 산물 기록용 — 앱 메모와 병행할 종이 노트', urgent: true },
+    { id: 'p6', t: '20kg 짐 무게 측정 (출발 17kg 이하 목표)', desc: '귀국 시 쇼핑 여유분 — 출발은 17kg 이하로 가볍게', urgent: false },
+    { id: 'c5', t: 'Hertz LHR → VCE 렌터카 예약 확인', desc: '픽업 지점·시간·보험 옵션 출발 전 최종 확인', urgent: false, url: 'https://www.hertz.com/' },
   ],
 };
 
@@ -2669,7 +2671,7 @@ function EveningReminder({ status }) {
         background: 'transparent', border: 'none', cursor: 'pointer',
         color: 'rgba(255,255,255,0.4)', fontSize: 'var(--type-h3)', lineHeight: 1
       }}>✕</button>
-      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', letterSpacing: '2px', fontWeight: 700, marginBottom: '8px' }}>
+      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-label)', fontWeight: 700, marginBottom: '8px' }}>
         🌙 오늘의 질문 · Day {status.current.n}
       </div>
       <div style={{ fontSize: 'var(--type-body)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
@@ -4027,7 +4029,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
           <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <span style={{ fontSize: 'var(--type-h1)' }}>{todayChapter?.flag}</span>
-              <div style={{ fontSize: 'var(--type-caption)', color: todayChapter?.accent, letterSpacing: '1px' }}>
+              <div style={{ fontSize: 'var(--type-caption)', color: todayChapter?.accent, letterSpacing: 'var(--track-label)' }}>
                 {todayChapter?.theme.toUpperCase()}
               </div>
             </div>
@@ -4054,11 +4056,11 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
             <strong>식사:</strong> {today.food}
           </div>
           <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: '1px', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
+            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
             <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
           </div>
           <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px' }}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: '1px', color: 'var(--color-warning-text)', marginBottom: '6px' }}>💕 커플 모먼트</div>
+            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-warning-text)', marginBottom: '6px' }}>💕 커플 모먼트</div>
             <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.mo}</div>
           </div>
         </Card>
@@ -4406,7 +4408,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
         </EditRow>
       </div>
       <div style={{ background: chapter.color, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
-        <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: '1px', marginBottom: '6px' }}>📋 ASI 산물</div>
+        <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>📋 ASI 산물</div>
         <EditableField
           value={day.asi}
           onSave={editField('asi')}
@@ -4417,7 +4419,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
         />
       </div>
       <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
-        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', letterSpacing: '1px', marginBottom: '6px' }}>💭 메모 질문</div>
+        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>💭 메모 질문</div>
         <EditableField
           value={day.q}
           onSave={editField('q')}
@@ -4428,7 +4430,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
         />
       </div>
       <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '14px' }}>
-        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-warning-text)', letterSpacing: '1px', marginBottom: '6px' }}>💕 커플 모먼트</div>
+        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-warning-text)', letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>💕 커플 모먼트</div>
         <EditableField
           value={day.mo}
           onSave={editField('mo')}
@@ -4838,6 +4840,9 @@ function ChecklistSection({ title, items, checks, toggle, showSource }) {
                   {item.urgent && !checked && <span style={{ color: 'var(--color-danger)', fontWeight: 600 }}>🔴 </span>}
                   {item.t}
                 </div>
+                {item.desc && !checked && (
+                  <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginTop: '4px', lineHeight: 1.5 }}>{item.desc}</div>
+                )}
                 {showSource && item.src && (
                   <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginTop: '4px' }}>{item.src}</div>
                 )}
@@ -6497,12 +6502,12 @@ function WeatherWidget() {
 // =================== RESTAURANT TRACKER ===================
 function RestaurantTracker() {
   const SPOTS = [
-    { id: 'R1', name: 'Le Jules Verne', ch: 'paris', date: '6/17', note: '미슐랭 2성 · 에펠탑 내 · 재킷 필수' },
-    { id: 'R2', name: 'Septime', ch: 'paris', date: '6/16~18', note: '미슐랭 1성 · 모던 비스트로 · 예약 難' },
-    { id: 'R3', name: 'Anna Stuben', ch: 'dol', date: '6/24', note: '미슐랭 · 알피니 전통 요리' },
-    { id: 'R4', name: 'La Pergola', ch: 'rom', date: '6/27~30', note: '미슐랭 3성 · 로마 유일 · Cavalieri 옥상' },
-    { id: 'R5', name: 'Selene (Pyrgos)', ch: 'san', date: '7/4', note: '미슐랭 + 와인 페어링 · 산토리니 정상' },
-    { id: 'R6', name: 'At.mosphere', ch: 'dxb', date: '7/8~10', note: 'Burj 122층 · 미슐랭급 · 드레스 코드 必' },
+    { id: 'R1', name: 'Le Jules Verne', ch: 'paris', date: '6/17', note: '미슐랭 2성 · 에펠탑 내 · 재킷 필수', platform: '공식 예약', book: 'https://booking.lejulesverne-paris.com/en' },
+    { id: 'R2', name: 'Septime', ch: 'paris', date: '6/16~18', note: '미슐랭 1성 · 모던 비스트로 · 21일 전 10시 오픈', platform: '공식 예약', book: 'https://www.septime-charonne.fr/' },
+    { id: 'R3', name: 'Anna Stuben', ch: 'dol', date: '6/24', note: '미슐랭 1성 · 알피니 전통 요리', platform: '호텔 예약', book: 'https://www.gardena.it/en/restaurant-anna-stuben.asp' },
+    { id: 'R4', name: 'La Pergola', ch: 'rom', date: '6/27~30', note: '미슐랭 3성 · 로마 유일 · Cavalieri 옥상', platform: 'SevenRooms', book: 'https://www.sevenrooms.com/reservations/lapergola' },
+    { id: 'R5', name: 'Selene (Fira)', ch: 'san', date: '7/4', note: 'Botrini 셰프(미슐랭) · 와인 페어링 · 피라 18C 수도원', platform: '공식 예약', book: 'https://selene.gr/' },
+    { id: 'R6', name: 'At.mosphere', ch: 'dxb', date: '7/8~10', note: 'Burj 122층 · 미슐랭급 · 드레스 코드 必', platform: 'SevenRooms', book: 'https://www.sevenrooms.com/explore/atmosphererestaurant/reservations/create/search' },
   ];
 
   const STATUS_CYCLE = ['pending', 'confirmed', 'visited'];
@@ -6559,6 +6564,14 @@ function RestaurantTracker() {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 500 }}>{spot.name}</div>
                 <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginTop: '2px', lineHeight: 1.4 }}>{spot.note}</div>
+                {spot.book && (
+                  <a href={spot.book} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px',
+                    fontSize: 'var(--type-micro)', fontWeight: 600, color: 'var(--color-atomic-navy-900)',
+                    background: 'var(--color-bg-subtle, rgba(27,42,74,0.06))', border: '1px solid var(--color-border-default)',
+                    borderRadius: 'var(--radius-xs)', padding: '3px 8px', textDecoration: 'none', whiteSpace: 'nowrap'
+                  }}>{spot.platform || '예약'} ↗</a>
+                )}
               </div>
               <button
                 onClick={() => cycle(spot.id)}

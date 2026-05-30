@@ -1,10 +1,10 @@
 # Grand Tour 2026 — 개발 현 상태 리뷰
 
 > 대상: `~/Desktop/grandtour/` (단일 HTML 앱, Vercel 배포)
-> 정리일: **2026-05-29** · 정리자: Claude (Opus 4.8)
-> 라이브: https://grandtour-lilac.vercel.app/  · **Phase H·I 포함 최신 버전 배포·폰 확인 완료**
+> 정리일: **2026-05-30** · 정리자: Claude (Opus 4.8)
+> 라이브: https://grandtour-lilac.vercel.app/  · **Supabase 동기화·예약 딥링크까지 배포 완료 (라이브==로컬 byte-identical 검증)**
 > 저장소: https://github.com/rarehotdog/grandtour
-> 출발: **2026-06-15** (D−17) · 코드 동결 권장: **2026-06-08**
+> 출발: **2026-06-15** (D−16) · 코드 동결 권장: **2026-06-08**
 
 ---
 
@@ -12,10 +12,10 @@
 
 | 지표 | 값 |
 |---|---|
-| **index.html** | 6,448줄 · ~255KB |
-| **React 컴포넌트** | 53개 (App 포함) |
-| **디자인 토큰** | 67개 (atomic + semantic + danger/warning-bg-deep 신규 4개) |
-| **Service Worker** | `grandtour-v3` · push/notificationclick 핸들러 추가 |
+| **index.html** | 6,786줄 · ~323KB |
+| **React 컴포넌트** | 56개 (App 포함, 함수형) |
+| **디자인 토큰** | 100개 (atomic + semantic + scale) |
+| **Service Worker** | `grandtour-v4` · push/notificationclick 핸들러 · 설치 PWA 강제 갱신 bump |
 | **PWA** | manifest 정상 · 192/512 SVG 아이콘 · 단축키 2개 |
 | **저장소** | localStorage + IndexedDB (사진) + spotify_urls |
 | **폰트** | Cormorant Garamond (Latin serif) + Pretendard Variable (Hangul/sans) |
@@ -44,7 +44,14 @@
 | **Phase H** | _(미커밋)_ | HeroCountdown 2단 세로 재구성(날씨 잘림 해결)·고정 네이비 hero(WMO 동적 제거)·dark-surface 토큰(--ink/--gold/--hairline)·여정 서브탭 4열 그리드·MapView 도시 셀렉터 flex-wrap·아이폰 자간 정리 |
 | **Phase I** | `042bf0f` | 여정 유틸 12번째 **현지 꿀팁**(5개국 전압/팁/영업/식수/매너)·항공탭에 **도시 내 이동·택시앱**(9도시)·MapView 도시 선택 시 **우리 일정 요약**(DAYS 연결, 확정일정+추천 2층 구조) |
 | **ExpenseTracker** | `4af3f21` | 가계부 — 일별 지출 입력·원화 환산·카테고리 합산 |
-| **(GitHub 웹 편집)** | `0788e47` | Tyler가 GitHub 웹에서 직접 통합 커밋 → Vercel 배포. **로컬과 코드 동일**(트리 diff: REVIEW.md만 상이) |
+| **(GitHub 웹 통합)** | `0788e47` | Tyler가 GitHub 웹에서 Phase H·I+가계부를 통합 커밋. 로컬 `042bf0f`/`4af3f21`은 이 커밋으로 대체(코드 동일). 이후 선형 히스토리 기준. |
+| **Offline P1** | `87840cd` | 오프라인 지도 폴백(`useOnlineStatus`·InlineMap 좌표/딥링크)·전역 OfflineBanner |
+| **Polish** | `df28a1f` | theme-color 메타 버그 수정·세리프 폰트스택 `var(--font-serif)` 통일 |
+| **a11y** | `89270e3` | tap-highlight 제거·`:focus-visible` 골드 아웃라인 |
+| **Docs** | `f31de3e` | REVIEW 월드클래스 7-bar 기준·로드맵·세션 적용분 |
+| **Sync (P3 #6)** | `c9ce0e6` | **Supabase 기기 간 동기화** — supabase-js·gtSync·Realtime 구독·SyncPanel(공유 trip code, last-write-wins) |
+| **Checklist** | `96d48f7` | **예약 항목 확장+예약 딥링크**(36개 url)·영국 체험·공연 섹션(해리포터/West End/Soane) |
+| **레스토랑 정밀화** | _(미커밋)_ | 미식 트래커 6곳 예약 칩+체크리스트 r1~r8 URL을 공식 플랫폼으로(SevenRooms 4·자체 4·호텔 1)·Selene 피르고스→피라 정정·SW `v4` bump |
 
 ---
 
@@ -92,7 +99,7 @@ BackupReminder    ← 최하단 (이동됨)
 
 ### ✅ 안정성 (출발 전 핵심)
 
-- [x] 오프라인 동작 — SW network-first HTML, cache-first 라이브러리 (`grandtour-v3`)
+- [x] 오프라인 동작 — SW network-first HTML, cache-first 라이브러리 (`grandtour-v4`)
 - [x] PWA 설치 — manifest · 아이콘 · 단축키 · standalone 풀스크린
 - [x] iPhone safe-area — Header top, BottomNav/main bottom inset
 - [x] ErrorBoundary — throw 시 복구 안내 화면
@@ -129,6 +136,12 @@ BackupReminder    ← 최하단 (이동됨)
 - [x] 비상연락처 9개 (대사관 × 5국 + Amex + 응급)
 - [x] 클립보드 복사 CopyChip
 
+### ✅ 동기화 / 예약 (2026-05-30 세션)
+
+- [x] **Supabase 기기 간 동기화** — 공유 trip code로 체크·패킹·예약·가계부 양 기기 실시간 공유 (메모·산물·사진·PIN 제외). last-write-wins·자기 에코 가드·오프라인 graceful. SyncPanel은 홈에 공개.
+- [x] **체크리스트 예약 딥링크** — 36개 예약/입장 항목에 공식 URL `예약 ↗` (영국 체험·공연 섹션 신규)
+- [x] **미식 트래커 예약처 정밀화** — 6곳 공식 예약 칩 (SevenRooms: La Pergola·At.mosphere / 자체: Le Jules Verne·Septime·Selene / 호텔: Anna Stuben), Selene 피르고스→피라 위치 정정
+
 ### ✅ 코드 품질
 
 - [x] CSS 디자인 토큰 67개 (atomic + semantic + scale)
@@ -153,7 +166,7 @@ BackupReminder    ← 최하단 (이동됨)
 > 출발 D-17 · 코드 동결 권장 **2026-06-08**. 동결 전엔 기능, 이후엔 데이터·백업만.
 >
 > ✅ **P0(작업 보존·배포)는 완료** — Phase H·I 커밋(`042bf0f`)·라이브 배포·폰 확인 끝.
-> ⚠️ **운영 이슈**: 로컬↔GitHub 히스토리 갈라짐(코드는 동일, REVIEW.md만 상이). §6 참조 — 정리 필요.
+> ✅ **운영**: 로컬↔GitHub 히스토리 갈라짐 **해소**(현재 선형, origin==local). §6 참조.
 
 ### 5.0 "월드클래스"의 정의 — 이 앱이 통과해야 할 바(bar)
 
@@ -162,24 +175,27 @@ BackupReminder    ← 최하단 (이동됨)
 | # | 월드클래스 바 | 현재 | 갭 |
 |---|---|---|---|
 | 1 | **오프라인 완전 동작** — 비행기·로밍 끊김에도 지도·일정·문서가 뜬다 | 🟡 부분 | 지도 iframe·문서 부재 (→P1) |
-| 2 | **데이터 무손실** — 기기 분실·파손에도 기록이 산다 | 🔴 미달 | 단일 기기 저장 (→P1/P3) |
+| 2 | **데이터 무손실** — 기기 분실·파손에도 기록이 산다 | 🟡 부분 | Supabase 동기화 시 클라우드 사본 (메모·사진 제외) |
 | 3 | **첫 화면 1.5초 이내·60fps** — 모바일 Lighthouse 90+ | 🟡 부분 | Babel 런타임 컴파일 (→P2) |
 | 4 | **접근성 AA** — 대비·터치 44px·스크린리더 | 🟡 부분 | aria·focus 일부 (→P2) |
 | 5 | **"지금" 한눈에** — 열면 다음 행동이 0클릭에 보인다 | 🟢 양호 | 시간 인지 강화 여지 (→P2) |
-| 6 | **둘이 하나의 기록** — 커플 실시간 공유 | 🔴 미달 | 단일 기기 (→P3) |
+| 6 | **둘이 하나의 기록** — 커플 실시간 공유 | 🟡 1차 달성 | Supabase 공유 trip code (체크·예약·가계부·패킹) |
 | 7 | **디테일 일관성** — 모션·타이포·여백이 한 손에서 나온 듯 | 🟢 양호 | 토큰화 거의 완료, 잔여 정리 |
 
-→ **1·2번이 빨강**인 게 핵심. 화면 완성도(5·7)는 이미 1군이지만, *해외에서 안 끊기고·안 잃는다*는 두 축이 월드클래스와의 진짜 거리다. 아래 P1이 정확히 그 둘을 겨냥한다.
+→ 출발 전 핵심이던 **#2·#6**은 Supabase 동기화로 🟡까지 올라옴. 남은 실질 격차는 **#1 오프라인 지도(폴백까지·타일 선캐싱 미착수)·#3 첫 로드 성능**. 화면 완성도(5·7)는 이미 1군이다.
 
 #### 이번 세션 적용분 (2026-05-30)
 
 | 커밋 | 내용 | 관련 bar |
 |---|---|---|
-| `86ee5d4` | **오프라인 지도 폴백** — `useOnlineStatus` 훅, InlineMap offline 시 좌표·복사·지도앱 딥링크, 전역 OfflineBanner | #1 ↑ |
-| `2b04b1e` | **theme-color 버그 수정**(meta는 CSS var 미지원→`#1B2A4A`) · 흩어진 세리프 폰트스택 6곳→`var(--font-serif)` 통일 | #7 ↑ |
-| `8b3d0e6` | tap-highlight 제거 · `:focus-visible` 골드 아웃라인 | #4 ↑, #7 ↑ |
+| `87840cd` | **오프라인 지도 폴백** — `useOnlineStatus` 훅, InlineMap offline 시 좌표·복사·지도앱 딥링크, 전역 OfflineBanner | #1 ↑ |
+| `df28a1f` | **theme-color 버그 수정**(meta는 CSS var 미지원→`#1B2A4A`) · 흩어진 세리프 폰트스택 6곳→`var(--font-serif)` 통일 | #7 ↑ |
+| `89270e3` | tap-highlight 제거 · `:focus-visible` 골드 아웃라인 | #4 ↑, #7 ↑ |
+| `c9ce0e6` | **Supabase 기기 간 동기화** — 공유 trip code로 체크·패킹·예약·가계부 실시간 공유 (메모·산물·사진 제외) | **#2 ↑, #6 ↑↑** |
+| `96d48f7` | **체크리스트 예약 딥링크**(36개)·영국 체험·공연 섹션 | #5 ↑ |
+| _(미커밋)_ | **레스토랑 예약처 공식 플랫폼 정밀화**(SevenRooms 4·자체 4·호텔 1)·Selene 피라 정정·SW `v4` bump | #1 ↑, #7 ↑ |
 
-> bar #1은 "graceful 폴백"까지 도달(타일 선캐싱 아님). #2(데이터 무손실)·#3(첫 로드 성능)·#6(공유)는 미착수 — 다음 우선순위.
+> bar #1은 "graceful 폴백"까지 도달(타일 선캐싱 아님). **bar #6(커플 공유)는 Supabase 동기화로 1차 달성**, #2(무손실)도 클라우드 사본으로 부분 완화. 남은 우선순위는 **#3 첫 로드 성능**·#1 지도 타일 선캐싱.
 
 ### 🔴 P1 — 출발 전 필수 (해외 실패 방지 + 실데이터)
 
@@ -226,16 +242,13 @@ BackupReminder    ← 최하단 (이동됨)
 
 ## 6. 운영 메모
 
-### ⚠️ 히스토리 갈라짐 (2026-05-29 발견)
+### ✅ 히스토리 갈라짐 — 해소됨 (2026-05-30)
 
-로컬과 GitHub가 공통 조상 `bda32f5` 이후 서로 다른 커밋 경로로 갈라짐.
-- **GitHub(origin/main)**: `1c0d3a5` → `dbfc309` → `0788e47`(웹 통합 편집, 현재 라이브)
-- **로컬(main)**: `4af3f21`(가계부) → `042bf0f`(Phase H·I)
-- **코드는 동일** — `git diff origin/main 042bf0f`는 `REVIEW.md` 한 파일만 차이(index.html·sw.js 100% 일치). **유실 작업 없음.**
-- **정리 방안**: 라이브 기준은 origin이므로, 로컬 REVIEW.md만 origin에 반영하면 수렴.
-  Tyler 수동 푸시(사내망 차단으로 Claude는 푸시 안 함). 옵션:
-  ① 로컬에서 `git push`(non-FF면 거부) → ② `git pull --rebase` 후 충돌(REVIEW.md)만 해결 → 푸시
-  또는 GitHub 웹에서 REVIEW.md만 직접 갱신. 코드가 같으므로 위험 낮음.
+2026-05-29 발견된 로컬↔GitHub 갈라짐은 **해소되어 현재 선형 히스토리**다.
+- 이번 세션 변경 직전 기준 `main` == `origin/main` == `96d48f7` (working tree clean).
+- 로컬 전용이던 `042bf0f`(Phase H·I)·`4af3f21`(가계부)는 **`0788e47`(GitHub 웹 통합)으로 대체** — 두 해시는 더 이상 조상이 아니나 **코드 내용은 보존**(`git merge-base --is-ancestor` 확인: 둘 다 "히스토리에 없음").
+- 이후 `87840cd → df28a1f → 89270e3 → f31de3e → c9ce0e6 → 96d48f7`까지 origin 위에 선형 적층. **유실 작업 없음.**
+- 푸시는 여전히 Tyler 수동(사내망 차단으로 Claude는 푸시 안 함). 이번 세션 변경(index.html·sw.js·REVIEW.md)은 워킹트리 미커밋 → 한 번에 커밋·푸시 권장.
 
 ### 배포
 
@@ -248,9 +261,9 @@ index.html / sw.js 직접 편집
 ### SW 캐시 정책
 
 - HTML (`/`) — network-first
-- 라이브러리/Pretendard — cache-first (`grandtour-v3`)
+- 라이브러리/Pretendard — cache-first (`grandtour-v4`)
 - 외부 API — passthrough (캐시 안 함)
-- **버전 bump**: `sw.js` 자체 수정 시만 `CACHE` 상수 v3 → v4
+- **버전 bump**: `sw.js` 자체 수정 시만 `CACHE` 상수 v4 → v5 (이번 세션 v3→v4 적용 완료)
 
 ### 백업 권장 주기
 
@@ -267,4 +280,4 @@ index.html / sw.js 직접 편집
 ### 폰트 문제 시
 
 - Safari 설정 → 고급 → 웹사이트 데이터 → `grandtour-lilac.vercel.app` 삭제
-- `sw.js` CACHE → v4 bump
+- `sw.js` CACHE → v5 bump
