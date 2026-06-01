@@ -119,16 +119,16 @@
       --font-mono: ui-monospace, SFMono-Regular, Menlo, 'Roboto Mono', monospace;
 
       /* ── Type scale (semantic — Korean optimized) ────────────────── */
-      --type-display: 30px;   /* page titles (gt-serif overrides Korean→Cormorant) */
-      --type-h1: 22px;
-      --type-h2: 18px;
-      --type-h3: 16px;
-      --type-body: 14px;
-      --type-body-sm: 13px;
-      --type-caption: 12px;
-      --type-eyebrow: 11px;   /* uppercase small labels */
-      --type-micro: 10px;
-      --type-nano: 9px;       /* tiny meta labels (강수% 등) */
+      --type-display: 31px;   /* page titles (gt-serif overrides Korean→Cormorant) */
+      --type-h1: 23px;
+      --type-h2: 19px;
+      --type-h3: 17px;
+      --type-body: 16px;
+      --type-body-sm: 14px;
+      --type-caption: 13px;
+      --type-eyebrow: 12px;   /* uppercase small labels */
+      --type-micro: 11px;
+      --type-nano: 10px;      /* tiny meta labels (강수% 등) */
 
       /* ── Legacy alias (do not remove — used by older inline styles) ─ */
       --navy: var(--color-atomic-navy-900);
@@ -2241,19 +2241,19 @@ function Recommendations({ chapterId, chapter }) {
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
               <span style={{ fontSize: 'var(--type-h2)', flexShrink: 0 }}>{item.tag}</span>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
+                <div style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
                   {item.t}
                 </div>
-                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>
+                <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.55 }}>
                   {item.why}
                 </div>
                 {item.worth && (
-                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.55, fontStyle: 'italic' }}>
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.55, fontStyle: 'italic' }}>
                     ↳ {item.worth}
                   </div>
                 )}
                 {item.tip && (
-                  <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
+                  <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
                     💡 {item.tip}
                   </div>
                 )}
@@ -2960,7 +2960,7 @@ function TimezoneWidget({ status, DAYS }) {
           borderRadius: 'var(--radius-md)',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: 'var(--type-micro)', color: ch.accent, letterSpacing: '1.5px', fontWeight: 500 }}>
+          <div style={{ fontSize: 'var(--type-micro)', color: ch.accent, letterSpacing: 'var(--track-label)', fontWeight: 500 }}>
             {ch.flag} {ch.name.toUpperCase()}
           </div>
           <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
@@ -3016,7 +3016,7 @@ function NextFlight({ FLIGHTS, DAYS, status, setView }) {
           {/* Left: flight info */}
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-              <span style={{ fontSize: 'var(--type-micro)', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>다음 이동</span>
+              <span style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>다음 이동</span>
               {arrivalChapter && (
                 <span style={{ fontSize: 'var(--type-micro)', padding: '2px 6px', borderRadius: 'var(--radius-xs)', background: arrivalChapter.color, color: arrivalChapter.accent, fontWeight: 600 }}>
                   {arrivalChapter.flag} {arrivalChapter.name}
@@ -3135,7 +3135,7 @@ function ArrivalWeather({ chapter, dateStr }) {
   return (
     <div style={{ padding: '12px 16px', borderTop: '1px solid var(--color-border-default)', background: 'var(--color-bg-page)' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-        <span style={{ fontSize: 'var(--type-micro)', letterSpacing: '1.5px', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
+        <span style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>
           🌤️ {chapter.name} 도착지 날씨
         </span>
         <span style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}>{dateStr}~</span>
@@ -3549,7 +3549,7 @@ function TripSummaryCard({ status, setView, checks, packing }) {
       marginBottom: '16px',
       boxShadow: 'var(--shadow-sm)',
     }}>
-      <div style={{ fontSize: 'var(--type-micro)', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
+      <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '12px', fontWeight: 600 }}>
         준비 현황
       </div>
       {rows.map((r, i) => (
@@ -3803,7 +3803,7 @@ function ChapterProgress({ DAYS, status, setView }) {
                   {/* Recommendations preview */}
                   {recs && (
                     <div style={{ marginTop: '12px' }}>
-                      <div style={{ fontSize: 'var(--type-micro)', letterSpacing: '1.5px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
+                      <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '6px', fontWeight: 600 }}>
                         추천 활동
                       </div>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '5px' }}>
@@ -4517,6 +4517,14 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
   const hotelSearch = day.hotel && !['기내', '집'].includes(day.hotel) && chapter.country
     ? `${day.hotel} ${chapter.country}`
     : chapter.search;
+  // Per-row Google Maps queries (tap label → open in Maps)
+  const cityQuery = day.city && !day.city.includes('→') && chapter.country
+    ? `${day.city} ${chapter.country}`
+    : (chapter.search || null);
+  const hotelQuery = day.hotel && !['기내', '집'].includes(day.hotel) && chapter.country
+    ? `${day.hotel} ${chapter.country}`
+    : null;
+  const actQuery = day.hl && chapter.country ? `${day.hl} ${chapter.country}` : null;
 
   return (
     <div>
@@ -4544,7 +4552,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
         </a>
       )}
       <div style={{ display: 'grid', gap: '10px', marginBottom: '12px' }}>
-        <EditRow label="📍 도시">
+        <EditRow label="📍 도시" mapQuery={cityQuery}>
           <EditableField
             value={day.city}
             onSave={editField('city')}
@@ -4553,7 +4561,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             textStyle={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
-        <EditRow label="🏨 호텔">
+        <EditRow label="🏨 호텔" mapQuery={hotelQuery}>
           <EditableField
             value={day.hotel}
             onSave={editField('hotel')}
@@ -4572,7 +4580,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
             textStyle={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}
           />
         </EditRow>
-        <EditRow label="✨ 활동">
+        <EditRow label="✨ 활동" mapQuery={actQuery}>
           <EditableField
             value={day.hl}
             onSave={editField('hl')}
@@ -4662,10 +4670,15 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
   );
 }
 
-function EditRow({ label, children }) {
+function EditRow({ label, children, mapQuery }) {
   return (
     <div style={{ fontSize: 'var(--type-caption)', lineHeight: 1.5 }}>
-      <div style={{ color: 'var(--color-text-muted)', marginBottom: '2px', fontSize: 'var(--type-eyebrow)' }}>{label}</div>
+      <div style={{ color: 'var(--color-text-muted)', marginBottom: '2px', fontSize: 'var(--type-eyebrow)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+        <span>{label}</span>
+        {mapQuery && (
+          <a href={mapsUrl(mapQuery)} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent-primary)', textDecoration: 'none', fontWeight: 600, flexShrink: 0 }}>📍 지도 →</a>
+        )}
+      </div>
       <div>{children}</div>
     </div>
   );
@@ -6119,7 +6132,7 @@ function ExchangeRates() {
         const krw = (!isNaN(amt) && amt > 0 && rate) ? Math.round(amt / rate) : null;
         return (
           <div style={{ marginTop: '18px', padding: '14px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}>
-            <div style={{ fontSize: 'var(--type-micro)', letterSpacing: '2px', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
+            <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '10px', fontWeight: 600 }}>
               💸 계산기 · 이 정도면?
             </div>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -6273,7 +6286,7 @@ function ExpenseTracker() {
         padding: 'var(--space-5)', marginBottom: 'var(--space-4)', color: 'var(--color-text-inverse)',
         boxShadow: 'var(--shadow-md)',
       }}>
-        <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: '2px', color: 'var(--color-accent-primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
+        <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-accent-primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
           🧾 지출 합계
         </div>
         <div style={{ fontSize: '32px', fontFamily: 'var(--font-sans)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', lineHeight: 1.1 }}>
@@ -6479,7 +6492,7 @@ function SpotifyWidget() {
         background: info.color || 'var(--color-bg-page)',
         border: '1px solid rgba(0,0,0,0.06)',
       }}>
-        <div style={{ fontSize: 'var(--type-eyebrow)', color: info.accent, letterSpacing: '1.5px', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>
+        <div style={{ fontSize: 'var(--type-eyebrow)', color: info.accent, letterSpacing: 'var(--track-label)', fontWeight: 700, marginBottom: '4px', textTransform: 'uppercase' }}>
           🎵 추천 무드
         </div>
         <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 500 }}>{info.theme}</div>
