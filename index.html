@@ -2816,13 +2816,16 @@ function DocumentsInner() {
   );
 }
 
+// 산물 티어 정의 — OutputsInner·OutputsProgress 공용 (star 3=Lifetime / 2=Major / 1=Working)
+const OUTPUTS_TIERS = [
+  { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
+  { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
+  { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
+];
+
 function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
-  // 진행 요약 — 홈 OutputsProgress와 동일 티어 로직(싱크)
-  const tiers = [
-    { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
-    { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
-    { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
-  ];
+  // 진행 요약 — 홈 OutputsProgress와 동일 티어(싱크)
+  const tiers = OUTPUTS_TIERS;
   const totalAll = OUTPUTS.length;
   const doneAll = OUTPUTS.filter(o => outputs[o.id]?.done).length;
   return (
@@ -3959,13 +3962,8 @@ function TimelineStrip({ DAYS, status, setView }) {
 
 // Outputs 3-tier progress (Lifetime 4 / Major 6 / Working 9)
 function OutputsProgress({ outputs, setView }) {
-  // Tier is derived from `star` (3 = Lifetime, 2 = Major, 1 = Working).
-  // OUTPUTS data has no `cat` field — star is the source of truth.
-  const tiers = [
-    { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
-    { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
-    { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
-  ];
+  // Tier is derived from `star` (3 = Lifetime, 2 = Major, 1 = Working). star is the source of truth.
+  const tiers = OUTPUTS_TIERS;
   const counts = tiers.map(t => {
     const total = OUTPUTS.filter(o => o.star === t.star).length;
     const done = OUTPUTS.filter(o => o.star === t.star && outputs[o.id]?.done).length;
@@ -4029,7 +4027,7 @@ function ChapterProgress({ DAYS, status, setView }) {
               style={{
                 background: isCurrent ? ch.color : 'var(--color-bg-surface)',
                 border: isCurrent ? `1.5px solid ${ch.accent}` : (isOpen ? `1px solid ${ch.accent}` : '1px solid var(--color-border-default)'),
-                borderLeft: `4px solid ${ch.accent}`,
+                boxShadow: `inset 4px 0 0 ${ch.accent}`,
                 borderRadius: 'var(--radius-md)',
                 opacity: isDone ? 0.65 : 1,
                 overflow: 'hidden',
@@ -4769,7 +4767,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
           <div key={day.n} style={{
             background: 'var(--color-bg-surface)',
             border: '1px solid var(--color-border-default)',
-            borderLeft: `4px solid ${ch.accent}`,
+            boxShadow: `inset 4px 0 0 ${ch.accent}`,
             borderRadius: 'var(--radius-md)',
             marginBottom: '8px',
             overflow: 'hidden'
@@ -5031,8 +5029,6 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           textStyle={{ fontSize: 'var(--type-caption)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}
         />
       </div>
-      {/* 이 챕터 도시의 추가 추천 활동 (RECOMMENDATIONS 없는 챕터면 자동 null) */}
-      <Recommendations chapterId={chapter.id} chapter={chapter} />
     </div>
   );
 }
