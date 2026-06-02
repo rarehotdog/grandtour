@@ -4438,6 +4438,14 @@ function SyncPanel() {
   );
 }
 
+// 오늘의 강도(intensity) 라벨 — 데일리 "지금" 포커스용
+const INT_LABEL = {
+  'H':  { t: '🔴 빡센 날', c: 'var(--color-danger)' },
+  'M+': { t: '🟠 활동 많음', c: 'var(--color-warning-text)' },
+  'M':  { t: '🟡 보통', c: 'var(--color-text-soft)' },
+  'L':  { t: '🟢 여유', c: 'var(--color-success)' },
+};
+
 function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
@@ -4510,14 +4518,27 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
             <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} cacheKey={todayChapter.id} />
           )}
 
-          <div style={{ fontSize: 'var(--type-body)', lineHeight: 1.7, marginBottom: '8px' }}>
-            <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
+            <div style={{ fontSize: 'var(--type-body)', lineHeight: 1.7, minWidth: 0 }}>
+              <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
+            </div>
+            {today.int && INT_LABEL[today.int] && (
+              <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: INT_LABEL[today.int].c }}>{INT_LABEL[today.int].t}</span>
+            )}
+          </div>
+          {today.moves && (
+            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
+              <strong>🚐 이동:</strong> {today.moves}
+            </div>
+          )}
+          <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
+            <strong>✨ 오늘:</strong> {today.hl}
           </div>
           <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
-            <strong>오늘:</strong> {today.hl}
-          </div>
-          <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
-            <strong>식사:</strong> {today.food}
+            <strong>🍽️ 식사:</strong> {today.food}
+            {today.food && today.food.includes('🌟') && (
+              <span style={{ marginLeft: '6px', fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-accent-primary)' }}>· 예약 확인!</span>
+            )}
           </div>
           <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
@@ -4947,6 +4968,8 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           textStyle={{ fontSize: 'var(--type-caption)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}
         />
       </div>
+      {/* 이 챕터 도시의 추가 추천 활동 (RECOMMENDATIONS 없는 챕터면 자동 null) */}
+      <Recommendations chapterId={chapter.id} chapter={chapter} />
     </div>
   );
 }
