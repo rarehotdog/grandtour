@@ -10,6 +10,7 @@
   <title>Grand Tour 2026 · Taehyeon × Juyeon</title>
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231B2A4A'/><text x='50' y='66' text-anchor='middle' font-family='Georgia,serif' font-size='48' font-style='italic' fill='%23C9A961' letter-spacing='-1'>GT</text></svg>">
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
@@ -310,7 +311,7 @@
 
     /* Reduce motion respect */
     @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+      *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
     }
 
   </style>
@@ -5092,7 +5093,14 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
         <SubTab active={tab === 'packing'} onClick={() => setTab('packing')}>👔 패킹</SubTab>
       </div>
 
-      {tab === 'checklist' && Object.entries(CHECKLIST).map(([section, items]) => (
+      {tab === 'checklist' && Object.entries(CHECKLIST)
+        .sort((a, b) => {
+          // 완전 완료된 카테고리는 아래로, 미완료끼리는 원래 순서 유지(stable)
+          const aDone = a[1].every(i => checks[i.id]) ? 1 : 0;
+          const bDone = b[1].every(i => checks[i.id]) ? 1 : 0;
+          return aDone - bDone;
+        })
+        .map(([section, items]) => (
         <ChecklistSection
           key={section}
           title={section}
@@ -5336,6 +5344,9 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
 function ChecklistSection({ title, items, checks, toggle, checkMeta, showSource }) {
   const total = items.length;
   const done = items.filter(i => checks[i.id]).length;
+  const pct = total ? Math.round((done / total) * 100) : 0;
+  const allDone = total > 0 && done === total;
+  const urgentLeft = items.filter(i => i.urgent && !checks[i.id]).length;
 
   return (
     <div style={{
@@ -5345,9 +5356,19 @@ function ChecklistSection({ title, items, checks, toggle, checkMeta, showSource 
       marginBottom: '12px',
       overflow: 'hidden'
     }}>
-      <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--color-border-soft)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ fontSize: 'var(--type-body)', fontWeight: 500, color: 'var(--color-text-strong)' }}>{title}</div>
-        <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)' }}>{done}/{total}</div>
+      <div style={{ padding: '14px 16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+        <div style={{ fontSize: 'var(--type-body)', fontWeight: 500, color: 'var(--color-text-strong)', display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+          <span style={{ minWidth: 0 }}>{title}</span>
+          {urgentLeft > 0 && (
+            <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-danger)', background: 'var(--color-danger-bg)', borderRadius: 'var(--radius-xs)', padding: '1px 6px' }}>🔴 {urgentLeft}</span>
+          )}
+        </div>
+        <div style={{ flexShrink: 0, fontSize: 'var(--type-eyebrow)', fontWeight: 600, color: allDone ? 'var(--color-success)' : 'var(--color-text-muted)' }}>
+          {allDone ? '✓ 완료' : `${done}/${total}`}
+        </div>
+      </div>
+      <div style={{ height: '3px', background: 'var(--color-border-soft)' }}>
+        <div style={{ height: '100%', width: `${pct}%`, background: allDone ? 'var(--color-success)' : 'var(--color-accent-primary)', transition: 'width 0.3s ease' }} />
       </div>
       {items.map(item => {
         const checked = !!checks[item.id];
