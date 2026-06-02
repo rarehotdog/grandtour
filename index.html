@@ -945,8 +945,8 @@ const PACKING_COUPLE = {
 
 // Combined packing structure for 3-person view
 const PACKING_ALL = {
-  tyler: { label: '👤 태현', sections: PACKING },
-  juyeon: { label: '💕 주연', sections: PACKING_JUYEON },
+  tyler: { label: '🤵 태현', sections: PACKING },
+  juyeon: { label: '👰 주연', sections: PACKING_JUYEON },
   couple: { label: '👫 공용', sections: PACKING_COUPLE },
 };
 
@@ -5080,7 +5080,7 @@ function NoteEditor({ dayId, note, save }) {
 
   return (
     <div>
-      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', marginBottom: '6px', letterSpacing: '1px' }}>
+      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', marginBottom: '6px', letterSpacing: 'var(--track-label)' }}>
         📝 오늘의 1줄 인사이트
       </div>
       <textarea
@@ -5177,7 +5177,7 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>{tab === 'checklist' ? '체크리스트' : '패킹 · ' + PACKING_ALL[tab].label}</h2>
 
-      <div className="gt-chips" style={{ gap: '8px', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '20px' }}>
         <SubTab active={tab === 'checklist'} onClick={() => setTab('checklist')}>✓ 체크리스트</SubTab>
         {Object.keys(PACKING_ALL).map(p => (
           <SubTab key={p} active={tab === p} onClick={() => setTab(p)}>{PACKING_ALL[p].label}</SubTab>

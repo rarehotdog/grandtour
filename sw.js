@@ -4,7 +4,7 @@
 // index.html 수정 시 버전을 올릴 필요 없음(navigation이 network-first라 자동 최신).
 // 단, 이 sw.js 자체를 바꿀 때만 CACHE 버전을 올린다.
 
-const CACHE = 'grandtour-v4';
+const CACHE = 'grandtour-v5';
 
 const PRECACHE = [
   './',
