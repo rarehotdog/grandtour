@@ -357,20 +357,19 @@ const C = (id) => CHAPTERS.find(c => c.id === id);
 const mapsUrl = (query) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 
 // Image compression helper (resize to max 1000px, JPEG 0.7)
-const compressImage = (file) => new Promise((resolve, reject) => {
+const compressImage = (file, maxSize = 1000, quality = 0.7) => new Promise((resolve, reject) => {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
     img.onload = () => {
       const canvas = document.createElement('canvas');
-      const maxSize = 1000;
       let { width, height } = img;
       const scale = Math.min(maxSize / width, maxSize / height, 1);
       canvas.width = Math.round(width * scale);
       canvas.height = Math.round(height * scale);
       const ctx = canvas.getContext('2d');
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', 0.7));
+      resolve(canvas.toDataURL('image/jpeg', quality));
     };
     img.onerror = reject;
     img.src = e.target.result;
@@ -977,7 +976,7 @@ const OUTPUTS = [
 // Photos move from localStorage to IDB to lift the ~5MB cap.
 // Auto-migrates legacy localStorage photos on first load.
 const idb = {
-  DB: 'grandtour', STORE: 'photos', VER: 1, _p: null,
+  DB: 'grandtour', STORE: 'photos', VER: 3, _p: null,
   open() {
     if (this._p) return this._p;
     this._p = new Promise((resolve, reject) => {
@@ -986,53 +985,55 @@ const idb = {
       req.onupgradeneeded = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains('photos')) db.createObjectStore('photos');
+        if (!db.objectStoreNames.contains('maptiles')) db.createObjectStore('maptiles');
+        if (!db.objectStoreNames.contains('documents')) db.createObjectStore('documents');
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);
     });
     return this._p;
   },
-  async get(key) {
+  async get(key, store = this.STORE) {
     try {
       const db = await this.open();
       return await new Promise((res, rej) => {
-        const tx = db.transaction(this.STORE, 'readonly');
-        const r = tx.objectStore(this.STORE).get(key);
+        const tx = db.transaction(store, 'readonly');
+        const r = tx.objectStore(store).get(key);
         r.onsuccess = () => res(r.result || null);
         r.onerror = () => rej(r.error);
       });
     } catch (e) { return null; }
   },
-  async put(key, value) {
+  async put(key, value, store = this.STORE) {
     try {
       const db = await this.open();
       return await new Promise((res, rej) => {
-        const tx = db.transaction(this.STORE, 'readwrite');
-        tx.objectStore(this.STORE).put(value, key);
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).put(value, key);
         tx.oncomplete = () => res(true);
         tx.onerror = () => rej(tx.error);
       });
     } catch (e) { return false; }
   },
-  async delete(key) {
+  async delete(key, store = this.STORE) {
     try {
       const db = await this.open();
       return await new Promise((res, rej) => {
-        const tx = db.transaction(this.STORE, 'readwrite');
-        tx.objectStore(this.STORE).delete(key);
+        const tx = db.transaction(store, 'readwrite');
+        tx.objectStore(store).delete(key);
         tx.oncomplete = () => res(true);
         tx.onerror = () => rej(tx.error);
       });
     } catch (e) { return false; }
   },
-  async all() {
+  async all(store = this.STORE) {
     try {
       const db = await this.open();
       return await new Promise((res, rej) => {
-        const tx = db.transaction(this.STORE, 'readonly');
-        const store = tx.objectStore(this.STORE);
+        const tx = db.transaction(store, 'readonly');
+        const os = tx.objectStore(store);
         const result = {};
-        const cursorReq = store.openCursor();
+        const cursorReq = os.openCursor();
         cursorReq.onsuccess = (e) => {
           const cur = e.target.result;
           if (cur) { result[cur.key] = cur.value; cur.continue(); }
@@ -1043,6 +1044,54 @@ const idb = {
     } catch (e) { return {}; }
   },
 };
+
+// =================== OFFLINE MAP TILES (OSM 2×2 합성) ===================
+// 도시 중심 좌표 → OSM 타일 2×2를 canvas로 합쳐 512px PNG blob 생성.
+// tile.openstreetmap.org는 CORS(Access-Control-Allow-Origin:*) 허용 → toBlob 가능(tainted 아님).
+// SW passthrough 목록에 openstreetmap.org 포함 → 캐시 간섭 없이 네트워크 통과.
+const MAP_TILE_Z = 12;
+function loadTileImage(url) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = () => resolve(null);
+    img.src = url;
+  });
+}
+async function buildCityTileBlob(lat, lng, accent = '#1B2A4A', z = MAP_TILE_Z) {
+  if (typeof document === 'undefined') return null;
+  const n = Math.pow(2, z);
+  const latRad = lat * Math.PI / 180;
+  const xf = (lng + 180) / 360 * n;
+  const yf = (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n;
+  const x0 = Math.floor(xf - 0.5), y0 = Math.floor(yf - 0.5);
+  const canvas = document.createElement('canvas');
+  canvas.width = 512; canvas.height = 512;
+  const ctx = canvas.getContext('2d');
+  ctx.fillStyle = '#e8e6e1';
+  ctx.fillRect(0, 0, 512, 512);
+  let loaded = 0;
+  for (let dx = 0; dx < 2; dx++) {
+    for (let dy = 0; dy < 2; dy++) {
+      const tx = ((x0 + dx) % n + n) % n;
+      const ty = y0 + dy;
+      if (ty < 0 || ty >= n) continue;
+      const img = await loadTileImage(`https://tile.openstreetmap.org/${z}/${tx}/${ty}.png`);
+      if (img) { ctx.drawImage(img, dx * 256, dy * 256, 256, 256); loaded++; }
+    }
+  }
+  if (!loaded) return null; // 한 장도 못 받으면 캐싱 실패로 간주
+  // 도시 중심 마커
+  const mx = (xf - x0) * 256, my = (yf - y0) * 256;
+  ctx.beginPath();
+  ctx.arc(mx, my, 8, 0, Math.PI * 2);
+  ctx.fillStyle = accent; ctx.fill();
+  ctx.lineWidth = 3; ctx.strokeStyle = '#ffffff'; ctx.stroke();
+  return await new Promise((res) => {
+    try { canvas.toBlob((b) => res(b), 'image/png'); } catch (e) { res(null); }
+  });
+}
 
 // =================== TIMEZONE / COPY HELPERS ===================
 const CITY_TZ = {
@@ -1651,6 +1700,7 @@ function App() {
     URL.revokeObjectURL(url);
     // Track for backup reminder
     await storage.set('lastBackupAt', Date.now());
+    if (includePhotos) await storage.set('lastFullBackupAt', Date.now());
   };
 
   // JSON Import
@@ -2087,8 +2137,19 @@ function OfflineBanner() {
   );
 }
 
-function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
+function InlineMap({ lat, lng, label, height = 240, zoom = 0.05, cacheKey }) {
   const online = useOnlineStatus();
+  const [cachedTile, setCachedTile] = useState(null);
+  // 오프라인일 때 미리 받아둔 도시 타일(IDB)을 objectURL로 표시
+  useEffect(() => {
+    if (online || !cacheKey) { setCachedTile(null); return; }
+    let alive = true;
+    idb.get(cacheKey, 'maptiles').then((blob) => {
+      if (alive && blob) setCachedTile(URL.createObjectURL(blob));
+    });
+    return () => { alive = false; };
+  }, [online, cacheKey]);
+  useEffect(() => () => { if (cachedTile) URL.revokeObjectURL(cachedTile); }, [cachedTile]);
   if (!lat || !lng) return null;
   const bbox = `${lng - zoom},${lat - zoom},${lng + zoom},${lat + zoom}`;
   const src = `https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik&marker=${lat}%2C${lng}`;
@@ -2113,8 +2174,23 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
           title={`Map of ${label}`}
           loading="lazy"
         />
+      ) : cachedTile ? (
+        // 오프라인 + 미리 받은 타일 있음 → 저장된 도시 지도 이미지 표시
+        <div style={{ position: 'relative' }}>
+          <img
+            src={cachedTile}
+            alt={`오프라인 저장 지도 — ${label}`}
+            style={{ width: '100%', height, objectFit: 'cover', display: 'block' }}
+          />
+          <span style={{
+            position: 'absolute', top: '8px', left: '8px',
+            background: 'rgba(27,42,74,0.85)', color: 'var(--color-text-inverse)',
+            fontSize: 'var(--type-micro)', fontWeight: 600,
+            padding: '3px 8px', borderRadius: 'var(--radius-xs)'
+          }}>📡 오프라인 저장 지도</span>
+        </div>
       ) : (
-        // 오프라인 폴백 — iframe 타일은 네트워크 필수라 못 뜸. 좌표·딥링크·복사로 대체.
+        // 오프라인 + 캐시 없음 — iframe 타일은 네트워크 필수라 못 뜸. 좌표·딥링크·복사로 대체.
         <div style={{
           height,
           display: 'flex',
@@ -2173,6 +2249,61 @@ function InlineMap({ lat, lng, label, height = 240, zoom = 0.05 }) {
         >
           {online ? 'Google Maps →' : '지도 앱 →'}
         </a>
+      </div>
+    </div>
+  );
+}
+
+// =================== OFFLINE MAP DOWNLOADER ===================
+// 9개 챕터 도시의 OSM 타일을 미리 받아 IDB(maptiles)에 저장 — 수동 트리거.
+function OfflineMapDownloader() {
+  const cities = CHAPTERS.filter((c) => c.coords);
+  const total = cities.length;
+  const [cached, setCached] = useState(null);
+  const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    idb.all('maptiles').then((m) => { if (alive) setCached(Object.keys(m || {}).length); });
+    return () => { alive = false; };
+  }, []);
+  const download = async () => {
+    setBusy(true); setDone(0);
+    let ok = 0;
+    for (const c of cities) {
+      const blob = await buildCityTileBlob(c.coords.lat, c.coords.lng, c.accent);
+      if (blob) { await idb.put(c.id, blob, 'maptiles'); ok++; }
+      setDone((d) => d + 1);
+    }
+    setCached(ok); setBusy(false);
+  };
+  const allCached = cached !== null && cached >= total;
+  return (
+    <div style={{ marginTop: '12px', padding: '14px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-md)', border: '1px solid var(--color-border-default)' }}>
+      <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600, marginBottom: '6px' }}>📥 오프라인 지도</div>
+      <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.5, marginBottom: '10px' }}>
+        {cached === null
+          ? '확인 중…'
+          : allCached
+            ? `${total}개 도시 지도가 저장됨 — 로밍이 끊겨도 도시 지도가 떠요.`
+            : `로밍·비행기 모드에서도 도시 지도를 보려면 미리 받아두세요. (${total}개 도시 · 약 1MB)`}
+      </div>
+      <button
+        onClick={download}
+        disabled={busy}
+        style={{
+          width: '100%', padding: '10px 14px',
+          background: busy ? 'var(--color-bg-surface)' : 'var(--color-bg-inverse)',
+          color: busy ? 'var(--color-text-muted)' : 'var(--color-text-inverse)',
+          border: 'none', borderRadius: 'var(--radius-sm)',
+          fontSize: 'var(--type-body-sm)', fontWeight: 600,
+          cursor: busy ? 'default' : 'pointer'
+        }}
+      >
+        {busy ? `받는 중… ${done}/${total}` : allCached ? '🔄 지도 다시 받기' : '📥 오프라인 지도 미리 받기'}
+      </button>
+      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '8px', lineHeight: 1.4 }}>
+        © OpenStreetMap 기여자 · Wi-Fi 연결에서 받기를 권장해요.
       </div>
     </div>
   );
@@ -2287,10 +2418,12 @@ function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutp
       <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
         <SubTab active={view === 'notes'} onClick={() => setView('notes')}>📝 메모</SubTab>
         <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 관점</SubTab>
+        <SubTab active={view === 'docs'} onClick={() => setView('docs')}>🔐 문서</SubTab>
       </div>
 
       {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} />}
       {view === 'outputs' && <OutputsInner outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
+      {view === 'docs' && <DocumentsInner />}
     </div>
   );
 }
@@ -2590,6 +2723,98 @@ function NotesInner({ notes, saveNote, notesMeta, DAYS }) {
 }
 
 // Inner Outputs (without the page header)
+// =================== DOCUMENT VAULT (오프라인 문서 금고) ===================
+// 여권·비자·보험·바우처를 이미지로 IDB(documents)에 저장 → 오프라인·분실·입국심사 대비.
+// PIN 미적용(사용자 선택): 기기 화면 잠금이 1차 방어선.
+const DOC_CATS = [
+  { id: 'passport',  label: '여권',                    icon: '🛂' },
+  { id: 'visa',      label: '비자',                    icon: '📋' },
+  { id: 'insurance', label: '여행자보험',              icon: '🛡️' },
+  { id: 'flight',    label: '항공권·바우처',           icon: '✈️' },
+  { id: 'hotel',     label: '호텔 바우처',             icon: '🏨' },
+  { id: 'etc',       label: '기타 (국제운전·접종 등)', icon: '📄' },
+];
+
+function DocumentsInner() {
+  const [docs, setDocs] = useState(null);
+  const [busyCat, setBusyCat] = useState(null);
+  const [lightbox, setLightbox] = useState(null);
+  const load = async () => setDocs(await idb.all('documents'));
+  useEffect(() => { load(); }, []);
+
+  const onPick = (cat) => async (e) => {
+    const files = Array.from(e.target.files || []);
+    if (!files.length) return;
+    setBusyCat(cat);
+    for (const file of files) {
+      try {
+        const data = await compressImage(file, 1600, 0.82); // 문서는 텍스트 가독성 위해 고해상도
+        const id = `${cat}_${Date.now()}_${Math.round(Math.random() * 10000)}`;
+        await idb.put(id, { cat, data, savedAt: new Date().toISOString() }, 'documents');
+      } catch (err) { /* 잘못된 파일은 건너뜀 */ }
+    }
+    await load();
+    setBusyCat(null);
+    e.target.value = '';
+  };
+  const onDelete = async (id) => {
+    if (!window.confirm('이 문서를 삭제할까요? 되돌릴 수 없어요.')) return;
+    await idb.delete(id, 'documents');
+    await load();
+  };
+
+  const entries = docs ? Object.keys(docs).map((id) => ({ id, ...docs[id] })) : [];
+
+  return (
+    <div>
+      <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: 'var(--space-4)', marginBottom: 'var(--space-4)' }}>
+        <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6 }}>
+          여권·비자·보험·바우처를 미리 담아두면 <strong>비행기 모드·로밍이 끊겨도</strong> 바로 꺼내볼 수 있어. 분실·입국심사 때 든든해.
+        </div>
+        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: 'var(--space-2)', lineHeight: 1.5 }}>
+          🔒 이 기기에만 저장돼 (IndexedDB) · 별도 잠금은 없으니 <strong>폰 화면 잠금</strong>을 꼭 켜둬.
+        </div>
+      </div>
+
+      {DOC_CATS.map((c) => {
+        const items = entries.filter((d) => d.cat === c.id);
+        return (
+          <div key={c.id} style={{ marginBottom: 'var(--space-4)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--space-2)' }}>
+              <span style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: 'var(--color-text-strong)' }}>
+                {c.icon} {c.label}{items.length > 0 ? ` · ${items.length}` : ''}
+              </span>
+              <label style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 600, color: 'var(--color-accent-primary)', cursor: 'pointer', padding: '4px 8px', flexShrink: 0 }}>
+                {busyCat === c.id ? '추가 중…' : '＋ 사진 추가'}
+                <input type="file" accept="image/*" multiple onChange={onPick(c.id)} disabled={busyCat === c.id} style={{ display: 'none' }} />
+              </label>
+            </div>
+            {items.length > 0 ? (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 'var(--space-2)' }}>
+                {items.map((d) => (
+                  <div key={d.id} style={{ position: 'relative', aspectRatio: '3 / 4', borderRadius: 'var(--radius-sm)', overflow: 'hidden', border: '1px solid var(--color-border-default)' }}>
+                    <img src={d.data} alt={c.label} onClick={() => setLightbox(d.data)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', cursor: 'pointer' }} />
+                    <button onClick={() => onDelete(d.id)} aria-label="문서 삭제" style={{ position: 'absolute', top: '4px', right: '4px', width: '24px', height: '24px', borderRadius: '50%', border: 'none', background: 'rgba(0,0,0,0.6)', color: '#fff', fontSize: 'var(--type-caption)', cursor: 'pointer', lineHeight: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', padding: '6px 0' }}>아직 없음</div>
+            )}
+          </div>
+        );
+      })}
+
+      {lightbox && (
+        <div onClick={() => setLightbox(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.92)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px' }}>
+          <img src={lightbox} alt="문서 원본" style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+          <button onClick={() => setLightbox(null)} aria-label="닫기" style={{ position: 'fixed', top: 'calc(env(safe-area-inset-top) + 12px)', right: '16px', width: '40px', height: '40px', borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 'var(--type-h2)', cursor: 'pointer' }}>×</button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
   return (
     <div>
@@ -2848,15 +3073,69 @@ function EveningReminder({ status }) {
   );
 }
 
-function BackupReminder({ exportData }) {
+function BackupReminder({ exportData, status }) {
   const [lastAt, setLastAt] = useState(undefined);
+  const [lastFullAt, setLastFullAt] = useState(undefined);
   const [dismissed, setDismissed] = useState(false);
+  const [busy, setBusy] = useState(false);
   useEffect(() => {
     storage.get('lastBackupAt').then(v => setLastAt(v));
+    storage.get('lastFullBackupAt').then(v => setLastFullAt(v));
   }, []);
-  if (lastAt === undefined || dismissed) return null;
-  const ms = lastAt ? (Date.now() - lastAt) : Infinity;
-  const days = Math.floor(ms / 86400000);
+  if (lastAt === undefined || lastFullAt === undefined || dismissed) return null;
+
+  const DAY = 86400000;
+  // 출발 D-7 이내 → 사진 포함 전체 백업이 최근에 없으면 강조
+  const urgent = status && status.phase === 'pre' && status.dDay <= 7;
+  if (urgent) {
+    const fullDays = lastFullAt ? Math.floor((Date.now() - lastFullAt) / DAY) : Infinity;
+    if (lastFullAt !== null && fullDays < 7) return null; // 최근 전체 백업 완료 → 조용
+    const runFull = async () => {
+      setBusy(true);
+      await exportData(true);
+      setLastAt(Date.now()); setLastFullAt(Date.now());
+      setBusy(false);
+    };
+    return (
+      <div style={{
+        background: 'linear-gradient(135deg, var(--color-atomic-navy-900) 0%, var(--color-atomic-navy-700) 100%)',
+        border: '1px solid var(--color-accent-primary)',
+        borderRadius: '12px',
+        padding: '16px',
+        marginBottom: '16px',
+      }}>
+        <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-label)', fontWeight: 700, marginBottom: '6px' }}>
+          📸 출발 D-{status.dDay} · 전체 백업
+        </div>
+        <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-inverse)', lineHeight: 1.6, marginBottom: '12px' }}>
+          사진까지 포함한 전체 백업을 받아두면 기기를 잃어도 28일 기록이 안전해.
+          {lastFullAt === null ? ' 아직 사진 포함 백업을 한 적이 없어.' : ` 마지막 전체 백업 ${fullDays}일 전이야.`}
+        </div>
+        <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+          <button
+            onClick={runFull}
+            disabled={busy}
+            style={{
+              flex: 1, fontSize: 'var(--type-body-sm)', padding: '10px 14px',
+              background: 'var(--color-accent-primary)', color: 'var(--color-atomic-navy-900)',
+              border: 'none', borderRadius: 'var(--radius-sm)', cursor: busy ? 'default' : 'pointer', fontWeight: 700,
+            }}
+          >{busy ? '백업 받는 중…' : '📥 사진 포함 전체 백업'}</button>
+          <button
+            onClick={() => setDismissed(true)}
+            style={{
+              fontSize: 'var(--type-micro)', padding: '8px 10px',
+              background: 'transparent', color: 'rgba(255,255,255,0.5)',
+              border: 'none', cursor: 'pointer', whiteSpace: 'nowrap',
+            }}
+          >나중에</button>
+        </div>
+      </div>
+    );
+  }
+
+  // 평소: 14일 이상 미백업 시 일반(사진 미포함) 백업 권장
+  const days = lastAt ? Math.floor((Date.now() - lastAt) / DAY) : Infinity;
   const shouldWarn = lastAt === null || days >= 14;
   if (!shouldWarn) return null;
   const msg = lastAt === null
@@ -4227,7 +4506,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
 
           {/* Inline Map */}
           {todayChapter?.coords && (
-            <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} />
+            <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} cacheKey={todayChapter.id} />
           )}
 
           <div style={{ fontSize: 'var(--type-body)', lineHeight: 1.7, marginBottom: '8px' }}>
@@ -4343,7 +4622,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
       <NotifSetup />
 
       {/* Backup reminder — lowest priority, bottom of home */}
-      <BackupReminder exportData={exportData} />
+      <BackupReminder exportData={exportData} status={status} />
     </div>
   );
 }
@@ -4482,6 +4761,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                       lng={ch.coords.lng}
                       label={ch.search}
                       height={200}
+                      cacheKey={ch.id}
                     />
                   )}
 
@@ -5744,7 +6024,9 @@ function MapView() {
             lng={selected.coords.lng}
             label={selected.search}
             height={280}
+            cacheKey={selected.id}
           />
+          <OfflineMapDownloader />
           </Card>
         </div>
       )}
