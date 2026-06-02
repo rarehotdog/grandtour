@@ -1325,6 +1325,7 @@ const getRelativeTime = (iso) => {
   try { return new Date(iso).toLocaleDateString('ko-KR'); } catch (e) { return ''; }
 };
 
+let pendingDayFocus = null; // 홈 챕터 진행 → 일정 진입 시 펼칠 {chId,dayN}. Days mount 시 1회 소비.
 const getCurrentStatus = () => {
   const now = new Date();
   if (now < TRIP_START) {
@@ -2381,16 +2382,16 @@ function Recommendations({ chapterId, chapter }) {
                 <span style={{ fontSize: 'var(--type-micro)', color: chapter.accent, flexShrink: 0 }}>📍 →</span>
               </div>
               {/* 설명·가치·팁 — 카드 가로 폭 전체 사용 */}
-              <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.55 }}>
+              <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6, wordBreak: 'keep-all' }}>
                 {item.why}
               </div>
               {item.worth && (
-                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.55, fontStyle: 'italic' }}>
+                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.6, fontStyle: 'italic', wordBreak: 'keep-all' }}>
                   ↳ {item.worth}
                 </div>
               )}
               {item.tip && (
-                <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
+                <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500, wordBreak: 'keep-all' }}>
                   💡 {item.tip}
                 </div>
               )}
@@ -4089,7 +4090,7 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                     {chapterDays.map(d => (
                       <button
                         key={d.n}
-                        onClick={(e) => { e.stopPropagation(); goToDay ? goToDay(ch.id, d.n) : (setView && setView('days')); }}
+                        onClick={(e) => { e.stopPropagation(); pendingDayFocus = { chId: ch.id, dayN: d.n }; setView && setView('days'); }}
                         style={{
                           display: 'flex', gap: '10px', alignItems: 'flex-start',
                           padding: '8px 10px',
@@ -4713,12 +4714,11 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
 }
 
 // =================== DAYS ===================
-function Days({ notes, saveNote, DAYS, focus, clearFocus, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
-  // 홈 챕터 진행 → 일정 진입 시 mount 즉시 해당 챕터 필터 + 그 날 펼침(초기값으로 확실히 반영)
-  const [openDay, setOpenDay] = useState(focus?.dayN ?? null);
-  const [filterCh, setFilterCh] = useState(focus?.chId ?? 'all');
-  // focus는 1회 소비 후 클리어(이후 일정 탭 직접 진입 시 필터·펼침 남지 않게)
-  useEffect(() => { if (focus && clearFocus) clearFocus(); }, []);
+function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
+  // 홈 챕터 진행에서 들어온 경우 mount 즉시 해당 챕터 필터 + 그 날 펼침(모듈 변수 pendingDayFocus, 1회 소비)
+  const [openDay, setOpenDay] = useState(pendingDayFocus?.dayN ?? null);
+  const [filterCh, setFilterCh] = useState(pendingDayFocus?.chId ?? 'all');
+  useEffect(() => { pendingDayFocus = null; }, []);
 
   const chapterIds = DAYS.reduce((acc, d) => {
     if (!acc.includes(d.c)) acc.push(d.c);
