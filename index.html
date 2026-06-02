@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
   <meta name="theme-color" content="#1B2A4A">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -347,7 +347,7 @@ const CHAPTERS = [
   { id: 'rom', name: '로마', flag: '🇮🇹', icon: '🏛️', country: 'Italy', theme: 'System · 시스템', tag: '1000년을 버티는 시스템', color: '#FEF3C7', accent: '#854D0E', coords: { lat: 41.9028, lng: 12.4964 }, search: 'Rome, Italy', dates: '6/27~30' },
   { id: 'pos', name: '포지타노', flag: '🇮🇹', icon: '🌊', country: 'Italy', theme: 'Rest · 휴식', tag: '절대적 휴식이 만드는 명료함', color: '#BAE6FD', accent: '#075985', coords: { lat: 40.6280, lng: 14.4842 }, search: 'Positano, Amalfi Coast, Italy', dates: '6/30~7/3' },
   { id: 'san', name: '산토리니', flag: '🇬🇷', icon: '🏝️', country: 'Greece', theme: 'Rebirth · 재탄생', tag: '파괴된 위에 다시 짓는다', color: '#CFFAFE', accent: '#155E75', coords: { lat: 36.3932, lng: 25.4615 }, search: 'Santorini, Greece', dates: '7/3~6' },
-  { id: 'ath', name: '아테네', flag: '🇬🇷', icon: '🦉', country: 'Greece', theme: 'Mission · 미션', tag: '나의 Nike를 발견하는 날', color: '#F5F5F4', accent: '#44403C', coords: { lat: 37.9838, lng: 23.7275 }, search: 'Athens, Greece', dates: '7/6~8' },
+  { id: 'ath', name: '아테네', flag: '🇬🇷', icon: '🦉', country: 'Greece', theme: 'Mission · 미션', tag: '나의 Nike를 발견하는 날', color: '#EDE9FE', accent: '#6D28D9', coords: { lat: 37.9838, lng: 23.7275 }, search: 'Athens, Greece', dates: '7/6~8' },
   { id: 'dxb', name: '두바이·아부다비', flag: '🇦🇪', icon: '🌆', country: 'UAE', theme: 'Frontier · 미래', tag: '사막 위에 세운 청사진', color: '#FDE68A', accent: '#92400E', coords: { lat: 25.2048, lng: 55.2708 }, search: 'Dubai, United Arab Emirates', dates: '7/8~10' },
   { id: 'ret', name: '귀국', flag: '🇰🇷', icon: '🏠', country: 'Korea', theme: 'Return · 귀환', tag: '우리, 이제 시작이다', color: '#F5F5F4', accent: '#262626', coords: null, dates: '7/10~12' },
 ];
@@ -2817,8 +2817,42 @@ function DocumentsInner() {
 }
 
 function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
+  // 진행 요약 — 홈 OutputsProgress와 동일 티어 로직(싱크)
+  const tiers = [
+    { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
+    { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
+    { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
+  ];
+  const totalAll = OUTPUTS.length;
+  const doneAll = OUTPUTS.filter(o => outputs[o.id]?.done).length;
   return (
     <div>
+      {/* 진행 요약 (홈 '관점 진행' 카드와 싱크) */}
+      <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: '16px' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
+          <span style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>관점 진행</span>
+          <span className="gt-serif" style={{ fontSize: 'var(--type-h2)', fontStyle: 'italic', color: 'var(--color-text-strong)' }}>{doneAll}<span style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-muted)' }}>/{totalAll}</span></span>
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {tiers.map(t => {
+            const total = OUTPUTS.filter(o => o.star === t.star).length;
+            const done = OUTPUTS.filter(o => o.star === t.star && outputs[o.id]?.done).length;
+            const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+            return (
+              <div key={t.star}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 'var(--type-micro)', marginBottom: '3px' }}>
+                  <span style={{ color: t.tone, fontWeight: 500 }}>{t.label}</span>
+                  <span style={{ color: 'var(--color-text-muted)' }}>{done}/{total}</span>
+                </div>
+                <div style={{ height: '4px', background: t.bg, borderRadius: 'var(--radius-xs)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: pct + '%', background: t.tone, transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)' }} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
         <div style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 500, color: 'var(--color-warning-text)', marginBottom: '4px' }}>
           ⭐⭐⭐ 평생 간직할 관점 4개
@@ -3286,7 +3320,9 @@ function NextFlight({ FLIGHTS, DAYS, status, setView }) {
 
   // Find arrival chapter from DAYS matching the flight date
   const arrivalDay = (DAYS || []).find(d => d.d === next.d);
-  const arrivalChapter = arrivalDay ? C(arrivalDay.c) : null;
+  let arrivalChapter = arrivalDay ? C(arrivalDay.c) : null;
+  // 서막·귀국(coords 없는 챕터)은 도착 챕터로 부적절 — 배지·지도 링크·날씨 숨김(깨진 검색어 방지)
+  if (arrivalChapter && !arrivalChapter.coords) arrivalChapter = null;
   const showWeatherPreview = arrivalChapter && arrivalChapter.coords && daysOut <= 16;
 
   return (
@@ -3993,6 +4029,7 @@ function ChapterProgress({ DAYS, status, setView }) {
               style={{
                 background: isCurrent ? ch.color : 'var(--color-bg-surface)',
                 border: isCurrent ? `1.5px solid ${ch.accent}` : (isOpen ? `1px solid ${ch.accent}` : '1px solid var(--color-border-default)'),
+                borderLeft: `4px solid ${ch.accent}`,
                 borderRadius: 'var(--radius-md)',
                 opacity: isDone ? 0.65 : 1,
                 overflow: 'hidden',
@@ -4526,20 +4563,45 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
               <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: INT_LABEL[today.int].c }}>{INT_LABEL[today.int].t}</span>
             )}
           </div>
-          {today.moves && (
-            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
-              <strong>🚐 이동:</strong> {today.moves}
-            </div>
-          )}
-          <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
-            <strong>✨ 오늘:</strong> {today.hl}
-          </div>
-          <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-soft)', marginBottom: '12px' }}>
-            <strong>🍽️ 식사:</strong> {today.food}
-            {today.food && today.food.includes('🌟') && (
-              <span style={{ marginLeft: '6px', fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-accent-primary)' }}>· 예약 확인!</span>
-            )}
-          </div>
+          {/* 오늘 동선 타임라인 — 현재 시각 기준 '지금쯤 여기' 강조 */}
+          {(() => {
+            const hour = new Date().getHours();
+            const nowPhase = hour < 11 ? 0 : hour < 17 ? 1 : 2; // 아침/오후/저녁
+            const steps = [
+              { icon: '🚐', label: '이동', value: today.moves, ph: 0 },
+              { icon: '✨', label: '활동', value: today.hl, ph: 1 },
+              { icon: '🍽️', label: '식사', value: today.food, ph: 2, reserve: today.food && today.food.includes('🌟') },
+            ].filter(s => s.value);
+            return (
+              <div style={{ margin: '4px 0 12px' }}>
+                {steps.map((s, i) => {
+                  const active = s.ph === nowPhase;
+                  return (
+                    <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
+                        <div style={{
+                          width: active ? '12px' : '9px', height: active ? '12px' : '9px',
+                          borderRadius: '50%', marginTop: '4px',
+                          background: active ? (todayChapter?.accent || 'var(--color-accent-primary)') : 'var(--color-border-strong)',
+                          boxShadow: active ? `0 0 0 4px ${todayChapter?.color || 'var(--color-warning-bg)'}` : 'none',
+                        }} />
+                        {i < steps.length - 1 && <div style={{ width: '2px', flex: 1, minHeight: '24px', background: 'var(--color-border-default)' }} />}
+                      </div>
+                      <div style={{ paddingBottom: '14px', flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: active ? (todayChapter?.accent || 'var(--color-accent-primary)') : 'var(--color-text-muted)', fontWeight: 700, marginBottom: '2px' }}>
+                          {s.icon} {s.label}{active && ' · 지금쯤'}
+                          {s.reserve && <span style={{ marginLeft: '6px', color: 'var(--color-accent-primary)' }}>예약 확인!</span>}
+                        </div>
+                        <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: active ? 'var(--color-text-strong)' : 'var(--color-text-soft)', fontWeight: active ? 600 : 400 }}>
+                          {s.value}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          })()}
           <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
             <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
@@ -4589,8 +4651,8 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
       {/* JSON Backup / Restore */}
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
-        <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-          체크 · 메모 · 편집 · 관점 JSON 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
+        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginBottom: '12px', lineHeight: 1.6, letterSpacing: 'normal', wordBreak: 'keep-all' }}>
+          체크 · 메모 · 편집 · 관점을 JSON으로 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>
           <input
@@ -4707,6 +4769,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
           <div key={day.n} style={{
             background: 'var(--color-bg-surface)',
             border: '1px solid var(--color-border-default)',
+            borderLeft: `4px solid ${ch.accent}`,
             borderRadius: 'var(--radius-md)',
             marginBottom: '8px',
             overflow: 'hidden'
