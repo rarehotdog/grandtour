@@ -1375,6 +1375,7 @@ class ErrorBoundary extends React.Component {
 function App() {
   const [view, setView] = useState('home');
   const [forkCode, setForkCode] = useState(null);
+  const [daysFocus, setDaysFocus] = useState(null); // 홈 챕터 진행 → 일정 자세히 연결용
   const [checks, setChecks] = useState({});
   const [checkMeta, setCheckMeta] = useState({});
   const [notes, setNotes] = useState({});
@@ -1805,8 +1806,8 @@ function App() {
         )}
         {loaded && (
           <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
-            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
+            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} goToDay={(chId, dayN) => { setDaysFocus({ chId, dayN }); setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
+            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} focus={daysFocus} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} checkMeta={checkMeta} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
             {view === 'forkpreview' && <ForkPreview code={forkCode} onFork={onFork} onClose={() => setView('home')} />}
@@ -4005,7 +4006,7 @@ function OutputsProgress({ outputs, setView }) {
 }
 
 // Chapter progress dots (9 chapters with per-day status)
-function ChapterProgress({ DAYS, status, setView }) {
+function ChapterProgress({ DAYS, status, setView, goToDay }) {
   const todayN = status.current?.n;
   const [openId, setOpenId] = useState(null);
   // group days by chapter (excluding 'p' and 'ret')
@@ -4086,7 +4087,7 @@ function ChapterProgress({ DAYS, status, setView }) {
                     {chapterDays.map(d => (
                       <button
                         key={d.n}
-                        onClick={(e) => { e.stopPropagation(); setView && setView('days'); }}
+                        onClick={(e) => { e.stopPropagation(); goToDay ? goToDay(ch.id, d.n) : (setView && setView('days')); }}
                         style={{
                           display: 'flex', gap: '10px', alignItems: 'flex-start',
                           padding: '8px 10px',
@@ -4481,7 +4482,7 @@ const INT_LABEL = {
   'L':  { t: '🟢 여유', c: 'var(--color-success)' },
 };
 
-function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
+function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
@@ -4624,7 +4625,7 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
       )}
 
       {/* Chapter Progress (visual) */}
-      <ChapterProgress DAYS={DAYS} status={status} setView={setView} />
+      <ChapterProgress DAYS={DAYS} status={status} setView={setView} goToDay={goToDay} />
 
       {/* Outputs 3-tier Progress */}
       <OutputsProgress outputs={outputs} setView={setView} />
@@ -4710,9 +4711,16 @@ function Home({ status, checks, packing, outputs, notes, setView, DAYS, FLIGHTS,
 }
 
 // =================== DAYS ===================
-function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
+function Days({ notes, saveNote, DAYS, focus, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
   const [openDay, setOpenDay] = useState(null);
   const [filterCh, setFilterCh] = useState('all');
+  // 홈 챕터 진행에서 특정 일정으로 진입 시 해당 챕터 필터 + 그 날 펼침
+  useEffect(() => {
+    if (focus) {
+      if (focus.chId) setFilterCh(focus.chId);
+      if (focus.dayN) setOpenDay(focus.dayN);
+    }
+  }, [focus]);
 
   const chapterIds = DAYS.reduce((acc, d) => {
     if (!acc.includes(d.c)) acc.push(d.c);
@@ -5145,8 +5153,7 @@ function SwipeRow({ meta, children, bg }) {
 }
 
 function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, packingCustom, packingEdits, savePackingEdit, resetPackingEdit, addPackingItem, removePackingItem }) {
-  const [tab, setTab] = useState('checklist');
-  const [packingPerson, setPackingPerson] = useState('tyler');
+  const [tab, setTab] = useState('checklist'); // 'checklist' | 'tyler' | 'juyeon' | 'couple'
 
   // Get combined sections (default + custom) for current person
   const getCombinedSections = (person) => {
@@ -5168,11 +5175,13 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <h2 style={pageTitleStyle}>{tab === 'checklist' ? '체크리스트' : '패킹 리스트'}</h2>
+      <h2 style={pageTitleStyle}>{tab === 'checklist' ? '체크리스트' : '패킹 · ' + PACKING_ALL[tab].label}</h2>
 
-      <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
-        <SubTab active={tab === 'checklist'} onClick={() => setTab('checklist')}>D-30 → D-3</SubTab>
-        <SubTab active={tab === 'packing'} onClick={() => setTab('packing')}>👔 패킹</SubTab>
+      <div className="gt-chips" style={{ gap: '8px', marginBottom: '20px' }}>
+        <SubTab active={tab === 'checklist'} onClick={() => setTab('checklist')}>✓ 체크리스트</SubTab>
+        {Object.keys(PACKING_ALL).map(p => (
+          <SubTab key={p} active={tab === p} onClick={() => setTab(p)}>{PACKING_ALL[p].label}</SubTab>
+        ))}
       </div>
 
       {tab === 'checklist' && Object.entries(CHECKLIST)
@@ -5193,42 +5202,18 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
         />
       ))}
 
-      {tab === 'packing' && (
+      {tab !== 'checklist' && (
         <div>
-          {/* Person sub-tabs */}
-          <div className="gt-chips" style={{ marginBottom: '16px' }}>
-            {Object.keys(PACKING_ALL).map(p => (
-              <button
-                key={p}
-                onClick={() => setPackingPerson(p)}
-                style={{
-                  padding: '10px 16px',
-                  fontSize: 'var(--type-body-sm)',
-                  background: packingPerson === p ? 'var(--color-atomic-navy-900)' : 'var(--color-bg-surface)',
-                  color: packingPerson === p ? 'var(--color-atomic-white)' : 'var(--color-text-soft)',
-                  border: '1px solid var(--color-border-default)',
-                  borderRadius: '20px',
-                  cursor: 'pointer',
-                  fontWeight: packingPerson === p ? 500 : 400,
-                  whiteSpace: 'nowrap',
-                  flexShrink: 0
-                }}
-              >
-                {PACKING_ALL[p].label}
-              </button>
-            ))}
-          </div>
-
           <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: 'var(--radius-sm)' }}>
             💡 ✎로 기존 항목 편집 · "+ 추가" 버튼으로 새 항목 · 직접 추가한 건 삭제 가능
           </div>
 
-          {Object.entries(getCombinedSections(packingPerson)).map(([section, items]) => (
+          {Object.entries(getCombinedSections(tab)).map(([section, items]) => (
             <PackingSection
               key={section}
               title={section}
               items={items}
-              person={packingPerson}
+              person={tab}
               packing={packing}
               togglePacking={togglePacking}
               packingEdits={packingEdits}
@@ -5766,7 +5751,7 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
       {subTab === 'flights' && <FlightsList FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       {subTab === 'fx' && <ExchangeRates />}
       {subTab === 'weather' && <WeatherWidget />}
-      {subTab === 'food' && <RestaurantTracker />}
+      {subTab === 'food' && <div><RestaurantTracker /><LocalEats /></div>}
       {subTab === 'costs' && <CostsSummary />}
       {subTab === 'expense' && <ExpenseTracker />}
       {subTab === 'translate' && <TranslateWidget />}
@@ -7346,6 +7331,109 @@ function WeatherWidget() {
 }
 
 // =================== RESTAURANT TRACKER ===================
+// 로컬 유명 맛집 — 미슐랭 아닌 현지 명물. 둘러보기용(구글맵 링크), 꼭 안 가도 OK.
+const LOCAL_EATS = {
+  paris: [
+    { n: "L'As du Fallafel", t: '🥙', d: '마레 지구 팔라펠 — 현지인이 줄 서는 길거리 명물' },
+    { n: 'Du Pain et des Idées', t: '🥐', d: '1889년 빵집 — 에스카르고 페이스트리, 아침 일찍' },
+    { n: 'Marché des Enfants Rouges', t: '🍲', d: '파리 最古 시장(1615) — 다국적 먹거리 점심' },
+    { n: 'Pierre Hermé', t: '🍬', d: '마카롱의 피카소 — 한 알씩 사 먹는 디저트' },
+    { n: 'Breizh Café Marais', t: '🥞', d: '정통 브르타뉴 갈레트·시드르' },
+  ],
+  london: [
+    { n: 'Borough Market', t: '🧺', d: '1000년 역사 푸드마켓 — 치즈·굴·디저트 시식 천국' },
+    { n: 'Poppies Fish & Chips', t: '🐟', d: '레트로 분위기 정통 피시앤칩스' },
+    { n: 'Monmouth Coffee', t: '☕', d: '런던 스페셜티 커피의 성지' },
+    { n: 'Dishoom Covent Garden', t: '🍛', d: '봄베이 카페 무드 — 베이컨 나안롤·차이' },
+    { n: 'Maltby Street Market', t: '🥪', d: '토요일만 여는 한적한 미식 골목' },
+  ],
+  dol: [
+    { n: 'Rifugio Firenze', t: '⛰️', d: '알페 디 시우시 산장 — 트레킹 중 카네데를리 점심' },
+    { n: 'Gostner Schwaige', t: '🥛', d: '고산 농가 식당 — 건초 수프 등 향토식' },
+    { n: 'Baita Sofie', t: '🧀', d: '세체다 전망 산장 — 슈페츨레·슈트루델' },
+    { n: 'Mastlè', t: '🍷', d: '발 가르데나 전망 비스트로 — 알프스 와인' },
+  ],
+  flo: [
+    { n: "All'Antico Vinaio", t: '🥪', d: '피렌체 명물 파니니 — 늘 줄 서는 길거리 간판' },
+    { n: 'Mercato Centrale', t: '🍝', d: '중앙시장 2층 푸드홀 — 트러플·람프레도토' },
+    { n: 'Trattoria Mario', t: '🍖', d: '1953년 점심 전용 — 비스테카·합석 문화' },
+    { n: 'Gelateria dei Neri', t: '🍦', d: '현지인이 가는 젤라또 — 리코타·무화과' },
+    { n: 'Trattoria Sostanza', t: '🧈', d: '버터치킨으로 유명한 토스카나 백년 노포' },
+  ],
+  rom: [
+    { n: 'Da Enzo al 29', t: '🍝', d: '트라스테베레 정통 트라토리아 — 카초에페페' },
+    { n: 'Pizzarium Bonci', t: '🍕', d: '본치의 알 탈리오(조각) 피자 — 토핑 예술' },
+    { n: 'Giolitti', t: '🍨', d: '1900년 로마 젤라또 전설 — 판테온 근처' },
+    { n: 'Trapizzino', t: '🔺', d: '로마식 삼각 피자 주머니에 스튜' },
+    { n: 'Tonnarello', t: '🍝', d: '트라스테베레 — 4대 로마 파스타 한자리' },
+  ],
+  pos: [
+    { n: 'Da Vincenzo', t: '🍤', d: '포지타노 가족 운영 — 해산물·로컬 와인' },
+    { n: "C'era una volta", t: '🍕', d: '언덕 위 캐주얼 트라토리아 — 가성비 좋음' },
+    { n: 'Lo Guarracino', t: '🌊', d: '절벽 테라스 — 바다 보며 피자·파스타' },
+    { n: 'La Tagliata', t: '🥩', d: '산 위 농가 패밀리 스타일 — 셔틀 운행' },
+  ],
+  san: [
+    { n: "Lucky's Souvlakis", t: '🥙', d: '피라 명물 수블라키 — 새벽까지, 가성비 甲' },
+    { n: 'To Psaraki', t: '🐙', d: 'Vlychada 항구 — 문어·생선 구이' },
+    { n: 'Metaxi Mas', t: '🇬🇷', d: 'Exo Gonia 현지인 타베르나 — 예약 필수' },
+    { n: 'Aktarma', t: '🍷', d: 'Pyrgos 캐주얼 메제 — 일몰 전 한잔' },
+  ],
+  ath: [
+    { n: 'Kostas Souvlaki', t: '🥙', d: '1950년 신타그마 뒷골목 — 점심만, 줄 서는 수블라키' },
+    { n: 'Diporto', t: '🍷', d: '간판 없는 지하 타베르나 — 메뉴도 없음, 그날 요리' },
+    { n: 'Ta Karamanlidika', t: '🧀', d: '모나스티라키 — 미트·치즈 메제 플래터' },
+    { n: 'Varvakios Agora', t: '🐟', d: '아테네 중앙 농수산시장 — 진짜 로컬 풍경' },
+    { n: 'Bougatsadiko Thessaloniki', t: '🥧', d: '부가차 — 커스터드/치즈 페이스트리 아침' },
+  ],
+  dxb: [
+    { n: 'Ravi Restaurant', t: '🍛', d: '두바이 전설의 파키스탄 노포 — 저렴·푸짐' },
+    { n: 'Bu Qtair', t: '🐟', d: '어부 마을 생선 튀김 — 줄 서는 진짜 로컬' },
+    { n: 'Al Ustad Special Kebab', t: '🍢', d: '1978년 이란 케밥 — 빈티지 사진 가득' },
+    { n: 'Arabian Tea House', t: '🫖', d: '알 파히디 올드타운 — 에미라티 조식' },
+    { n: 'Logma', t: '🧆', d: '모던 에미라티 컴포트푸드 — 차이 카락' },
+  ],
+};
+
+function LocalEats() {
+  const cities = CHAPTERS.filter(c => LOCAL_EATS[c.id]);
+  return (
+    <Card>
+      <SectionTitle>🍴 로컬 맛집 둘러보기</SectionTitle>
+      <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6, marginBottom: 'var(--space-4)' }}>
+        미슐랭 말고 현지인이 사랑하는 동네 명물. 꼭 다 안 가도 돼 — 근처 지나다 "오 여기?" 싶으면 탭해서 구글맵으로.
+      </div>
+      {cities.map(c => (
+        <div key={c.id} style={{ marginBottom: 'var(--space-5)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: 'var(--space-2)', paddingBottom: '6px', borderBottom: `2px solid ${c.color}` }}>
+            <span style={{ fontSize: 'var(--type-h3)' }}>{c.flag}</span>
+            <span style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: c.accent }}>{c.name}</span>
+            <span style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}>{c.country}</span>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+            {LOCAL_EATS[c.id].map((e, i) => (
+              <a
+                key={i}
+                href={mapsUrl(`${e.n} ${c.search || c.name}`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-sm)', textDecoration: 'none', color: 'inherit', border: '1px solid var(--color-border-soft)' }}
+              >
+                <span style={{ fontSize: 'var(--type-h3)', flexShrink: 0 }}>{e.t}</span>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-text-strong)' }}>{e.n}</div>
+                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)', lineHeight: 1.5, marginTop: '2px' }}>{e.d}</div>
+                </div>
+                <span style={{ fontSize: 'var(--type-micro)', color: c.accent, alignSelf: 'center', flexShrink: 0, fontWeight: 700 }}>📍 →</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
+    </Card>
+  );
+}
+
 function RestaurantTracker() {
   const SPOTS = [
     { id: 'R1', name: 'Le Jules Verne', ch: 'paris', date: '6/17', note: '미슐랭 2성 · 에펠탑 내 · 재킷 필수', platform: '공식 예약', book: 'https://booking.lejulesverne-paris.com/en' },
@@ -7514,6 +7602,7 @@ function SubTab({ active, onClick, children }) {
       letterSpacing: '-0.01em',
       fontFamily: 'inherit',
       whiteSpace: 'nowrap',
+      flexShrink: 0,
       boxShadow: active ? '0 2px 8px rgba(27,42,74,0.18)' : 'none',
       transition: 'background 0.2s var(--ease-out), color 0.2s, box-shadow 0.2s, transform 0.1s',
     }}>
