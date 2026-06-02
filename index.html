@@ -1807,7 +1807,7 @@ function App() {
         {loaded && (
           <div key={view} className="gt-view">
             {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} goToDay={(chId, dayN) => { setDaysFocus({ chId, dayN }); setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} />}
-            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} focus={daysFocus} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
+            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} focus={daysFocus} clearFocus={() => setDaysFocus(null)} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} checkMeta={checkMeta} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
             {view === 'forkpreview' && <ForkPreview code={forkCode} onFork={onFork} onClose={() => setView('home')} />}
@@ -2371,27 +2371,29 @@ function Recommendations({ chapterId, chapter }) {
               border: `1px solid ${chapter.color}`
             }}
           >
-            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-              <span style={{ fontSize: 'var(--type-h2)', flexShrink: 0 }}>{item.tag}</span>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: chapter.accent, marginBottom: '4px' }}>
+            <div>
+              {/* 이모지 + 제목 + 지도 화살표 (한 줄) */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                <span style={{ fontSize: 'var(--type-h2)', flexShrink: 0 }}>{item.tag}</span>
+                <div style={{ flex: 1, minWidth: 0, fontSize: 'var(--type-body)', fontWeight: 600, color: chapter.accent }}>
                   {item.t}
                 </div>
-                <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.55 }}>
-                  {item.why}
-                </div>
-                {item.worth && (
-                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.55, fontStyle: 'italic' }}>
-                    ↳ {item.worth}
-                  </div>
-                )}
-                {item.tip && (
-                  <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
-                    💡 {item.tip}
-                  </div>
-                )}
+                <span style={{ fontSize: 'var(--type-micro)', color: chapter.accent, flexShrink: 0 }}>📍 →</span>
               </div>
-              <span style={{ fontSize: 'var(--type-micro)', color: chapter.accent, alignSelf: 'center' }}>📍 →</span>
+              {/* 설명·가치·팁 — 카드 가로 폭 전체 사용 */}
+              <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.55 }}>
+                {item.why}
+              </div>
+              {item.worth && (
+                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '4px', lineHeight: 1.55, fontStyle: 'italic' }}>
+                  ↳ {item.worth}
+                </div>
+              )}
+              {item.tip && (
+                <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500 }}>
+                  💡 {item.tip}
+                </div>
+              )}
             </div>
           </a>
         ))}
@@ -4711,16 +4713,12 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
 }
 
 // =================== DAYS ===================
-function Days({ notes, saveNote, DAYS, focus, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
-  const [openDay, setOpenDay] = useState(null);
-  const [filterCh, setFilterCh] = useState('all');
-  // 홈 챕터 진행에서 특정 일정으로 진입 시 해당 챕터 필터 + 그 날 펼침
-  useEffect(() => {
-    if (focus) {
-      if (focus.chId) setFilterCh(focus.chId);
-      if (focus.dayN) setOpenDay(focus.dayN);
-    }
-  }, [focus]);
+function Days({ notes, saveNote, DAYS, focus, clearFocus, saveEdit, resetEdit, isEdited, photos, savePhoto, deletePhoto }) {
+  // 홈 챕터 진행 → 일정 진입 시 mount 즉시 해당 챕터 필터 + 그 날 펼침(초기값으로 확실히 반영)
+  const [openDay, setOpenDay] = useState(focus?.dayN ?? null);
+  const [filterCh, setFilterCh] = useState(focus?.chId ?? 'all');
+  // focus는 1회 소비 후 클리어(이후 일정 탭 직접 진입 시 필터·펼침 남지 않게)
+  useEffect(() => { if (focus && clearFocus) clearFocus(); }, []);
 
   const chapterIds = DAYS.reduce((acc, d) => {
     if (!acc.includes(d.c)) acc.push(d.c);
@@ -5751,7 +5749,7 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
       {subTab === 'flights' && <FlightsList FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
       {subTab === 'fx' && <ExchangeRates />}
       {subTab === 'weather' && <WeatherWidget />}
-      {subTab === 'food' && <div><RestaurantTracker /><LocalEats /></div>}
+      {subTab === 'food' && <div><LocalEats /><RestaurantTracker /></div>}
       {subTab === 'costs' && <CostsSummary />}
       {subTab === 'expense' && <ExpenseTracker />}
       {subTab === 'translate' && <TranslateWidget />}
