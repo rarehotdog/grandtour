@@ -333,6 +333,10 @@
     button, a, [role="button"], input, textarea, select { -webkit-tap-highlight-color: transparent; }
     :focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; border-radius: 3px; }
 
+    /* Swipe 어포던스 chevron — 항목을 밀면 누가·언제 고쳤는지 보이는 공동작업 힌트.
+       opacity는 인라인에서 dx에 따라 페이드(밀수록 사라짐), 여기선 그 변화만 부드럽게. */
+    .gt-swipe-handle { transition: opacity 0.2s var(--ease-out); }
+
     /* Reduce motion respect */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
@@ -2893,7 +2897,7 @@ function NotesInner({ notes, saveNote, notesMeta, DAYS }) {
               <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-2)', letterSpacing: 'var(--track-label)' }}>
                 ✍️ 위 질문들에서 떠오른 생각을 자유롭게 — 정답은 없어, 꼬리를 따라가 봐
               </div>
-              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} />
+              <NoteEditor dayId={day.n} note={notes[day.n]} save={saveNote} meta={notesMeta && notesMeta[day.n]} />
             </div>
           </details>
           </SwipeRow>
@@ -5240,14 +5244,23 @@ function EditRow({ label, children, mapQuery }) {
 }
 
 // =================== NOTE EDITOR ===================
-function NoteEditor({ dayId, note, save }) {
+function NoteEditor({ dayId, note, save, meta }) {
   const [val, setVal] = useState(note?.content || '');
   const [saving, setSaving] = useState(false);
   const [savedAt, setSavedAt] = useState(null);
+  const [conflict, setConflict] = useState(null); // 공동작업 동시편집 충돌 { by, at, content }
   const timerRef = useRef(null);
+  const baseRef = useRef(note?.content || ''); // 마지막으로 동기화/저장된 기준값
 
+  // 원격(공동작업) 변경 감지 — 편집 중이 아니면 그대로 수용, 편집 중이면 내 입력을 보존하고 충돌 배너로 알림.
+  // (기존엔 무조건 setVal로 덮어써 동시편집 시 내 글이 조용히 사라졌음 = LWW 손실)
   useEffect(() => {
-    setVal(note?.content || '');
+    const nv = note?.content || '';
+    if (nv === baseRef.current) return;        // 변화 없음 or 내 저장 에코
+    const dirty = val !== baseRef.current;     // 내가 미저장 편집 중인가
+    baseRef.current = nv;                       // 기준은 항상 최신 원격으로 이동
+    if (!dirty) { setVal(nv); setConflict(null); }
+    else { setConflict({ by: (meta && meta.by) || null, at: meta && meta.at, content: nv }); }
   }, [note?.content]);
 
   const handleChange = (e) => {
@@ -5257,16 +5270,41 @@ function NoteEditor({ dayId, note, save }) {
     if (timerRef.current) clearTimeout(timerRef.current);
     timerRef.current = setTimeout(async () => {
       await save(dayId, newVal);
+      baseRef.current = newVal;                 // 내 저장본을 새 기준으로 — 에코로 돌아와도 충돌 오인 방지
       setSaving(false);
       setSavedAt(new Date());
     }, 800);
   };
+
+  // 상대 버전으로 교체 — 내 입력을 버리고 원격 글을 채택
+  const takeTheirs = () => { setVal(conflict.content); baseRef.current = conflict.content; setConflict(null); };
+  // 내 입력 유지 — 배너만 닫음. 기준은 이미 원격값이라 다음 저장 시 내 글이 반영됨(LWW, 내가 이김)
+  const keepMine = () => setConflict(null);
 
   return (
     <div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', marginBottom: '6px', letterSpacing: 'var(--track-label)' }}>
         📝 오늘의 1줄 인사이트
       </div>
+      {conflict && (
+        <div style={{ background: 'var(--color-danger-bg)', border: '1px solid var(--color-danger)', borderRadius: 'var(--radius-sm)', padding: '10px 12px', marginBottom: '8px' }}>
+          <div style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 700, color: 'var(--color-danger)', marginBottom: '4px' }}>
+            ⚠️ {conflict.by ? conflict.by + '님이' : '상대가'} 방금 이 메모를 수정했어요{conflict.at ? ' · ' + getRelativeTime(conflict.at) : ''}
+          </div>
+          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)', lineHeight: 1.5, marginBottom: '8px' }}>
+            내가 쓰던 내용은 그대로 남겨뒀어. 상대 버전으로 바꾸거나, 내 입력을 유지할 수 있어.
+          </div>
+          {conflict.content && (
+            <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-xs)', padding: '6px 8px', marginBottom: '8px', lineHeight: 1.5, maxHeight: '64px', overflow: 'hidden' }}>
+              상대 버전: {conflict.content.length > 120 ? conflict.content.slice(0, 120) + '…' : conflict.content}
+            </div>
+          )}
+          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+            <button type="button" onClick={takeTheirs} style={{ fontSize: 'var(--type-micro)', fontWeight: 600, padding: '6px 12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-danger)', background: 'var(--color-danger)', color: 'var(--color-atomic-white)', cursor: 'pointer' }}>상대 버전으로</button>
+            <button type="button" onClick={keepMine} style={{ fontSize: 'var(--type-micro)', fontWeight: 600, padding: '6px 12px', borderRadius: 'var(--radius-xs)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-surface)', color: 'var(--color-text-strong)', cursor: 'pointer' }}>내 입력 유지</button>
+          </div>
+        </div>
+      )}
       <textarea
         value={val}
         onChange={handleChange}
@@ -5297,11 +5335,36 @@ function NoteEditor({ dayId, note, save }) {
 
 // =================== CHECKLIST ===================
 // 옆으로 밀면 "누가 언제 수정" 노출 (터치+마우스 pointer 드래그). 메타 없으면 안내.
+// Swipe 힌트 1회 노출 — 공동 수정 기록이 있는 첫 항목만 살짝 열렸다 닫혀 "밀 수 있음"을 알린다.
+let _swipeHintShown = false;
+const shouldHintSwipe = () => {
+  if (_swipeHintShown) return false;
+  try { if (localStorage.getItem('swipe_hinted') === '1') { _swipeHintShown = true; return false; } } catch (e) {}
+  return true;
+};
+const markSwipeHinted = () => {
+  _swipeHintShown = true;
+  try { localStorage.setItem('swipe_hinted', '1'); } catch (e) {}
+};
+
 function SwipeRow({ meta, children, bg }) {
   const [dx, setDx] = useState(0);
   const g = useRef(null);
   const REVEAL = 112;
-  const label = (meta && meta.by) ? ('👤 ' + meta.by + ' · ' + getRelativeTime(meta.at)) : '수정 기록 없음';
+  const hasMeta = !!(meta && meta.by);
+  const label = hasMeta ? ('👤 ' + meta.by + ' · ' + getRelativeTime(meta.at)) : '수정 기록 없음';
+
+  // 첫 방문 1회 nudge — 수정 기록이 있고 아직 힌트를 안 본 경우. reduced-motion이면 건너뜀.
+  useEffect(() => {
+    if (!hasMeta || !shouldHintSwipe()) return;
+    markSwipeHinted();
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) return;
+    setDx(-34);
+    const t = setTimeout(() => setDx(0), 640);
+    return () => clearTimeout(t);
+  }, [hasMeta]);
+
   const down = (e) => { g.current = { x: e.clientX, y: e.clientY, base: dx, decided: false, horiz: false }; };
   const move = (e) => {
     const s = g.current; if (!s) return;
@@ -5331,6 +5394,13 @@ function SwipeRow({ meta, children, bg }) {
         style={{ position: 'relative', transform: `translateX(${dx}px)`, transition: g.current ? 'none' : 'transform 0.25s var(--ease-out)', background: bg || 'var(--color-bg-surface)', touchAction: 'pan-y' }}
       >
         {children}
+        {/* 시각 어포던스 — "밀면 수정 기록" 신호. 클릭은 아래 카드로 통과(pointerEvents none). 밀수록 페이드아웃. */}
+        {hasMeta && (
+          <span
+            className="gt-swipe-handle" aria-hidden="true"
+            style={{ position: 'absolute', right: '3px', top: 0, bottom: 0, width: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none', color: 'var(--color-text-muted)', fontSize: 'var(--type-body)', lineHeight: 1, opacity: Math.max(0, 0.4 - Math.abs(dx) / 90) }}
+          >‹</span>
+        )}
       </div>
     </div>
   );
