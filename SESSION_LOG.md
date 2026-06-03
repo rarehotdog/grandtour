@@ -13,7 +13,9 @@
 1. **REVIEW 10차 갱신** — 미문서화 커밋 8개(`1f672c2`~`495a44f`: 홈 동선 타임라인·챕터→일정 연결·`DAY_RECS` day별 추천·`LOCAL_EATS` 로컬 맛집·체크/패킹 탭 통합·챕터 필터 sticky) 정리. → 커밋 `f031320`, 푸시 완료.
 2. **금빛 glossy 테두리** — 도시색이 무채색(`#F5F5F4`)인 챕터는 서막('p')·귀국('ret') 둘뿐 → 이들이 그려지는 **28일 일정 카드(Day1·27·28)**의 왼쪽 띠를 `.gt-gold-edge`로 교체(다중스톱 금 그라데이션·화이트 하이라이트·골드 glow·`gtGoldSheen` 4.5s, `prefers-reduced-motion` 정지). ChapterProgress는 p/ret를 필터로 제외하므로 대상 아님.
 3. **디자인 규격 검토 + 안전 정리(시각 무변화 한정)** — Explore 에이전트 전수 검토 후 grep으로 사실 확인. 적용분: 인라인 `#fff` 7곳 → `var(--color-atomic-white)`(canvas `#ffffff` 제외), `fontFamily` 하드코딩 2곳 → `var(--font-sans)`. → 커밋 `2129a31`.
-4. **REVIEW 11차 갱신** → 커밋 `2a5aedf`. 전부 푸시 완료.
+4. **REVIEW 11차 갱신** → 커밋 `2a5aedf`. (`f031320`→`2a5aedf`까지 푸시 완료)
+5. **SESSION_LOG 신규** → `c46dd47`.
+6. **LESSONS 보강** — 디자인 토큰 교훈 추가(C5 토큰 이름≠값, C6 토큰화≠무변화, C7 box-shadow 그라데이션 불가→`::before`, D5 에이전트 리포트 grep 검증, D6 모호 요청 데이터 기준 범위 확정).
 
 **중요 발견**
 - `--color-text-inverse`는 순백이 아니라 `--color-atomic-cream-50`(크림) → 흰색 대체엔 반드시 `--color-atomic-white` 사용.
@@ -21,7 +23,7 @@
 
 **검증**: esbuild 인라인 JSX 파싱 0 오류. `var(--color-atomic-white)` 18곳·`var(--font-sans)` 22곳·apple-system 하드코딩 0.
 
-**종료 상태**: `origin/main`==`2a5aedf` (working tree clean). index.html만 변경, sw.js 무변경 → SW v5 유지.
+**종료 상태**: 코드(`index.html`)는 `2a5aedf`까지 푸시됨(`origin/main`). 이후 문서 커밋 `c46dd47`(SESSION_LOG) + LESSONS·SESSION_LOG 보강 커밋은 **미푸시**(Tyler 수동 푸시 대기). sw.js 무변경 → SW v5 유지. *앱 동작은 라이브에 모두 반영됨, 미푸시분은 문서뿐.*
 
 **보류 / 다음 세션 ground truth**
 - 🔴 **실데이터 입력**(Tyler 직접): 호텔·항공 확정 예약번호, 미식 예약 상태, 가계부 통화·초기 예산. *코드 아님.*
