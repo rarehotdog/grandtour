@@ -2404,6 +2404,159 @@ function Recommendations({ chapterId, chapter }) {
 }
 
 // =================== 기록 (메모 + 관점, 공개) ===================
+// 일정(day) 동선 맞춤 추천 — 그 날 숙소·이동·시간대 기준. 이동/기내일은 생략(키 없음).
+const DAY_RECS = {
+  2: [
+    { tag: '☕', t: 'Café de la Paix', why: '오페라 가르니에 앞 1862년 카페. 호텔에서 도보 5분, 도착 첫 커피로 딱이야.', tip: '시차 적응 산책 겸' },
+    { tag: '🏬', t: 'Galeries Lafayette 옥상', why: '백화점 옥상 무료 테라스에서 오페라·에펠탑 전경. 짐 풀고 가볍게.', tip: '입장 무료' },
+    { tag: '🥐', t: 'Du Pain et des Idées', why: '1889년 빵집. 에스카르고 페이스트리로 파리 첫 끼.', tip: '오전 일찍' },
+  ],
+  3: [
+    { tag: '📚', t: 'Shakespeare and Company', why: '센강변 노트르담 앞 전설의 영문 서점. 라탱 지구 도보 동선에 딱.', tip: '루브르·판테온과 한 코스' },
+    { tag: '🌳', t: 'Jardin du Luxembourg', why: '라탱 지구 한복판 정원. 카페 드 플로르 가는 길에 쉬어가.' },
+    { tag: '🏛️', t: 'Sainte-Chapelle', why: '13세기 스테인드글라스의 정수. 15분이면 충분해.', tip: '시테섬' },
+  ],
+  4: [
+    { tag: '🌇', t: 'Sky Garden', why: '무료 전망대. 강변 호텔 근처라 일몰 시간에 딱.', tip: '온라인 예약 필수' },
+    { tag: '🧺', t: 'Borough Market', why: '런던 최고 푸드마켓. 호텔에서 가까워 도착 첫 끼로.' },
+    { tag: '🌉', t: 'Tower Bridge', why: '템스 야경 산책. 강변 호텔에서 도보권.' },
+  ],
+  5: [
+    { tag: '🏛️', t: 'British Museum', why: '무료. 로제타스톤·파르테논 조각, 오늘의 핵심 동선.', tip: '개장 직후' },
+    { tag: '🏪', t: 'Leadenhall Market', why: '더시티 빅토리안 마켓(해리포터 촬영지). 시티 도보 코스.' },
+    { tag: '☕', t: 'Monmouth Coffee', why: '런던 스페셜티 커피 성지. 보로마켓 근처.' },
+  ],
+  6: [
+    { tag: '🌳', t: 'Hyde Park', why: '호텔(파크레인) 바로 앞 대공원. 우버 이동 후 산책.' },
+    { tag: '🗣️', t: "Speakers' Corner", why: '하이드파크 북동쪽, 누구나 연설하는 광장.' },
+    { tag: '🍛', t: 'Dishoom Mayfair', why: '봄베이 카페 무드. 메이페어 호텔 근처 저녁.' },
+  ],
+  7: [
+    { tag: '♨️', t: 'Roman Baths Bath', why: 'Bath 데이트립이면 2000년 로마 목욕탕은 필수.', tip: 'Paddington→Bath 1.5h' },
+    { tag: '🏛️', t: 'Royal Crescent Bath', why: '초승달 모양 조지안 건축의 절정.' },
+    { tag: '🎨', t: 'V&A Museum London', why: '시내에 남으면 무료 디자인·공예 박물관.', tip: 'Bath 대신 옵션' },
+  ],
+  8: [
+    { tag: '♨️', t: 'ADLER Spa Ortisei', why: '강행군 뒤 도착일. 호텔 풀·사우나 회복이 오늘의 일정.' },
+    { tag: '🚶', t: 'Ortisei 마을 산책', why: '발 가르데나 중심 보행자 거리. 가볍게 한 바퀴.' },
+  ],
+  9: [
+    { tag: '🏔️', t: 'Alpe di Siusi', why: '유럽 최대 고원 트레킹(3h). 케이블카로 올라 시작.' },
+    { tag: '⛰️', t: 'Sella Pass', why: '돌로미티 드라이브 명소. 트레킹 후 차로.' },
+    { tag: '🧀', t: 'Rifugio 산장 점심', why: '트레킹 중 산장에서 카네데를리·슈페츨레.' },
+  ],
+  10: [
+    { tag: '🌅', t: 'Seceda 정상', why: '능선 일출이 오늘의 하이라이트. 05:30 출발.', tip: '케이블카 첫차' },
+    { tag: '🍽️', t: 'Anna Stuben', why: '발 가르데나 산장 미슐랭. 일출 본 날 저녁.', tip: '호텔 통해 예약' },
+  ],
+  11: [
+    { tag: '🌇', t: 'Piazzale Michelangelo', why: '피렌체 전경 일몰 명소. 도착일 저녁 동선.' },
+    { tag: '🥪', t: "All'Antico Vinaio", why: '명물 파니니. 광장 가는 길에 요기.' },
+    { tag: '🌉', t: 'Ponte Vecchio', why: '베키오 다리 — 일몰 전 구시가 진입.' },
+  ],
+  12: [
+    { tag: '🎨', t: 'Uffizi Gallery', why: '르네상스 미술의 정점. 도보권, 예약 추천.' },
+    { tag: '⛪', t: 'Duomo Firenze', why: '브루넬레스키 돔. 구시가 10분 내.', tip: '쿠폴라 등반 예약' },
+    { tag: '🍦', t: 'Gelateria dei Neri', why: '현지인 젤라또. 두오모 산책 후.' },
+  ],
+  13: [
+    { tag: '⛲', t: 'Trevi Fountain', why: '자정엔 인파 없이 트레비를 독차지. 도착일 밤 동선.', tip: '자정 추천' },
+    { tag: '🪜', t: 'Spanish Steps', why: '스페인 광장 — 트레비에서 도보.' },
+    { tag: '🍨', t: 'Giolitti', why: '1900년 로마 젤라또. 야간 산책 간식.' },
+  ],
+  14: [
+    { tag: '🏛️', t: 'Colosseum', why: '07:00 입장으로 인파 회피. 오늘의 핵심.', tip: '얼리 예약' },
+    { tag: '🏛️', t: 'Roman Forum', why: '콜로세움 통합권. 포로 로마노 도보.' },
+    { tag: '🍝', t: 'Da Enzo al 29', why: '트라스테베레 정통 트라토리아. 풀데이 후 저녁.' },
+  ],
+  15: [
+    { tag: '⛪', t: 'Vatican Museums', why: '06:30 가이드로 시스티나 독점. 오늘의 핵심.', tip: '얼리 가이드' },
+    { tag: '🏰', t: "Castel Sant'Angelo Rome", why: '천사의 성 — 바티칸에서 도보.' },
+    { tag: '🍕', t: 'Pizzarium Bonci', why: '바티칸 근처 알 탈리오 피자. 점심.' },
+  ],
+  16: [
+    { tag: '🕯️', t: 'La Sponda Positano', why: '촛불 400개 디너가 오늘의 하이라이트.', tip: '도착일 저녁 예약' },
+    { tag: '🏖️', t: 'Spiaggia Grande', why: '포지타노 메인 비치. 체크인 후 산책.' },
+    { tag: '🍋', t: 'Positano 골목', why: '레몬·세라믹 부티크 좁은 계단길.' },
+  ],
+  17: [
+    { tag: '⛵', t: 'Capri 보트투어', why: '오늘의 메인. 9-13시 해안 투어.' },
+    { tag: '🦞', t: 'Da Adolfo Positano', why: '보트로만 가는 전설의 비치 레스토랑. 점심.', tip: '셔틀 보트' },
+    { tag: '🔵', t: 'Blue Grotto Capri', why: '카프리 푸른 동굴 — 보트 코스에.' },
+  ],
+  18: [
+    { tag: '🥾', t: 'Path of the Gods', why: '신들의 길 트레킹 일부. 휴식일 가볍게.' },
+    { tag: '🍾', t: 'Le Sirenuse Champagne Bar', why: '아말피 최고 뷰 샴페인 바. 오늘의 여유.' },
+    { tag: '🏖️', t: 'Fornillo Beach', why: '메인 비치보다 한적. 완전 휴식.' },
+  ],
+  20: [
+    { tag: '🌅', t: 'Oia Sunset', why: '이아 일몰 — 휴식일의 정점.', tip: '1시간 전 자리' },
+    { tag: '🍷', t: 'Selene Pyrgos', why: '산토리니 정상 마을 미슐랭. 저녁.' },
+    { tag: '⚓', t: 'Amoudi Bay', why: '이아 아래 항구 — 일몰 전 해산물.' },
+  ],
+  21: [
+    { tag: '🏛️', t: 'Akrotiri Santorini', why: '청동기 화산 매몰 유적. 08:00 시원할 때.' },
+    { tag: '🔴', t: 'Red Beach Santorini', why: 'Akrotiri 근처 붉은 화산 해변.' },
+    { tag: '⛵', t: '칼데라 보트투어', why: '오후 온천·일몰 크루즈.' },
+  ],
+  22: [
+    { tag: '🍸', t: 'GB Roof Garden', why: '아크로폴리스 야경 디너 — 도착일 저녁.', tip: '예약 필수' },
+    { tag: '🏪', t: 'Monastiraki', why: '벼룩시장·골목. 신타그마에서 도보.' },
+    { tag: '🚶', t: 'Plaka Athens', why: '아크로폴리스 아래 옛 거리 야경 산책.' },
+  ],
+  23: [
+    { tag: '🏛️', t: 'Acropolis', why: '08:00 파르테논. 오늘의 핵심, 더위 전.' },
+    { tag: '🏛️', t: 'Ancient Agora Athens', why: '고대 아고라 — 아크로폴리스 아래.' },
+    { tag: '🥙', t: 'Kostas Souvlaki', why: '신타그마 뒷골목 명물 수블라키. 점심.' },
+  ],
+  24: [
+    { tag: '🏖️', t: 'Saadiyat Beach', why: '도착일. 호텔 비치 휴식이 오늘.' },
+    { tag: '🎨', t: 'Louvre Abu Dhabi', why: '사막의 루브르 — 돔 빛 건축. 여유 있으면.' },
+  ],
+  25: [
+    { tag: '🔮', t: 'Museum of the Future', why: '두바이 미래 박물관 — 건축부터 명물.' },
+    { tag: '🏙️', t: 'Burj Khalifa', why: '일몰 전망대. 오늘 동선의 정점.', tip: '일몰 슬롯 예약' },
+    { tag: '🍽️', t: 'At.mosphere Dubai', why: '부르즈 칼리파 안 디너. 결심을 새기기 딱.' },
+  ],
+  26: [
+    { tag: '🕌', t: 'Sheikh Zayed Mosque', why: '백색 대리석 모스크 — 귀국 전 마지막 명소.', tip: '복장 규정' },
+    { tag: '🏛️', t: 'Qasr Al Watan', why: '아부다비 대통령궁 — 시간 되면.' },
+    { tag: '🌊', t: 'Abu Dhabi Corniche', why: '해안 산책로 — 마지막 비치 겸.' },
+  ],
+};
+
+function DayRecs({ day, chapter }) {
+  const recs = DAY_RECS[day.n];
+  if (!recs || !recs.length) return null;
+  return (
+    <Card>
+      <SectionTitle>💡 이 날 추천 동선</SectionTitle>
+      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', wordBreak: 'keep-all' }}>
+        {day.city} · 숙소·이동에 맞춘 추천 · 탭하여 구글맵
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        {recs.map((r, i) => (
+          <a
+            key={i}
+            href={mapsUrl(`${r.t} ${chapter.search || chapter.name}`)}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'block', padding: '12px', background: chapter.color, borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--type-h2)', flexShrink: 0 }}>{r.tag}</span>
+              <div style={{ flex: 1, minWidth: 0, fontSize: 'var(--type-body)', fontWeight: 600, color: chapter.accent }}>{r.t}</div>
+              <span style={{ fontSize: 'var(--type-micro)', color: chapter.accent, flexShrink: 0 }}>📍 →</span>
+            </div>
+            <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6, wordBreak: 'keep-all' }}>{r.why}</div>
+            {r.tip && <div style={{ fontSize: 'var(--type-caption)', color: chapter.accent, marginTop: '4px', fontWeight: 500, wordBreak: 'keep-all' }}>💡 {r.tip}</div>}
+          </a>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutput, saveOutputContent, edits, onForkOpen }) {
   const [view, setView] = useState('notes'); // 'notes' or 'outputs'
 
@@ -4862,10 +5015,10 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                     isEdited={isEdited}
                   />
 
-                  {/* Recommendations for this chapter */}
-                  {RECOMMENDATIONS[ch.id] && (
+                  {/* 이 날 동선 맞춤 추천 (도시 단위 아님 — day별) */}
+                  {DAY_RECS[day.n] && (
                     <div style={{ marginTop: '20px' }}>
-                      <Recommendations chapterId={ch.id} chapter={ch} />
+                      <DayRecs day={day} chapter={ch} />
                     </div>
                   )}
                 </div>
