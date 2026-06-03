@@ -343,10 +343,12 @@
     }
 
   </style>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
+  <!-- defer: HTML 파싱(로딩 스플래시 즉시 페인트)을 스크립트 다운로드와 분리. defer는 문서 순서 보장이라
+       React→ReactDOM→babel 의존성 유지. babel-standalone은 readyState 'interactive'에서 transformScriptTags 호출 → defer 호환. -->
+  <script defer crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script defer crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script defer crossorigin src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer crossorigin src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.6/babel.min.js"></script>
 </head>
 <body>
   <div id="root">
