@@ -4871,7 +4871,15 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
   // 홈 챕터 진행에서 들어온 경우 mount 즉시 해당 챕터 필터 + 그 날 펼침(모듈 변수 pendingDayFocus, 1회 소비)
   const [openDay, setOpenDay] = useState(pendingDayFocus?.dayN ?? null);
   const [filterCh, setFilterCh] = useState(pendingDayFocus?.chId ?? 'all');
-  useEffect(() => { pendingDayFocus = null; }, []);
+  // 챕터 필터를 글래스 헤더 바로 아래에 sticky 고정 — 헤더 높이(safe-area 가변)를 측정
+  const [headerH, setHeaderH] = useState(56);
+  useEffect(() => {
+    pendingDayFocus = null;
+    const measure = () => { const el = document.querySelector('.gt-header'); if (el) setHeaderH(el.offsetHeight); };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, []);
 
   const chapterIds = DAYS.reduce((acc, d) => {
     if (!acc.includes(d.c)) acc.push(d.c);
@@ -4889,8 +4897,8 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
         💡 편집된 항목은 골드 ● 표시 · "원래대로" 버튼으로 초기화 가능
       </div>
 
-      {/* Chapter filter pills */}
-      <div className="gt-chips" style={{ marginBottom: '16px' }}>
+      {/* Chapter filter pills — 글래스 헤더 바로 아래 sticky 고정(스크롤해도 챕터 전환 가능) */}
+      <div className="gt-chips" style={{ position: 'sticky', top: headerH + 'px', zIndex: 40, background: 'var(--color-bg-page)', marginLeft: '-16px', marginRight: '-16px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', marginBottom: '14px', boxShadow: '0 6px 8px -6px rgba(27,42,74,0.18)' }}>
         <button
           onClick={() => setFilterCh('all')}
           style={{
