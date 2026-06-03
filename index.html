@@ -5492,6 +5492,49 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
         ))}
       </div>
 
+      {tab === 'checklist' && (() => {
+        // 출발 준비 요약 — 8개 섹션에 흩어진 긴급 미완료를 한곳에 모아 '지금 예약할 것' 0클릭
+        const allItems = Object.values(CHECKLIST).flat();
+        const total = allItems.length;
+        const done = allItems.filter(i => checks[i.id]).length;
+        const pct = total ? Math.round((done / total) * 100) : 0;
+        const urgentPending = allItems.filter(i => i.urgent && !checks[i.id]);
+        const textStyle = { flex: 1, minWidth: 0, fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', lineHeight: 1.4 };
+        const arrowStyle = { flexShrink: 0, fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', fontWeight: 600 };
+        const rowStyle = { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--color-danger-bg)', borderRadius: 'var(--radius-xs)', textDecoration: 'none' };
+        return (
+          <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
+              <span style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>출발 준비</span>
+              <span className="gt-serif" style={{ fontSize: 'var(--type-h2)', fontStyle: 'italic', color: 'var(--color-text-strong)' }}>{done}<span style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-muted)' }}>/{total}</span></span>
+            </div>
+            <div style={{ height: '4px', background: 'var(--color-border-soft)', borderRadius: 'var(--radius-xs)', overflow: 'hidden', marginBottom: urgentPending.length ? '14px' : '0' }}>
+              <div style={{ height: '100%', width: pct + '%', background: pct === 100 ? 'var(--color-success)' : 'var(--color-accent-primary)', transition: 'width 0.6s cubic-bezier(0.16,1,0.3,1)' }} />
+            </div>
+            {urgentPending.length > 0 ? (
+              <div>
+                <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-danger)', marginBottom: '8px' }}>🔴 지금 예약·확정할 것 {urgentPending.length}건</div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {urgentPending.slice(0, 6).map(i => (
+                    i.url
+                      ? <a key={i.id} href={i.url} target="_blank" rel="noopener noreferrer" style={rowStyle}>
+                          <span style={textStyle}>{i.t}</span>
+                          <span style={arrowStyle}>예약 ↗</span>
+                        </a>
+                      : <div key={i.id} style={rowStyle}><span style={textStyle}>{i.t}</span></div>
+                  ))}
+                </div>
+                {urgentPending.length > 6 && (
+                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '6px', textAlign: 'center' }}>+ {urgentPending.length - 6}건 더 — 아래 카테고리에서 확인</div>
+                )}
+              </div>
+            ) : (
+              <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-success)', fontWeight: 600 }}>✓ 긴급 항목 모두 완료 — 출발 준비 순항 중</div>
+            )}
+          </div>
+        );
+      })()}
+
       {tab === 'checklist' && Object.entries(CHECKLIST)
         .sort((a, b) => {
           // 완전 완료된 카테고리는 아래로, 미완료끼리는 원래 순서 유지(stable)
