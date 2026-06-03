@@ -1,10 +1,11 @@
 # Grand Tour 2026 — 개발 현 상태 리뷰
 
 > 대상: `~/Desktop/grandtour/` (단일 HTML 앱, Vercel 배포)
-> 정리일: **2026-06-03** (10차 갱신) · 정리자: Claude (Opus 4.8)
-> 라이브: https://grandtour-lilac.vercel.app/  · **홈 동선 타임라인·관점 진행요약·도시색 띠·입력 줌 방지**(`1f672c2`) · 챕터 카드 테두리 버그·추천 중복 제거·OUTPUTS_TIERS DRY(`80f5438`) · **챕터→일정 클릭 연결·체크 탭 통합·로컬 맛집 둘러보기**(`2519b55`) · 패킹 탭 통합·신혼 아이콘·SW v5(`8854929`) · 일정 즉시 펼침·미식 로컬 우선(`b31e342`·`047f762`) · **일정 추천 day별 동선 맞춤(`DAY_RECS`)**(`c1df0e5`) · **챕터 필터 상단 sticky**(`495a44f`). **전 작업 push 완료(`495a44f`)**
+> 정리일: **2026-06-03** (11차 갱신) · 정리자: Claude (Opus 4.8)
+> 라이브: https://grandtour-lilac.vercel.app/  · 10차: 홈 동선 타임라인·챕터→일정 연결·day별 추천(`DAY_RECS`)·로컬 맛집·탭 통합·챕터 필터 sticky(`1f672c2`~`495a44f`) · **11차: 도시색 없는 챕터(서막·귀국) 금빛 glossy 테두리 + 디자인 규격 안전 토큰화(`#fff`→`--color-atomic-white`·fontFamily→`--font-sans`)**(`2129a31`)
 > 저장소: https://github.com/rarehotdog/grandtour
 > 출발: **2026-06-15** (D−12) · 코드 동결 권장: **2026-06-08** (D−5)
+> 푸시 상태: `origin/main`==`f031320`(10차 REVIEW). 로컬 `2129a31`(11차 디자인) + 본 REVIEW 11차 커밋은 **미푸시** — Tyler 수동 푸시 대기.
 
 ---
 
@@ -25,7 +26,8 @@
 | **Service Worker** | `grandtour-v5` · push/notificationclick 핸들러 · 설치 PWA 강제 갱신 bump |
 | **PWA** | manifest 정상 · 192/512 SVG 아이콘 · 단축키 2개 · 입력 줌 방지(`maximum-scale=1`) |
 | **저장소** | localStorage + IndexedDB (사진 · **오프라인 지도 타일 `maptiles` · 문서 금고 `documents`**, VER 3) + spotify_urls |
-| **폰트 · 타이포** | Cormorant Garamond (Latin serif) + Pretendard Variable (Hangul/sans) · **타입 스케일 본문 16px(전체 +1~2px), 한글 라벨 자간 토큰화 완료** |
+| **폰트 · 타이포** | Cormorant Garamond (Latin serif) + Pretendard Variable (Hangul/sans) · **타입 스케일 본문 16px(전체 +1~2px), 한글 라벨 자간 토큰화 완료** · 11차: App 루트 `fontFamily` 하드코딩(`-apple-system`) → `var(--font-sans)` 통일(한글 본문이 의도대로 Pretendard로 렌더) |
+| **도시색 없는 챕터** | 서막('p')·귀국('ret')은 무채색(`#F5F5F4`) → 28일 일정 카드 왼쪽 띠를 **금빛 glossy 테두리**(`.gt-gold-edge`, 다중스톱 금 그라데이션·하이라이트·glow·sheen 4.5s, reduced-motion 정지). 9개 도시 카드는 도시색 `inset` 띠 유지 |
 | **오프라인 지도** | 📥 9도시 OSM 타일 2×2 합성 IDB 선캐싱(수동 다운로드) · InlineMap 오프라인 시 저장 타일 표시 |
 | **문서 금고** | 🔐 여권·비자·보험·항공/호텔 바우처·기타 — IDB `documents` 오프라인 저장(기록 탭, PIN 없이 기기 잠금 안내) |
 | **탭 구조(10차)** | 체크 탭 1단계 통합(체크리스트/🤵태현/👰주연/👫공용) · 패킹 flex-wrap 잘림 해소 · 28일 일정 챕터 필터 **상단 sticky 고정** |
@@ -82,6 +84,7 @@
 | **(10차) 일정 즉시 펼침·미식 순서** | `b31e342`·`047f762` | 챕터 진행→일정 클릭 시 **그 날 즉시 펼침**(useState 초기값→ 최종 **모듈변수 `pendingDayFocus`** 동기 설정, 1회 소비)·미식 탭 로컬 맛집 위/미슐랭 예약 아래·추천 설명·worth·tip 카드 가로폭 전체+`word-break:keep-all`(어절 단위) |
 | **(10차) 일정 추천 day별 동선 맞춤** | `c1df0e5` | **`DAY_RECS`** — 24일 각각 숙소·이동·활동·시간대 기준 추천 3~4곳(이동/기내일 생략)·**`DayRecs` 컴포넌트**(일정 상세에서 도시 단위→day별 교체)·같은 도시라도 날마다 다른 동선·구글맵 링크. 홈 today·지도 도시 추천은 도시 단위 유지 |
 | **(10차) 챕터 필터 sticky** | `495a44f` | 28일 일정 챕터 필터(전체/서막/파리…)를 **글래스 헤더 바로 아래 sticky 고정**(헤더 높이 JS 측정·resize 대응)·칩 줄 전체폭 배경+패딩·미세 그림자 |
+| **(11차) 금빛 테두리·규격 토큰화** | `2129a31` | **도시색 없는 챕터(서막·귀국) 금빛 glossy 테두리**(`.gt-gold-edge`, 28일 일정 카드 Day1·27·28)·**디자인 규격 안전 정리(시각 무변화)**: 인라인 `#fff` 7곳→`var(--color-atomic-white)`(canvas `#ffffff` 제외)·`fontFamily` 하드코딩 2곳→`var(--font-sans)`. esbuild 파싱 0 오류 |
 
 ---
 
@@ -330,7 +333,20 @@ BackupReminder    ← 최하단 (이동됨)
 
 **검증/한계**: index.html 7,885줄·SW v5·`main`==`origin/main`==`495a44f`(working tree clean). 실시간·실기기 시각 검증은 사용자 몫(헤드리스 금지 규칙 유지) — P1 #2 실기기 QA에 10차 변경(동선 타임라인·도시색·sticky 필터·체크/패킹 통합·로컬 맛집·day별 추천) 합류.
 
-### 🎯 다음 개선 — 통합 우선순위 (2026-06-03 기준 · 10차)
+#### 2026-06-03 (11차) — 금빛 glossy 테두리 + 디자인 규격 안전 토큰화
+
+> 사용자 요청: ① 도시색이 없는 부분을 glossy·shiny한 황금색 테두리로 ② 전체 디자인 규격이 다 맞는지 검토.
+
+**완료 (커밋 `2129a31`)**
+- **금빛 glossy 테두리**: 색이 무채색(`#F5F5F4`)인 챕터는 서막('p')·귀국('ret') 둘뿐 → 이들이 그려지는 곳은 **28일 일정 카드(Day1·27·28)**. ChapterProgress는 `chapters = CHAPTERS.filter(c => !['p','ret'])`로 애초에 제외라 대상 아님. `.gt-gold-edge` CSS 클래스(다중스톱 금 그라데이션 `#FBEFC2→#C9A961→#9C7C42→#FBEFC2`·안쪽 화이트 하이라이트·골드 glow·`gtGoldSheen` 4.5s, `prefers-reduced-motion` 정지). 무채색 판정 `ch.color === '#F5F5F4'` 시 회색 `inset` 띠를 `none`으로 끄고 클래스 부여.
+- **디자인 규격 검토(Explore 에이전트) + 사실 확인**: 토큰 시스템 대체로 일관. 에이전트 리포트의 과대·오류는 grep으로 교정(예: `borderRadius:50%` 8곳은 원형 아이콘이라 `--radius-pill`이 아닌 50%가 정석 → 유지, fontFamily 하드코딩은 4곳이 아니라 2곳).
+- **안전 정리(시각 무변화 한정)**: 인라인 `#fff` 7곳 → `var(--color-atomic-white)`(둘 다 `#FFFFFF`). canvas `ctx.strokeStyle='#ffffff'`(`1115`)는 CSS 변수 미적용이라 제외. `fontFamily` 하드코딩 2곳(ErrorBoundary `1380`·App 루트 `1817`) → `var(--font-sans)`.
+  - **주의(무변화 아님이라 사용자 승인 후 적용)**: `--color-text-inverse`는 순백이 아니라 `--color-atomic-cream-50`(크림) → 흰색 대체엔 `--color-atomic-white`를 써야 함. `body`는 이미 `var(--font-sans)`(Pretendard)였으나 App 루트가 `-apple-system`으로 덮어써 **한글 본문이 사실상 애플고딕으로 렌더되던 불일치**를 정상화 → 한글이 Pretendard로 통일(미세 시각 변화 동반, 사용자 승인됨).
+- **보류**: 한글 라벨 자간 px(`0.2px`) → `--track-label`(0.08em)은 자간이 눈에 띄게 벌어져 무변화가 아니므로 미적용. `borderRadius:8px` 24곳은 토큰 스케일에 8px가 없는 구조적 불일치이나 일괄 변경 시 시각 회귀 위험으로 보류(사용자 "안전 정리만" 선택).
+
+**검증**: esbuild 인라인 JSX 파싱 0 오류 · `var(--color-atomic-white)` 18곳·`var(--font-sans)` 22곳·잔여 인라인 `#fff`=canvas 1곳뿐·apple-system 하드코딩 0. 시각 확인(gold edge 광택·한글 Pretendard 전환)은 Tyler 폰/브라우저 실측 몫(헤드리스 금지).
+
+### 🎯 다음 개선 — 통합 우선순위 (2026-06-03 기준 · 11차)
 
 > 기준: **출발 중 5초 효용 + 실패 시 타격 크기.** 시각·콘텐츠 다듬기 < 출발 전 실패 방지. 분류: 🔴 출발 전 필수 / 🟡 체감 품질 / 🟢 여유·확장(동결 후).
 > **9차 누적 완료(코드)**: 오프라인 지도 타일 선캐싱 · 문서 금고 · 출발 전 전체 백업 강조 · 첫 로드 preconnect · 접근성 보강 · 체크리스트 카테고리 완료율 · 일정↔추천 연결 · 데일리 "지금" 포커스 · 본문 16px·자간 토큰화·일정 맵링크.
@@ -406,6 +422,7 @@ BackupReminder    ← 최하단 (이동됨)
 - 이후 `87840cd → df28a1f → 89270e3 → f31de3e → c9ce0e6 → 96d48f7 → 288efc2 → … → f21e52f → 51a8e86 → fd6e8be → 4d5eeda`까지 origin 위에 선형 적층. **유실 작업 없음.**
 - **2026-06-03 현재 `main` == `origin/main` == `495a44f`** (10차 8커밋 `1f672c2`→`495a44f` push 성공·Vercel 배포, working tree clean. 본 REVIEW.md 10차 갱신만 미커밋).
 - 10차 선형 적층: `f924719 → 1f672c2 → 80f5438 → 2519b55 → 8854929 → b31e342 → 047f762 → c1df0e5 → 495a44f`. **유실 작업 없음.**
+- **11차(2026-06-03)**: `495a44f` 위에 `f031320`(REVIEW 10차, **push 완료** → `origin/main`) → `2129a31`(디자인: gold edge·`#fff`·fontFamily) → REVIEW 11차 커밋. **`2129a31` 이후는 미푸시, Tyler 수동 푸시 대기.** index.html만 변경(sw.js 무변경 → SW v5 유지, HTML은 network-first라 bump 불필요).
 - 9차 선형 적층: `d96e89f → 9b4a1e1 → cef1613 → 6eb9f3d → f0e0548`. **유실 작업 없음.**
 - 평소엔 Tyler 수동 푸시(사내망 차단)지만, 사용자 명시 요청 시 Claude가 커밋·푸시 수행. 9차·10차 모두 정상 푸시됨. 기본 규칙(요청 시에만 푸시)은 유지.
 
