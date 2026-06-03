@@ -4740,6 +4740,38 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
       {status.phase === 'during' && status.current && (
         <Card>
           <SectionTitle>오늘 · Day {today.n}</SectionTitle>
+          {/* 지금 포커스 — 여행 중 홈 0클릭 다음 행동(현재 시각 기준) + 예약·내일 이동 알림 */}
+          {(() => {
+            const hour = new Date().getHours();
+            const nowPhase = hour < 11 ? 0 : hour < 17 ? 1 : 2; // 아침/오후/저녁
+            const steps = [
+              { icon: '🚐', value: today.moves, ph: 0 },
+              { icon: '✨', value: today.hl, ph: 1 },
+              { icon: '🍽️', value: today.food, ph: 2 },
+            ].filter(s => s.value);
+            const cur = steps.find(s => s.ph === nowPhase) || steps[steps.length - 1];
+            if (!cur) return null;
+            const reserve = today.food && today.food.includes('🌟') && nowPhase >= 1;
+            const tomorrow = DAYS.find(d => d.n === today.n + 1);
+            const moveIcons = ['✈️', '🚄', '🚆', '🚐', '🚠', '🚖'];
+            const tmrwMove = nowPhase === 2 && tomorrow && moveIcons.some(ic => (tomorrow.moves || '').includes(ic)) ? tomorrow.moves : null;
+            return (
+              <div style={{ background: 'var(--color-bg-surface)', border: `1px solid ${todayChapter?.color}`, borderLeft: `4px solid ${todayChapter?.accent || 'var(--color-accent-primary)'}`, borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: '14px' }}>
+                <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: todayChapter?.accent, fontWeight: 700, textTransform: 'uppercase', marginBottom: '5px' }}>⏱️ 지금 포커스</div>
+                <div style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: 'var(--color-text-strong)', lineHeight: 1.5 }}>
+                  {cur.icon} {cur.value}
+                </div>
+                {reserve && (
+                  <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-accent-primary)', marginTop: '6px' }}>🌟 예약 식당 — 시간·드레스코드 확인</div>
+                )}
+                {tmrwMove && (
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--color-border-soft)' }}>
+                    🧳 내일 이동 — {tmrwMove} · 체크아웃 준비
+                  </div>
+                )}
+              </div>
+            );
+          })()}
           <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <span style={{ fontSize: 'var(--type-h1)' }}>{todayChapter?.flag}</span>
