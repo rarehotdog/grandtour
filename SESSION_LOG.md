@@ -5,6 +5,58 @@
 
 ---
 
+## 2026-06-05 (14차) — 비표준 radius 토큰화 (numeric 단일 스케일 + t-shirt alias, 시각 변화 0)
+
+**시작 상태**: `origin/main`==`HEAD`==`3d40207`. working tree = 13차 변경분(index.html + 문서 3종) **미커밋** 상태에서 이어 작업. REVIEW P2 "비표준 radius 잔여"(13차가 회귀 위험으로 보류한 `borderRadius:8px` 24곳) 해소가 목표.
+
+**한 일** (index.html 1파일 + 본 문서 3종, 미커밋)
+1. **근본 진단**: radius가 **두 체계로 이원화** — t-shirt 토큰(`xs`4/`sm`6/`md`10/`lg`14/`xl`18/`2xl`24)이 `var()`로 143곳, 코드가 실제 쓰는 4배수값(8/12/16/20)은 인라인 magic-number 41곳. t-shirt 스케일이 8을 못 담아 생긴 구조적 불일치가 13차 보류의 원인. (참고: `--radius-2xl`은 정의됐으나 사용 0회.)
+2. **해법 = exact-value 토큰화(스냅 아님)**: radius 스케일을 **numeric(px=이름)** 단일 진실원천으로 재정의(`--radius-2`~`--radius-24`+`--radius-pill`). 기존 t-shirt 이름은 **numeric을 가리키는 alias**(`--radius-xs: var(--radius-4)` …)로 유지 → 기존 `var()` 143곳 **무수정·무위험**, 8px가 정식 토큰을 얻음.
+3. **인라인 41곳 치환**: 8px×24·12px×7·20px×5·3px×3·16px×1·2px×1 → 대응 numeric 토큰. `borderRadius:'50%'` 8곳(원형)은 의미상 유지.
+
+**중요 발견 / 원칙**
+- **토큰화 ≠ 스냅**. 13차가 보류한 이유는 "8px를 기존 토큰(6/10)으로 스냅 = 1~4px 시각 변화 = 회귀". exact-value 토큰을 **추가**하면 값 불변이라 회귀 0 + 구조적 불일치 해소. "안전 정리"의 정의 = 값 보존.
+- 두 스케일 공존(t-shirt vs 4배수)을 **alias로 봉합** — 기존 호출부를 건드리지 않고 단일 진실원천을 세우는 무위험 마이그레이션. t-shirt는 점진 정리 대상으로 남김.
+- 자간(letterSpacing)은 손대지 않음 — 남은 px 자간은 대부분 **영문 uppercase 라벨의 의도된 트래킹(1~2px)**이고, px→em 토큰화는 폰트 크기 의존이라 값이 달라져 회귀. REVIEW대로 한글 라벨은 이미 토큰화 완료.
+
+**검증**: esbuild 인라인 JSX 파싱 **0 오류**(525KB). 인라인 magic-number radius **0**(50% 원형 8개만 잔존)·새 numeric 토큰 41 참조·t-shirt alias 143곳 무수정 유지·`function` 67개·`ReactDOM.createRoot` 1개. index.html 8087→**8101줄**(+14 = 토큰 정의 추가분). sw.js 무변경 → **SW v5 유지**. (시각 동등성은 alias가 동일 px로 해석되어 구조적으로 보장 — 추가 실측 불요, 다만 Tyler 실기기 회귀 확인은 13차분과 함께 권장.)
+
+**종료 상태**: index.html **미커밋**(13차분과 누적). working tree = index.html + SESSION_LOG·REVIEW·LESSONS 변경. `origin/main`==`HEAD`==`3d40207` 유지.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실데이터 입력**(Tyler 직접): 호텔·항공 예약번호, 미식 예약 상태, 가계부 통화·초기 예산.
+- 🔴 **실기기 아이폰 QA**(헤드리스 금지): 13차(보조 셀렉터 줄바꿈·칩 0.15s 모션) + 14차(radius 시각 동등성 — 모서리 둥글기 무회귀) 일괄 실측 후 커밋(F2).
+- 🟡 **남은 코드 작업 사실상 없음**: P2 radius·마이크로 인터랙션 완료. 자간은 의도된 잔여뿐. (선택적: t-shirt alias→numeric 점진 정리, 코드 품질용 극저순위.)
+- 🟢 동결(D−5, 6/8) 후: 사진→여정 자동정렬, PWA 예약 D-1 푸시, 사진·메모 Supabase Storage 동기화.
+
+---
+
+## 2026-06-05 (13차) — 마이크로 인터랙션 일관화 (보조 셀렉터 줄바꿈 + 칩 전환 모션 토큰 단일화)
+
+**시작 상태**: `origin/main`==`HEAD`==`3d40207`(12차 6커밋 전부 푸시 완료), working tree clean. 12차 SESSION_LOG의 "미푸시" 메모는 이후 정리되어 현재 선형·동기 상태.
+
+**한 일** (REVIEW P2 "마이크로 인터랙션 일관화" 항목, index.html 1파일·미커밋)
+1. **CSS 클래스 2개 신설** (`gt-chips` 블록 직후). ① `.gt-wrap` = `display:flex; flex-wrap:wrap; gap:var(--space-2)` — 가로 스크롤로 화면 밖에 숨던 보조 셀렉터 선택지를 줄바꿈으로 전부 노출(발견성, Logistics 서브탭을 grid로 푼 것과 동일 철학). ② `.gt-chip` = `transition: background/color/border-color 0.15s var(--ease)` — 칩·탭 선택 전환 모션을 단일 토큰으로.
+2. **보조 셀렉터 5곳 `gt-chips`→`gt-wrap`**: 번역 카테고리(`TranslateWidget`)·가계부 카테고리(`ExpenseTracker`)·음악 챕터(`SpotifyWidget`)·복장 필터(`DressCodeWidget`)·날씨 도시(`WeatherWidget`). 모두 한 화면에 들어가는 짧은 라벨 셀렉터.
+3. **가로 유지**(REVIEW 명시): 28일 타임라인(`TimelineStrip`)·일정 챕터 필터(sticky)는 `gt-chips` 유지 — 항목 多·라벨 길어 가로 스크롤이 정석.
+4. **전환 모션 `gt-chip` 통일**(10개 버튼): 위 5개 wrap 셀렉터 버튼 + 챕터 필터 버튼(전체/챕터) + Logistics 서브탭 + MapView 챕터 탭. Logistics 서브탭·MapView 탭의 **인라인 `transition` 문자열은 제거**하고 클래스로 일원화 → 인라인 0.15s transition 잔여 **0개**(완전 단일화).
+
+**중요 발견 / 원칙**
+- 보조 셀렉터의 가로 스크롤은 "선택지 일부가 화면 밖에 숨음" = 발견성 손실. 항목이 한 화면에 들어가면 줄바꿈(wrap)이 우월. **가로 유지 기준 = 항목 수·라벨 길이로 한 화면 초과**(28일·챕터필터)뿐.
+- MapView 챕터 탭 div는 `justifyContent:'center'`라 `gt-wrap`(기본 flex-start)으로 바꾸면 정렬 회귀 → **div는 그대로, 버튼만 `gt-chip`**으로 모션만 통일.
+- 동일 transition 문자열이 인라인에 분산되면 토큰화 의미가 없음 → **클래스 1곳으로 모아야 진짜 단일화**.
+
+**검증**: babel JSX 블록 esbuild 파싱 **0 오류**. `function` 67개 유지·`ReactDOM.createRoot` 1개. `gt-chips` 2(가로유지)·`gt-wrap` 5·`gt-chip` 10·인라인 0.15s transition 0. index.html 8079→**8087줄**. (헤드리스 Chrome 금지 → 줄바꿈 레이아웃·모션 시각검증은 Tyler 실기기 몫.)
+
+**종료 상태**: index.html **미커밋**(시각 변화 동반 → 실기기 확인 후 커밋 권장, F2 원칙). sw.js 무변경 → **SW v5 유지**. working tree = index.html 1파일 변경 + 본 문서 갱신.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실데이터 입력**(Tyler 직접): 호텔·항공 예약번호, 미식 예약 상태, 가계부 통화·초기 예산.
+- 🔴 **실기기 아이폰 QA**(헤드리스 금지): 13차 변경 실측 — ① 5개 보조 셀렉터 **줄바꿈 펼침**(날씨 9개 도시 2줄 등 과하지 않은지), ② 칩 선택 시 **0.15s 전환 모션** 자연스러움, ③ 가로 유지 2곳(타임라인·챕터필터) 무회귀.
+- 🟡 남은 코드: 시각 일관화 잔여(비표준 radius·자간, 보류된 디자인 정리)뿐. 🟢 동결 후: 사진→여정 자동정렬, PWA 예약 D-1 푸시, 사진·메모 Supabase Storage 동기화.
+
+---
+
 ## 2026-06-03 (12차) — 공동작업 디테일 + 첫 로드 defer + 골드 글로시 확장 + 데일리/출발 포커스
 
 **시작 상태**: `origin/main`==`2a5aedf`(코드), 로컬 HEAD==`6c38255`(11차 문서커밋 `c46dd47`·`6c38255` 미푸시 상태). working tree clean.
