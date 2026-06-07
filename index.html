@@ -96,13 +96,27 @@
       --space-16: 64px;
 
       /* ── Radius scale ────────────────────────────────────────────── */
-      --radius-xs: 4px;
-      --radius-sm: 6px;
-      --radius-md: 10px;
-      --radius-lg: 14px;
-      --radius-xl: 18px;
-      --radius-2xl: 24px;
+      /* numeric (px) = single source of truth; t-shirt names below are aliases */
+      --radius-2: 2px;
+      --radius-3: 3px;
+      --radius-4: 4px;
+      --radius-6: 6px;
+      --radius-8: 8px;
+      --radius-10: 10px;
+      --radius-12: 12px;
+      --radius-14: 14px;
+      --radius-16: 16px;
+      --radius-18: 18px;
+      --radius-20: 20px;
+      --radius-24: 24px;
       --radius-pill: 999px;
+      /* legacy t-shirt aliases — existing var() sites; consolidate to numeric over time */
+      --radius-xs: var(--radius-4);
+      --radius-sm: var(--radius-6);
+      --radius-md: var(--radius-10);
+      --radius-lg: var(--radius-14);
+      --radius-xl: var(--radius-18);
+      --radius-2xl: var(--radius-24);
 
       /* ── Elevation (shadows) ─────────────────────────────────────── */
       --shadow-sm: 0 1px 3px rgba(27,42,74,0.06), 0 1px 2px rgba(27,42,74,0.04);
@@ -343,6 +357,12 @@
     }
     .gt-chips::-webkit-scrollbar { display: none; }
     .gt-chips > * { scroll-snap-align: start; flex-shrink: 0; }
+
+    /* Wrapping chip group — secondary selectors that fit on screen.
+       가로 스크롤로 숨던 선택지를 줄바꿈으로 모두 노출(발견성). 가로 유지 대상은 28일 타임라인·챕터 필터(gt-chips)뿐. */
+    .gt-wrap { display: flex; flex-wrap: wrap; gap: var(--space-2); }
+    /* Unified chip/tab state transition — 탭·선택 전환 모션을 전 셀렉터에서 동일 토큰으로. */
+    .gt-chip { transition: background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease); }
 
     /* Subtle scrollbar */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -1409,7 +1429,7 @@ class ErrorBoundary extends React.Component {
           <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.7, marginBottom: '24px', maxWidth: '320px' }}>
             화면을 그리는 중 문제가 생겼어요. 저장된 데이터(메모·사진·체크리스트)는 그대로 있으니 안심하세요. 새로고침하면 대부분 해결됩니다.
           </div>
-          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: '8px', fontSize: 'var(--type-body)', fontWeight: 500, cursor: 'pointer' }}>
+          <button onClick={() => location.reload()} style={{ padding: '12px 24px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-body)', fontWeight: 500, cursor: 'pointer' }}>
             새로고침
           </button>
           <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '20px', wordBreak: 'break-word', maxWidth: '320px' }}>
@@ -2035,7 +2055,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           style={{
             position: 'relative',
             cursor: 'pointer',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-8)',
             overflow: 'hidden',
             border: '3px solid #FFF',
             boxShadow: '0 2px 8px rgba(27,42,74,0.15)'
@@ -2124,7 +2144,7 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           padding: compact ? '24px 16px' : '32px 16px',
           background: 'rgba(201,169,97,0.08)',
           border: '2px dashed var(--color-accent-primary)',
-          borderRadius: '8px',
+          borderRadius: 'var(--radius-8)',
           cursor: uploading ? 'wait' : 'pointer',
           textAlign: 'center',
           color: 'var(--color-accent-primary)',
@@ -2394,7 +2414,7 @@ function Recommendations({ chapterId, chapter }) {
               background: openSection === s.key ? chapter.accent : 'var(--color-bg-surface)',
               color: openSection === s.key ? 'var(--color-atomic-white)' : 'var(--color-text-soft)',
               border: `1px solid ${openSection === s.key ? chapter.accent : 'var(--color-border-default)'}`,
-              borderRadius: '20px',
+              borderRadius: 'var(--radius-20)',
               cursor: 'pointer',
               fontWeight: openSection === s.key ? 500 : 400
             }}
@@ -2416,7 +2436,7 @@ function Recommendations({ chapterId, chapter }) {
               display: 'block',
               padding: '12px',
               background: chapter.color,
-              borderRadius: '8px',
+              borderRadius: 'var(--radius-8)',
               textDecoration: 'none',
               color: 'inherit',
               border: `1px solid ${chapter.color}`
@@ -2591,7 +2611,7 @@ function DayRecs({ day, chapter }) {
             href={mapsUrl(`${r.t} ${chapter.search || chapter.name}`)}
             target="_blank"
             rel="noopener noreferrer"
-            style={{ display: 'block', padding: '12px', background: chapter.color, borderRadius: '8px', textDecoration: 'none', color: 'inherit' }}
+            style={{ display: 'block', padding: '12px', background: chapter.color, borderRadius: 'var(--radius-8)', textDecoration: 'none', color: 'inherit' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
               <span style={{ fontSize: 'var(--type-h2)', flexShrink: 0 }}>{r.tag}</span>
@@ -3063,7 +3083,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
         </div>
       </div>
 
-      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '16px' }}>
         <div style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 500, color: 'var(--color-warning-text)', marginBottom: '4px' }}>
           ⭐⭐⭐ 평생 간직할 관점 4개
         </div>
@@ -3180,7 +3200,7 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
             cursor: 'pointer',
             fontSize: 'var(--type-micro)',
             padding: '2px 6px',
-            borderRadius: '3px',
+            borderRadius: 'var(--radius-3)',
             lineHeight: 1,
             flexShrink: 0,
             marginTop: '2px'
@@ -3345,7 +3365,7 @@ function BackupReminder({ exportData, status }) {
       <div style={{
         background: 'linear-gradient(135deg, var(--color-atomic-navy-900) 0%, var(--color-atomic-navy-700) 100%)',
         border: '1px solid var(--color-accent-primary)',
-        borderRadius: '12px',
+        borderRadius: 'var(--radius-12)',
         padding: '16px',
         marginBottom: '16px',
       }}>
@@ -3390,7 +3410,7 @@ function BackupReminder({ exportData, status }) {
     <div style={{
       background: 'linear-gradient(135deg, #FFF8E1 0%, #FEF3C7 100%)',
       border: '1px solid var(--color-accent-primary)',
-      borderRadius: '12px',
+      borderRadius: 'var(--radius-12)',
       padding: '14px 16px',
       marginBottom: '16px',
       display: 'flex',
@@ -3561,7 +3581,7 @@ function NextFlight({ FLIGHTS, DAYS, status, setView }) {
             flexShrink: 0,
             textAlign: 'center',
             padding: '10px 14px',
-            borderRadius: '12px',
+            borderRadius: 'var(--radius-12)',
             background: isToday ? 'var(--color-accent-primary)' : 'var(--color-bg-page)',
             color: isToday ? 'var(--color-atomic-white)' : 'var(--color-text-strong)',
             minWidth: '70px',
@@ -3678,7 +3698,7 @@ function ArrivalWeather({ chapter, dateStr }) {
           return (
             <div key={dateStr2} style={{
               flex: 1, textAlign: 'center', padding: '8px 4px',
-              background: 'var(--color-bg-surface)', borderRadius: '8px', border: '1px solid var(--color-border-default)',
+              background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-8)', border: '1px solid var(--color-border-default)',
             }}>
               <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-text-muted)', fontWeight: 600 }}>
                 {dt.getMonth()+1}/{dt.getDate()} {dn}
@@ -3726,7 +3746,7 @@ function EmergencyContacts() {
           {contacts.map((c, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: '8px', gap: '8px',
+              padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', gap: '8px',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)' }}>{c.label}</div>
@@ -4101,7 +4121,7 @@ function TripSummaryCard({ status, setView, checks, packing }) {
               <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', fontWeight: 500 }}>{r.label}</span>
               <span style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)' }}>{r.done}/{r.total} · {r.pct}%</span>
             </div>
-            <div style={{ height: '4px', background: 'var(--color-border-soft)', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ height: '4px', background: 'var(--color-border-soft)', borderRadius: 'var(--radius-2)', overflow: 'hidden' }}>
               <div style={{
                 width: `${r.pct}%`,
                 height: '100%',
@@ -4299,7 +4319,7 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                           padding: '8px 10px',
                           background: 'var(--color-bg-page)',
                           border: '1px solid var(--color-border-default)',
-                          borderRadius: '8px',
+                          borderRadius: 'var(--radius-8)',
                           cursor: setView ? 'pointer' : 'default',
                           textAlign: 'left',
                           width: '100%',
@@ -4335,7 +4355,7 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                             padding: '4px 8px',
                             background: 'var(--color-bg-surface)',
                             border: '1px solid var(--color-border-default)',
-                            borderRadius: '12px',
+                            borderRadius: 'var(--radius-12)',
                             color: 'var(--color-text-strong)',
                           }}>
                             {r.tag} {r.t}
@@ -4647,7 +4667,7 @@ function SyncPanel() {
 
           <button onClick={disconnect} style={{
             padding: '10px 12px', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)',
-            border: '1px solid var(--color-border-default)', borderRadius: '8px',
+            border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-8)',
             fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 500, width: '100%'
           }}>연결 끊기</button>
         </div>
@@ -4655,7 +4675,7 @@ function SyncPanel() {
         <div>
           <button onClick={create} style={{
             padding: '12px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
-            border: 'none', borderRadius: '8px', fontSize: 'var(--type-caption)', cursor: 'pointer',
+            border: 'none', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-caption)', cursor: 'pointer',
             fontWeight: 500, width: '100%', marginBottom: '10px'
           }}>✨ 새 동기화 코드 만들기</button>
           <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', textAlign: 'center', marginBottom: '8px' }}>또는 받은 코드로 연결</div>
@@ -4665,13 +4685,13 @@ function SyncPanel() {
               onChange={e => setInput(e.target.value)}
               placeholder="공유 코드 붙여넣기"
               style={{
-                flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid var(--color-border-default)',
+                flex: 1, padding: '10px', borderRadius: 'var(--radius-8)', border: '1px solid var(--color-border-default)',
                 fontSize: 'var(--type-caption)', background: 'var(--color-bg-surface)', color: 'var(--color-text-strong)'
               }}
             />
             <button onClick={() => connect(input)} style={{
               padding: '10px 16px', background: 'var(--color-accent-primary)', color: 'var(--color-atomic-white)',
-              border: 'none', borderRadius: '8px', fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 600
+              border: 'none', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 600
             }}>연결</button>
           </div>
         </div>
@@ -4772,7 +4792,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
               </div>
             );
           })()}
-          <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: '8px', marginBottom: '16px' }}>
+          <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: 'var(--radius-8)', marginBottom: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
               <span style={{ fontSize: 'var(--type-h1)' }}>{todayChapter?.flag}</span>
               <div style={{ fontSize: 'var(--type-caption)', color: todayChapter?.accent, letterSpacing: 'var(--track-label)' }}>
@@ -4839,11 +4859,11 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
               </div>
             );
           })()}
-          <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '12px' }}>
+          <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '12px' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
             <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
           </div>
-          <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px' }}>
+          <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: 'var(--radius-8)' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-warning-text)', marginBottom: '6px' }}>💕 커플 모먼트</div>
             <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.mo}</div>
           </div>
@@ -4906,7 +4926,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
             background: 'var(--color-bg-inverse)',
             color: 'var(--color-text-inverse)',
             border: 'none',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-8)',
             fontSize: 'var(--type-caption)',
             cursor: 'pointer',
             fontWeight: 500
@@ -4918,7 +4938,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
             background: 'var(--color-bg-page)',
             color: 'var(--color-text-strong)',
             border: '1px solid var(--color-border-default)',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-8)',
             fontSize: 'var(--type-caption)',
             cursor: 'pointer',
             fontWeight: 500,
@@ -4982,9 +5002,10 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
       {/* Chapter filter pills — 글래스 헤더 바로 아래 sticky 고정(스크롤해도 챕터 전환 가능) */}
       <div className="gt-chips" style={{ position: 'sticky', top: headerH + 'px', zIndex: 40, background: 'var(--color-bg-page)', marginLeft: '-16px', marginRight: '-16px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', marginBottom: '14px', boxShadow: '0 6px 8px -6px rgba(27,42,74,0.18)' }}>
         <button
+          className="gt-chip"
           onClick={() => setFilterCh('all')}
           style={{
-            padding: '5px 12px', borderRadius: '20px', border: '1px solid ' + (filterCh === 'all' ? 'var(--color-atomic-navy-900)' : 'var(--color-border-default)'),
+            padding: '5px 12px', borderRadius: 'var(--radius-20)', border: '1px solid ' + (filterCh === 'all' ? 'var(--color-atomic-navy-900)' : 'var(--color-border-default)'),
             background: filterCh === 'all' ? 'var(--color-atomic-navy-900)' : 'var(--color-bg-surface)', color: filterCh === 'all' ? 'var(--color-atomic-white)' : 'var(--color-text-soft)',
             fontSize: 'var(--type-caption)', whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0, fontWeight: filterCh === 'all' ? 600 : 400
           }}
@@ -4994,8 +5015,8 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
           const count = DAYS.filter(d => d.c === id).length;
           const active = filterCh === id;
           return (
-            <button key={id} onClick={() => { setFilterCh(id); setOpenDay(null); }} style={{
-              padding: '5px 12px', borderRadius: '20px',
+            <button key={id} className="gt-chip" onClick={() => { setFilterCh(id); setOpenDay(null); }} style={{
+              padding: '5px 12px', borderRadius: 'var(--radius-20)',
               border: '1px solid ' + (active ? ch.accent : 'var(--color-border-default)'),
               background: active ? ch.color : 'var(--color-bg-surface)', color: active ? ch.accent : 'var(--color-text-soft)',
               fontSize: 'var(--type-caption)', whiteSpace: 'nowrap', cursor: 'pointer', flexShrink: 0, fontWeight: active ? 600 : 400
@@ -5039,7 +5060,7 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
               <div style={{
                 width: '36px',
                 height: '36px',
-                borderRadius: '8px',
+                borderRadius: 'var(--radius-8)',
                 background: ch.color,
                 color: ch.accent,
                 display: 'flex',
@@ -5213,7 +5234,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           />
         </EditRow>
       </div>
-      <div style={{ background: chapter.color, padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+      <div style={{ background: chapter.color, padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '10px' }}>
         <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>🍪 오늘의 추억 바이트</div>
         <EditableField
           value={day.asi}
@@ -5237,7 +5258,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           </div>
         )}
       </div>
-      <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: '8px', marginBottom: '10px' }}>
+      <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '10px' }}>
         <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>💭 메모 질문</div>
         <EditableField
           value={day.q}
@@ -5268,7 +5289,7 @@ function EditableDayDetail({ day, chapter, saveEdit, resetEdit, isEdited }) {
           </div>
         )}
       </div>
-      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: '8px', marginBottom: '14px' }}>
+      <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '14px' }}>
         <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-warning-text)', letterSpacing: 'var(--track-label)', marginBottom: '6px' }}>💕 커플 모먼트</div>
         <EditableField
           value={day.mo}
@@ -5598,7 +5619,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
     <div style={{
       background: 'var(--color-bg-surface)',
       border: '1px solid var(--color-border-default)',
-      borderRadius: '12px',
+      borderRadius: 'var(--radius-12)',
       marginBottom: '12px',
       overflow: 'hidden'
     }}>
@@ -5661,7 +5682,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
                     background: 'var(--color-warning-bg-deep)',
                     color: 'var(--color-warning-text)',
                     padding: '2px 6px',
-                    borderRadius: '3px'
+                    borderRadius: 'var(--radius-3)'
                   }}>직접 추가</span>
                   <button
                     onClick={(e) => {
@@ -5673,7 +5694,7 @@ function PackingSection({ title, items, person, packing, togglePacking, packingE
                       background: 'var(--color-danger-bg)',
                       color: 'var(--color-danger)',
                       border: '1px solid var(--color-danger-border)',
-                      borderRadius: '3px',
+                      borderRadius: 'var(--radius-3)',
                       padding: '2px 6px',
                       cursor: 'pointer'
                     }}
@@ -5770,7 +5791,7 @@ function ChecklistSection({ title, items, checks, toggle, checkMeta, showSource 
     <div style={{
       background: 'var(--color-bg-surface)',
       border: '1px solid var(--color-border-default)',
-      borderRadius: '12px',
+      borderRadius: 'var(--radius-12)',
       marginBottom: '12px',
       overflow: 'hidden'
     }}>
@@ -5995,9 +6016,9 @@ function TranslateWidget() {
           }}>{flag} {name}</button>
         ))}
       </div>
-      <div className="gt-chips" style={{ marginBottom: '12px' }}>
+      <div className="gt-wrap" style={{ marginBottom: '12px' }}>
         {cats.map(c => (
-          <button key={c} onClick={() => setCat(c)} style={{
+          <button key={c} className="gt-chip" onClick={() => setCat(c)} style={{
             padding: '8px 12px', fontSize: 'var(--type-eyebrow)', whiteSpace: 'nowrap',
             background: activeCat === c ? 'rgba(201,169,97,0.15)' : 'transparent',
             color: activeCat === c ? 'var(--color-accent-primary)' : 'var(--color-text-soft)',
@@ -6078,6 +6099,7 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
           return (
             <button
               key={t.id}
+              className="gt-chip"
               onClick={() => { setSubTab(t.id); if (navigator.vibrate) navigator.vibrate(8); }}
               style={{
                 display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
@@ -6087,7 +6109,6 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
                 border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
                 borderRadius: 'var(--radius-md)',
                 cursor: 'pointer', fontFamily: 'inherit',
-                transition: 'background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease)',
               }}
             >
               <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
@@ -6126,7 +6147,7 @@ function CityMomentHero({ chapter }) {
   const fg = hasPhoto ? 'var(--color-atomic-white)' : chapter.accent;
   return (
     <div style={{
-      position: 'relative', borderRadius: '16px', overflow: 'hidden', marginBottom: 'var(--space-5)',
+      position: 'relative', borderRadius: 'var(--radius-16)', overflow: 'hidden', marginBottom: 'var(--space-5)',
       minHeight: '188px', display: 'flex', alignItems: 'flex-end',
       boxShadow: '0 10px 26px rgba(27,42,74,0.13)', borderTop: `3px solid ${chapter.accent}`,
     }}>
@@ -6276,7 +6297,7 @@ function MapView() {
       </div>
 
       {/* SVG Journey Overview */}
-      <div style={{ position: 'relative', marginBottom: 'var(--space-5)', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: '12px', padding: 'var(--space-3)', overflow: 'hidden' }}>
+      <div style={{ position: 'relative', marginBottom: 'var(--space-5)', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-12)', padding: 'var(--space-3)', overflow: 'hidden' }}>
         <svg
           viewBox="0 0 800 500"
           style={{ width: '100%', height: 'auto', display: 'block', touchAction: 'none', cursor: view.s > 1 ? 'grab' : 'default' }}
@@ -6393,6 +6414,7 @@ function MapView() {
         {points.map(p => (
           <button
             key={p.id}
+            className="gt-chip"
             onClick={() => focusCity(p)}
             style={{
               padding: '8px 14px',
@@ -6404,7 +6426,6 @@ function MapView() {
               cursor: 'pointer',
               fontWeight: 500,
               whiteSpace: 'nowrap',
-              transition: 'background 0.15s var(--ease), color 0.15s var(--ease), border-color 0.15s var(--ease)',
             }}
           >
             {p.flag} {p.name}
@@ -6805,7 +6826,7 @@ function ExchangeRates() {
           style={{
             background: 'var(--color-bg-page)',
             border: '1px solid var(--color-border-default)',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-8)',
             padding: '6px 10px',
             fontSize: 'var(--type-caption)',
             color: 'var(--color-text-strong)',
@@ -7064,9 +7085,9 @@ function ExpenseTracker() {
             {FX_CURRENCIES.map(c => <option key={c.code} value={c.code}>{c.flag} {c.code}</option>)}
           </select>
         </div>
-        <div className="gt-chips" style={{ marginBottom: '10px' }}>
+        <div className="gt-wrap" style={{ marginBottom: '10px' }}>
           {EXPENSE_CATS.map(c => (
-            <button key={c.id} onClick={() => setCat(c.id)} style={{
+            <button key={c.id} className="gt-chip" onClick={() => setCat(c.id)} style={{
               padding: '8px 12px', fontSize: 'var(--type-eyebrow)',
               background: cat === c.id ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
               color: cat === c.id ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
@@ -7196,9 +7217,9 @@ function SpotifyWidget() {
   return (
     <div>
       {/* Chapter selector */}
-      <div className="gt-chips" style={{ marginBottom: '14px' }}>
+      <div className="gt-wrap" style={{ marginBottom: '14px' }}>
         {chaptersWithPlaylist.map(c => (
-          <button key={c.id} onClick={() => { setChId(c.id); setEditing(false); setInputVal(customUrls[c.id] || ''); }} style={{
+          <button key={c.id} className="gt-chip" onClick={() => { setChId(c.id); setEditing(false); setInputVal(customUrls[c.id] || ''); }} style={{
             flexShrink: 0, padding: '8px 12px', fontSize: 'var(--type-eyebrow)',
             background: chId === c.id ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
             color: chId === c.id ? 'var(--color-text-inverse)' : 'var(--color-text-default)',
@@ -7320,8 +7341,8 @@ function DressCodeWidget() {
   return (
     <div>
       {/* Filter */}
-      <div className="gt-chips" style={{ marginBottom: '14px' }}>
-        <button onClick={() => setChFilter('all')} style={{
+      <div className="gt-wrap" style={{ marginBottom: '14px' }}>
+        <button className="gt-chip" onClick={() => setChFilter('all')} style={{
           flexShrink: 0, padding: '8px 12px', fontSize: 'var(--type-eyebrow)',
           background: chFilter === 'all' ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
           color: chFilter === 'all' ? 'var(--color-text-inverse)' : 'var(--color-text-default)',
@@ -7331,7 +7352,7 @@ function DressCodeWidget() {
         {DRESS_CODES.map(c => {
           const ch = CHAPTERS.find(x => x.id === c.ch);
           return (
-            <button key={c.ch} onClick={() => setChFilter(c.ch)} style={{
+            <button key={c.ch} className="gt-chip" onClick={() => setChFilter(c.ch)} style={{
               flexShrink: 0, padding: '8px 12px', fontSize: 'var(--type-eyebrow)',
               background: chFilter === c.ch ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
               color: chFilter === c.ch ? 'var(--color-text-inverse)' : 'var(--color-text-default)',
@@ -7566,7 +7587,7 @@ function WeatherWidget() {
           style={{
             background: 'var(--color-bg-page)',
             border: '1px solid var(--color-border-default)',
-            borderRadius: '8px',
+            borderRadius: 'var(--radius-8)',
             padding: '6px 10px',
             fontSize: 'var(--type-caption)',
             color: 'var(--color-text-strong)',
@@ -7579,16 +7600,17 @@ function WeatherWidget() {
       </div>
 
       {/* City selector */}
-      <div className="gt-chips" style={{ marginBottom: '14px' }}>
+      <div className="gt-wrap" style={{ marginBottom: '14px' }}>
         {WEATHER_CITIES.map(city => {
           const active = selected === city.id;
           return (
             <button
               key={city.id}
+              className="gt-chip"
               onClick={() => setSelected(city.id)}
               style={{
                 padding: '5px 12px',
-                borderRadius: '20px',
+                borderRadius: 'var(--radius-20)',
                 border: '1px solid ' + (active ? city.accent : 'var(--color-border-default)'),
                 background: active ? city.color : 'var(--color-bg-surface)',
                 color: active ? city.accent : 'var(--color-text-soft)',
@@ -7865,7 +7887,7 @@ function RestaurantTracker() {
                 style={{
                   flexShrink: 0,
                   padding: '5px 11px',
-                  borderRadius: '20px',
+                  borderRadius: 'var(--radius-20)',
                   border: 'none',
                   background: STATUS_BG[status],
                   color: STATUS_COLOR[status],
