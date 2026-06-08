@@ -2838,7 +2838,13 @@ function ForkPreview({ code, onFork, onClose }) {
         <button onClick={onClose} style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', background: 'transparent', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-sm)', padding: '6px 10px', cursor: 'pointer' }}>닫기</button>
       </div>
 
-      {state === 'loading' && <div style={{ padding: '40px 0', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>불러오는 중…</div>}
+      {state === 'loading' && (
+        <div style={{ padding: '8px 0', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="gt-skel" style={{ height: '80px' }} />
+          <div className="gt-skel" style={{ height: '120px' }} />
+          <div className="gt-skel" style={{ height: '120px' }} />
+        </div>
+      )}
       {state === 'notfound' && <Card><div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>이 코드의 공개 여정을 찾지 못했어요.</div></Card>}
       {state === 'error' && <Card><div style={{ padding: 'var(--space-4)', textAlign: 'center', color: 'var(--color-text-muted)', fontSize: 'var(--type-body-sm)' }}>네트워크 오류 — 잠시 후 다시 열어줘.</div></Card>}
 
@@ -3742,8 +3748,8 @@ function ArrivalWeather({ chapter, dateStr }) {
   }, [chapter.id]);
 
   if (loading) return (
-    <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-border-default)', fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)' }}>
-      🌤️ 도착지 날씨 불러오는 중…
+    <div style={{ padding: '10px 16px', borderTop: '1px solid var(--color-border-default)' }}>
+      <div className="gt-skel" style={{ height: '16px', width: '62%' }} />
     </div>
   );
   if (!data || !data.time) return null;
@@ -4122,7 +4128,7 @@ function HeroCountdown({ status, setView }) {
                       </div>
                     </div>
                   ) : (
-                    <div style={{ fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.45)', marginTop: '2px' }}>불러오는 중…</div>
+                    <div className="gt-skel" style={{ height: '14px', width: '46px', marginTop: '4px', opacity: 0.3 }} />
                   )}
                 </div>
               );
@@ -4820,40 +4826,10 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
       {/* Trip Summary — pre-trip compact widget (D-7 임박: 준비 현황·예약을 철학 위로) */}
       {status.phase === 'pre' && <TripSummaryCard status={status} setView={setView} checks={checks} packing={packing} />}
 
-      {/* Trip Philosophy — hidden post-trip (RetrospectHero carries the closing line) */}
-      {status.phase !== 'post' && (
-        <div className="gt-card" style={{
-          background: 'var(--color-bg-surface)',
-          border: '1px solid var(--color-border-default)',
-          borderRadius: 'var(--radius-lg)',
-          padding: 'var(--space-6)',
-          marginBottom: 'var(--space-5)',
-          textAlign: 'center',
-          boxShadow: 'var(--shadow-sm)',
-        }}>
-          <div style={{
-            borderTop: '1px solid rgba(201,169,97,0.35)',
-            borderBottom: '1px solid rgba(201,169,97,0.35)',
-            padding: 'var(--space-4) 0',
-          }}>
-            <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.9, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
-              "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
-              앞으로 무엇을 할지 결정하기 위해 떠난다."
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Current city timezone — only during trip */}
-      {status.phase === 'during' && <TimezoneWidget status={status} DAYS={DAYS} />}
-
-      {/* Next flight / transit countdown */}
-      <NextFlight FLIGHTS={FLIGHTS} DAYS={DAYS} status={status} setView={setView} />
-
-      {/* Today's Card */}
+      {/* Today's Card — during trip: 여행 중엔 '지금 다음 행동'을 최상단으로 */}
       {status.phase === 'during' && status.current && (
         <Card>
-          <SectionTitle>오늘 · Day {today.n}</SectionTitle>
+          <SectionTitle>오늘 · Day {today.n} · {today.d} ({today.w})</SectionTitle>
           {/* 지금 포커스 — 여행 중 홈 0클릭 다음 행동(현재 시각 기준) + 예약·내일 이동 알림 */}
           {(() => {
             const hour = new Date().getHours();
@@ -4986,6 +4962,36 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
             );
           })()}
         </Card>
+      )}
+
+      {/* Current city timezone — only during trip */}
+      {status.phase === 'during' && <TimezoneWidget status={status} DAYS={DAYS} />}
+
+      {/* Next flight / transit countdown */}
+      <NextFlight FLIGHTS={FLIGHTS} DAYS={DAYS} status={status} setView={setView} />
+
+      {/* Trip Philosophy — hidden post-trip (RetrospectHero carries the closing line) */}
+      {status.phase !== 'post' && (
+        <div className="gt-card" style={{
+          background: 'var(--color-bg-surface)',
+          border: '1px solid var(--color-border-default)',
+          borderRadius: 'var(--radius-lg)',
+          padding: 'var(--space-6)',
+          marginBottom: 'var(--space-5)',
+          textAlign: 'center',
+          boxShadow: 'var(--shadow-sm)',
+        }}>
+          <div style={{
+            borderTop: '1px solid rgba(201,169,97,0.35)',
+            borderBottom: '1px solid rgba(201,169,97,0.35)',
+            padding: 'var(--space-4) 0',
+          }}>
+            <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.9, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
+              "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
+              앞으로 무엇을 할지 결정하기 위해 떠난다."
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Recommendations for current chapter (during trip) */}
@@ -5687,7 +5693,9 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
         const toConfirm = urgentPending.filter(i => !i.url).sort(byDate); // 직접 확인·준비
         const textStyle = { flex: 1, minWidth: 0, fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', lineHeight: 1.4 };
         const arrowStyle = { flexShrink: 0, fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', fontWeight: 600 };
-        const rowStyle = { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--color-danger-bg)', borderRadius: 'var(--radius-xs)', textDecoration: 'none' };
+        const rowStyle = { display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 10px', background: 'var(--color-danger-bg)', borderRadius: 'var(--radius-xs)' };
+        const checkBtnStyle = { flexShrink: 0, width: '20px', height: '20px', borderRadius: 'var(--radius-xs)', border: '1.5px solid var(--color-danger)', background: 'transparent', cursor: 'pointer', padding: 0 };
+        const linkStyle = { flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '8px', textDecoration: 'none' };
         return (
           <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: '16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '10px' }}>
@@ -5704,10 +5712,13 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
                     <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-danger)', marginBottom: '8px' }}>🔴 지금 예약·신청할 것 {toBook.length}건</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {toBook.map(i => (
-                        <a key={i.id} href={i.url} target="_blank" rel="noopener noreferrer" style={rowStyle}>
-                          <span style={textStyle}>{i.t}</span>
-                          <span style={arrowStyle}>예약 ↗</span>
-                        </a>
+                        <div key={i.id} style={rowStyle}>
+                          <button onClick={() => toggleCheck(i.id)} aria-label="완료 처리" title="완료하면 목록에서 사라져요" style={checkBtnStyle} />
+                          <a href={i.url} target="_blank" rel="noopener noreferrer" style={linkStyle}>
+                            <span style={textStyle}>{i.t}</span>
+                            <span style={arrowStyle}>예약 ↗</span>
+                          </a>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -5717,7 +5728,10 @@ function Checklist({ checks, toggleCheck, checkMeta, packing, togglePacking, pac
                     <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-text-muted)', marginBottom: '8px' }}>📋 직접 확인·준비할 것 {toConfirm.length}건</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {toConfirm.map(i => (
-                        <div key={i.id} style={{ ...rowStyle, background: 'var(--color-border-soft)' }}><span style={textStyle}>{i.t}</span></div>
+                        <div key={i.id} style={{ ...rowStyle, background: 'var(--color-border-soft)' }}>
+                          <button onClick={() => toggleCheck(i.id)} aria-label="완료 처리" title="완료하면 목록에서 사라져요" style={{ ...checkBtnStyle, borderColor: 'var(--color-text-muted)' }} />
+                          <span style={textStyle}>{i.t}</span>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -7018,7 +7032,9 @@ function ExchangeRates() {
       </div>
 
       {!rates && loading && (
-        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', padding: '12px 0' }}>환율 불러오는 중…</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '8px 0' }}>
+          {[0, 1, 2].map(i => <div key={i} className="gt-skel" style={{ height: '20px' }} />)}
+        </div>
       )}
 
       {rates && (
@@ -7815,7 +7831,9 @@ function WeatherWidget() {
 
       {/* Loading skeleton */}
       {loading && !data && (
-        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', padding: '16px 0' }}>날씨 불러오는 중…</div>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', padding: '8px 0' }}>
+          {[0, 1, 2, 3].map(i => <div key={i} className="gt-skel" style={{ height: '64px' }} />)}
+        </div>
       )}
 
       {/* Daily forecast rows */}
