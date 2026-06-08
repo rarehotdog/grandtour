@@ -5,6 +5,65 @@
 
 ---
 
+## 2026-06-09 (19차) — 홈 UX 고도화(로딩 스켈레톤·during 흐름·Today 헤더) + 예약 요약 완료 기능
+
+**시작 상태**: `origin/main`==`8b822de`(17차). 로컬 18차 코드 `8df602c`(푸시됨) + 18차 docs 미커밋 상태에서 이어 작업. 19차 코드 `94525f7`(plan mode 승인 후 실행), **미푸시**.
+
+**한 일** (index.html, 커밋 `94525f7`) — plan `gleaming-wobbling-wind.md` 기반, 사용자 "UX 고도화" 요청
+1. **Part A 로딩/빈 상태 고급화**: 위젯 로딩 텍스트 "불러오는 중…" 5곳(NextFlight 날씨·HeroCountdown 날씨[다크, opacity 0.3]·환율·WeatherWidget·ForkPreview) → `.gt-skel` 스켈레톤으로 통일(앱 초기 로드 L1945~와 일관). 텍스트 잔재 0.
+2. **Part B during-trip 흐름 심화**: 여행 중 홈에서 **Today 카드(지금 포커스)를 최상단**(EveningReminder 바로 뒤)으로. 작은 블록 3개(철학·TimezoneWidget·NextFlight, ~30줄)를 Today 카드 아래로 이동(137줄 카드 이동보다 안전). during: EveningReminder→Today→Timezone→NextFlight→철학→Recommendations. **pre 부수효과**: NextFlight가 철학 위로 옴(출발 카운트다운 상향, 무해).
+3. **Part C Today 카드 헤더**: "오늘 · Day N" → "오늘 · Day N · M/D (요일)". 밀집한 카드 본문은 during 시각검증 불가(D-7)라 재구성 안 함(안전 우선).
+4. **Part E 예약 요약 완료→제거**(사용자 요청): 체크탭 '지금 예약·신청할 것'·'직접 확인·준비할 것' 각 항목에 완료 체크 버튼(`toggleCheck(i.id)`) 추가 → 완료 시 `urgent && !checks` 필터로 요약에서 자동 제거. 행을 `<a>`→`div`(체크버튼+예약링크)로 재구성(button in anchor 회피).
+
+**중요 발견 / 원칙**
+- **서브에이전트 결과 반환 실패 반복**: designer×2·Explore×2 모두 분석은 했으나 최종 메시지에 리스트 미반환(이 환경 특성). → 에이전트 의존 중단, 직접 grep 점검으로 전환.
+- **온보딩 부재가 최대 갭**이나 사용자가 제외 선택 → 로딩/흐름/화면 3방향이 홈에서 수렴 → 홈 단일 대상 고도화.
+- 137줄 블록 이동보다 **작은 블록을 반대로 이동**이 안전(동일 효과, 회귀 위험↓).
+- during-phase 변경은 D-7이라 코드 검증만, 시각은 Tyler 실기기 몫.
+
+**검증**: esbuild 인라인 JSX 0오류 · function 67 · ReactDOM.createRoot 1 · DAYS 27 · `<>` 0 · "불러오는 중" 잔재 0 · `gt-skel` 11곳 · index.html 8300줄.
+
+**종료 상태**: 코드 `94525f7` 커밋, **미푸시**. sw.js 무변경 → SW v5 유지.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실데이터**: 귀국편 ET6973 코드 재확인(EY?), 6/18·6/22·7/3·7/6·7/8 편명, 가계부 통화·예산.
+- 🔴 **실기기 QA**: (during) Today 카드 최상단·날짜 헤더·로딩 스켈레톤(비행기모드 토글)·예약 요약 완료버튼 동작. **두 기기 동기화**.
+- 🟡 미착수: 온보딩(주연용 첫 실행 안내) — 사용자가 이번엔 제외, 추후 옵션. Today 카드 본문 깊은 리디자인도 실기기 확인 후 가능.
+- 🟢 동결 후: 사진/메모 Supabase Storage, PWA 예약 D-1 푸시.
+
+---
+
+## 2026-06-08 (18차) — 일정 펼침 모션·화살표 회전 통일 + 동기화 전수 검증
+
+**시작 상태**: `origin/main`==`8b822de`(17차 푸시 완료). 이번 코드 `8df602c`(단일 feat), **미푸시**(Tyler 수동).
+
+**한 일** (index.html, 커밋 `8df602c`)
+1. **디자인/UX 고퀄 디벨롭** (사용자 "전체 점검·고퀄화" 요청):
+   - 깊은 점검 결과 **기본기 이미 최상급** 확인 — 마이크로 인터랙션(button:active scale·gt-card hover·gt-tap-card·view fade·skeleton·gold sheen)·토큰·타이포(serif 20곳·tabular-nums 19곳)·빈상태 톤 모두 양호.
+   - **일정 카드 펼침 부드러운 전환**: 즉시 토글 → `.gt-expand`(opacity+translateY 0.28s, reduced-motion 정지).
+   - **토글 화살표 회전 통일**: 3곳 중 일정 카드만 `›` 회전+transition이었고 나머지 2곳(3819·4388)은 `▾/▸` 글리프 교체 → **전부 `›` + 90° 회전 transition**으로 일원화.
+   - 여백 px 혼재·lineHeight 산발·다크 surface rgba 투명도는 **회귀>효과**라 의도적 보류(LESSONS 22).
+2. **동기화 전수 점검·검증** (사용자 "공유 동기화 정리·체크" 요청, **코드 변경 0**):
+   - 배선 확인 — Push: `storage.set` monkey-patch 래핑(`_storageSet`+`gtSync.push`)으로 전 저장 자동 push(SYNC_KEYS 11키 필터). Pull: Realtime→`gt:remote`→App map 9키 + ExpenseTracker(`expenses`)·RestaurantTracker(`restaurant_status`) 자체 리스너 2키 = **11키 전부 수신, 반쪽 동기화 0**.
+   - SyncPanel(홈) 안내 정확: 공유=체크/패킹/미식예약/가계부/일정(편집·할일)/메모, 제외=관점·사진·PIN.
+   - **Supabase 11키 왕복 스모크 통과**(UPSERT 201·READ 11키 일치·DELETE 204).
+
+**중요 발견 / 원칙**
+- **검증 스크립트 zsh 함정**: `for k in $KEYS`가 zsh에선 단어분할 안 됨(SH_WORD_SPLIT off) → $k=전체 문자열. 배열 `KEYS=(...)`로 해결. 첫 "11키 read 0"은 앱이 아니라 테스트 버그였음.
+- **babel 블록 검증은 시작 줄 동적 탐지** 필수 — CSS 추가로 줄 밀리면 `sed 402` 하드코딩이 CSS를 JSX로 파싱해 가짜 에러. `grep type="text/babel"`로 시작 줄 찾기.
+- 점검 결론이 "변경 없음"인 게 정상 — 동기화·디자인 기본기가 이미 완성형.
+
+**검증**: esbuild 인라인 JSX 0오류 · function 67 · ReactDOM.createRoot 1 · DAYS 27 · `▾/▸` 글리프 잔재 0 · Supabase 11키 왕복 201/11/204 · index.html 8282줄.
+
+**종료 상태**: 코드 `8df602c` 커밋, **미푸시**. sw.js 무변경 → SW v5 유지.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **잔여 실데이터**: 귀국편 ET6973 코드 재확인(Etihad 보통 EY), 6/18 Eurostar·6/22 BA600·7/3 NAP·7/6·7/8 편명, 가계부 통화·예산.
+- 🔴 **실기기 QA**: 일정 펼침 모션·화살표 회전·**두 기기 동기화**(서로 다른 기기/시크릿창에서 같은 trip code 연결→체크·할일·메모 실시간 반영) 실측.
+- 🟢 동결 후: 사진/메모 Supabase Storage, PWA 예약 D-1 푸시. 특정 화면 깊은 리디자인(홈/일정상세/기록)은 요청 시.
+
+---
+
 ## 2026-06-08 (17차) — 귀국편 확정·토스카나 시간표 + 디자인/UX 점검 디벨롭
 
 **시작 상태**: `origin/main`==`3d40207`, 로컬 13~16차 6커밋 미푸시 ahead. 이번 코드 `c8fff38`(단일 feat), **미푸시**(Tyler 수동).

@@ -185,3 +185,7 @@
 21. **데이터 일괄 변경 후 파생 표시도 grep** — DAYS를 27개로 줄였는데 `Day n/28` 라벨이 따로 살아남았다. 핵심 데이터(개수·날짜·도시)를 바꾸면 그걸 **문자열로 박아 쓴 표시부**(라벨·요약·식비 "N일")까지 별도 grep해야 잔재 0. 배열 길이와 표시 문자열은 자동 동기화되지 않는다.
 22. **하드코딩이라고 다 잔재는 아니다** — 인라인 그림자 7곳이 토큰 미사용이라 통일하려다 보니 전부 **특수목적**(버튼 elevation·sticky 방향그림자[음수 spread]·모달·BottomNav 상단[음수 y])이었다. 범용 토큰(`--shadow-sm/md/lg`)과 값·방향이 다르면 통일=회귀. **점검의 결론이 "변경 없음"일 수 있다** — 억지로 손대지 않는 게 품질.
 23. **sticky 헤더가 있으면 scrollIntoView는 가린다** — 자동 스크롤 타겟이 sticky 헤더 밑에 숨는다. `scrollMarginTop: (headerH + 여유)px`를 타겟에 주면 scrollIntoView가 그만큼 띄워 멈춘다. 펼침 렌더 후 스크롤해야 하므로 `setTimeout` 한 틱 + `block:'start'`.
+24. **zsh는 `for x in $VAR` 단어분할 안 함**(SH_WORD_SPLIT off, bash와 다름) — 공백 구분 문자열을 루프 돌리면 $x=전체 문자열 1회. 배열 `VAR=(...)` 써야 원소별 순회. Supabase 11키 동기화 스모크의 "read 0"은 앱이 아니라 이 테스트 스크립트 버그였다. **검증 실패 시 앱부터 의심 말고 검증 도구부터 점검.**
+25. **babel 블록 검증은 시작 줄을 동적 탐지** — `<style>`에 CSS를 추가하면 `<script type="text/babel">` 시작 줄이 밀린다. `sed 402,$` 하드코딩이면 CSS를 JSX로 파싱해 `Unexpected "."` 가짜 에러. `START=$(grep -n 'type="text/babel"')` 로 매번 시작 줄을 찾아라.
+26. **순서 재배치는 작은 블록을 반대로 옮겨라** — during-trip 홈에서 137줄 Today 카드를 위로 올리는 대신, 그 위의 작은 블록 3개(철학·위젯 ~30줄)를 아래로 내려 같은 결과. 큰 블록 이동은 old_string 매칭 실패·들여쓰기 깨짐 위험이 크다. 단 조건부 렌더(`phase==='during'`)면 다른 phase의 부수 순서변경을 반드시 따져볼 것(여기선 pre에서 NextFlight↔철학 swap 발생, 무해 판단).
+27. **서브에이전트가 결과를 최종 메시지로 안 줄 수 있다** — 이 환경에서 designer·Explore 에이전트가 분석(수십 tool_use)은 하고도 final text는 "분석 완료" 요약만 반환(SendMessage 미지원). 광범위 점검은 에이전트 결과를 신뢰하기보다 **직접 grep으로 근거를 잡는 게 확실**.
