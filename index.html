@@ -269,6 +269,14 @@
       to   { opacity: 1; transform: translateY(0); }
     }
 
+    /* Accordion expand — 일정 카드 펼침 시 부드러운 등장 */
+    .gt-expand { animation: gtExpand 0.28s var(--ease-out); transform-origin: top; }
+    @keyframes gtExpand {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @media (prefers-reduced-motion: reduce) { .gt-expand { animation: none; } }
+
     /* Skeleton shimmer */
     .gt-skel {
       background: linear-gradient(90deg, var(--color-atomic-cream-200) 25%, var(--color-atomic-cream-100) 50%, var(--color-atomic-cream-200) 75%);
@@ -298,9 +306,22 @@
       margin-bottom: 8px;
       letter-spacing: 1px;
     }
-    .loading .dot { display: inline-block; animation: gtPulse 1.4s ease-in-out infinite; }
-    .loading .dot:nth-child(2) { animation-delay: 0.2s; }
-    .loading .dot:nth-child(3) { animation-delay: 0.4s; }
+    /* Gold sweep loading bar — quiet luxury 스타일 */
+    .loading-bar {
+      width: 52px; height: 1px;
+      background: var(--color-atomic-cream-200);
+      position: relative; overflow: hidden;
+      margin: 0 auto;
+    }
+    .loading-bar::after {
+      content: '';
+      position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, #C9A961, transparent);
+      animation: gtSweep 1.8s var(--ease-out) infinite;
+    }
+    @keyframes gtSweep { from { left: -100%; } to { left: 100%; } }
+    /* legacy pulse (unused but kept for safety) */
+    .loading .dot { display: none; }
     @keyframes gtPulse { 0%, 80%, 100% { opacity: 0.3; } 40% { opacity: 1; } }
     @keyframes gtMapDraw { to { stroke-dashoffset: 0; } }
     .gt-route { stroke-dasharray: 100; stroke-dashoffset: 100; animation: gtMapDraw 1.8s var(--ease) 0.25s forwards; }
@@ -377,6 +398,15 @@
        opacity는 인라인에서 dx에 따라 페이드(밀수록 사라짐), 여기선 그 변화만 부드럽게. */
     .gt-swipe-handle { transition: opacity 0.2s var(--ease-out); }
 
+    /* Tap feedback for <a> cards (Recommendations, DayRecs, LocalEats 등) */
+    .gt-tap-card {
+      transition: transform 0.12s var(--ease), box-shadow 0.18s var(--ease), opacity 0.12s var(--ease);
+    }
+    .gt-tap-card:active {
+      transform: scale(0.97);
+      opacity: 0.9;
+    }
+
     /* Reduce motion respect */
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
@@ -395,7 +425,7 @@
     <div class="loading">
       <div class="logo">Grand Tour</div>
       <div style="font-size: 10px; letter-spacing: 2.5px; color: var(--color-text-muted); margin-bottom: 28px;">TAEHYEON · JUYEON · 2026</div>
-      <div><span class="dot">●</span> <span class="dot">●</span> <span class="dot">●</span></div>
+      <div class="loading-bar"></div>
     </div>
   </div>
   <script type="text/babel" data-presets="react">
@@ -2475,6 +2505,7 @@ function Recommendations({ chapterId, chapter }) {
             href={mapsUrl(`${item.t} ${chapter.country}`)}
             target="_blank"
             rel="noopener noreferrer"
+            className="gt-tap-card"
             style={{
               display: 'block',
               padding: '12px',
@@ -2656,6 +2687,7 @@ function DayRecs({ day, chapter }) {
             href={mapsUrl(r.q || `${r.t} ${chapter.search || chapter.name}`)}
             target="_blank"
             rel="noopener noreferrer"
+            className="gt-tap-card"
             style={{ display: 'block', padding: '12px', background: chapter.color, borderRadius: 'var(--radius-8)', textDecoration: 'none', color: 'inherit' }}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
@@ -3784,7 +3816,7 @@ function EmergencyContacts() {
         background: 'transparent', border: 'none', padding: 0, cursor: 'pointer',
       }}>
         <SectionTitle>🆘 비상 연락처</SectionTitle>
-        <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)' }}>{open ? '▾' : '▸'}</span>
+        <span style={{ display: 'inline-block', fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', transform: open ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s var(--ease-out)' }}>›</span>
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
@@ -4012,7 +4044,7 @@ function HeroCountdown({ status, setView }) {
             fontSize: '50px', fontWeight: 500, lineHeight: 1,
             letterSpacing: 'var(--track-tight)', color: 'var(--ink-strong)', fontStyle: 'italic',
           }}>
-            D—{status.dDay}
+            D—<span className="gt-num">{status.dDay}</span>
           </div>
           <div style={{ marginTop: '8px' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', fontWeight: 600, letterSpacing: 'var(--track-label)' }}>
@@ -4353,7 +4385,7 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                       }} />
                     );
                   })}
-                  <span style={{ marginLeft: '8px', fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}>{isOpen ? '▾' : '▸'}</span>
+                  <span style={{ display: 'inline-block', marginLeft: '8px', fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', transition: 'transform 0.2s var(--ease-out)' }}>›</span>
                 </div>
               </button>
 
@@ -4799,9 +4831,15 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
           textAlign: 'center',
           boxShadow: 'var(--shadow-sm)',
         }}>
-          <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.65, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
-            "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
-            앞으로 무엇을 할지 결정하기 위해 떠난다."
+          <div style={{
+            borderTop: '1px solid rgba(201,169,97,0.35)',
+            borderBottom: '1px solid rgba(201,169,97,0.35)',
+            padding: 'var(--space-4) 0',
+          }}>
+            <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.9, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
+              "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
+              앞으로 무엇을 할지 결정하기 위해 떠난다."
+            </div>
           </div>
         </div>
       )}
@@ -5170,15 +5208,23 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
                   {day.hl}
                 </div>
               </div>
-              <div style={{ fontSize: 'var(--type-body)', color: 'var(--color-text-muted)', display: 'flex', gap: '4px' }}>
+              <div style={{ fontSize: 'var(--type-body)', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                 {hasPhoto && '📸'}
                 {hasNote && '✏️'}
-                <span>{isOpen ? '▾' : '▸'}</span>
+                <span style={{
+                  display: 'inline-block',
+                  fontSize: '14px',
+                  fontWeight: 500,
+                  lineHeight: 1,
+                  color: 'var(--color-text-muted)',
+                  transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
+                  transition: 'transform 0.2s var(--ease-out)',
+                }}>›</span>
               </div>
             </button>
 
             {isOpen && (
-              <div style={{ padding: '0 16px 16px', borderTop: '1px solid var(--color-border-soft)' }}>
+              <div className="gt-expand" style={{ padding: '0 16px 16px', borderTop: '1px solid var(--color-border-soft)' }}>
                 <div style={{ paddingTop: '12px' }}>
                   {/* Chapter intro — first day of each chapter only */}
                   {DAYS.find(d => d.c === day.c)?.n === day.n && <ChapterIntro chapter={ch} />}
@@ -7807,8 +7853,8 @@ function WeatherWidget() {
                   )}
                 </div>
                 <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span style={{ fontSize: 'var(--type-h3)', fontFamily: 'var(--font-sans)', color: 'var(--color-text-strong)', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{max}°</span>
-                  <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginLeft: '5px' }}>{min}°</span>
+                  <span style={{ fontSize: 'var(--type-h3)', fontFamily: 'var(--font-sans)', color: 'var(--color-text-strong)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', fontFeatureSettings: "'tnum' on" }}>{max}°</span>
+                  <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginLeft: '5px', fontVariantNumeric: 'tabular-nums', fontFeatureSettings: "'tnum' on" }}>{min}°</span>
                 </div>
               </div>
             );
@@ -7924,6 +7970,7 @@ function LocalEats() {
                 href={mapsUrl(`${e.n} ${c.search || c.name}`)}
                 target="_blank"
                 rel="noopener noreferrer"
+                className="gt-tap-card"
                 style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-sm)', textDecoration: 'none', color: 'inherit', border: '1px solid var(--color-border-soft)' }}
               >
                 <span style={{ fontSize: 'var(--type-h3)', flexShrink: 0 }}>{e.t}</span>
@@ -8063,7 +8110,7 @@ function Card({ children, onClick, style }) {
 
 function SectionTitle({ children }) {
   return (
-    <div className="gt-eyebrow" style={{ marginBottom: 'var(--space-3)' }}>
+    <div className="gt-section-title" style={{ marginBottom: 'var(--space-3)' }}>
       {children}
     </div>
   );
@@ -8111,7 +8158,7 @@ function SubTab({ active, onClick, children }) {
       fontFamily: 'inherit',
       whiteSpace: 'nowrap',
       flexShrink: 0,
-      boxShadow: active ? '0 2px 8px rgba(27,42,74,0.18)' : 'none',
+      boxShadow: active ? '0 2px 8px rgba(201,169,97,0.22)' : 'none',
       transition: 'background 0.2s var(--ease-out), color 0.2s, box-shadow 0.2s, transform 0.1s',
     }}>
       {children}
@@ -8150,13 +8197,14 @@ const btnLightStyle = {
 
 // Korean falls through Cormorant (no Hangul glyphs) -> Pretendard.
 // Latin renders in Cormorant for the luxury serif feel.
+// weight 700: Cormorant 500과 시각적으로 비슷하지만 Pretendard 폴백 시 충분한 무게감 확보.
 const pageTitleStyle = {
   fontFamily: "'Cormorant Garamond', 'Pretendard Variable', 'Pretendard', Georgia, 'Apple SD Gothic Neo', sans-serif",
   fontSize: 'var(--type-display)',
-  fontWeight: 500,
+  fontWeight: 700,
   color: 'var(--color-text-strong)',
   marginBottom: 'var(--space-1)',
-  letterSpacing: '-0.01em',
+  letterSpacing: '-0.02em',
   lineHeight: 1.15,
 };
 
