@@ -5,6 +5,40 @@
 
 ---
 
+## 2026-06-08 (16차) — 실예약 전수 반영 + 출발편 확정 + UX(스크롤·일정할일·동기화) + 발도르차 드라이브
+
+**시작 상태**: `origin/main`==`3d40207`, 로컬 13~15차 4커밋 미푸시 ahead. 이번 세션 코드는 `64af8c4`(단일 feat)로 커밋, **미푸시**(Tyler 수동).
+
+**한 일** (index.html, 커밋 `64af8c4`)
+1. **출발편 확정** (Cathay e-ticket): CX411 ICN 15:10→HKG 18:00 · CX261 HKG 00:05→CDG 07:50(16일), 비즈니스 12H/14G. FLIGHTS 2편 분리·day1·day2 moves·체크리스트 c9 ✅(urgent off).
+2. **호텔/항공/픽업 실예약 반영**: 호텔 3곳 예약번호·금액(La Cort My Dollhouse·Palazzo Talamo·NOŪS, NOŪS는 새 번호로 교체). 항공 2건 **정정**(7/3 FCO→ATH→JTR 환승 → **NAP→JTR 직항**, 7/8 ATH→DXB → **ATH→AUH**). 공항픽업 4건(CDG 6/16·JTR 7/3·ATH 7/6·AUH 7/8) FLIGHTS transfer로 추가.
+3. **돌로미티 호텔 변경**: X ALP → **La Cort My Dollhouse**(7곳).
+4. **6/30 로마→포지타노**: 프라이빗 트랜스퍼 → **Italo 9975(예약 GYGI5F·€45.80) + Welcome Pickups(€155)**, 총 €200.80.
+5. **렌터카 로마 반납 확정**(Tyler 주소 제공): Enterprise **베네치아 마르코폴로 공항 픽업 → 로마 Via Sardegna 25/Cavalieri 반납**. → 6/27 피렌체→로마를 **자가운전(발도르차 경유)**으로, **Frecciarossa 기차(a4) 삭제**, Hertz→Enterprise 정정(2곳).
+6. **체크리스트 강화**: 영국 ETA(a9)·Alpe di Siusi 차량통제/주차(t13)·피렌체 ZTL(a10)·피렌체 주차(a12)·로마 ZTL 무관확인(a11, Cavalieri=Monte Mario ZTL 밖). 입장 3건(Duomo/Acropolis/Borghese) urgent 승격. 링크 점검(Burj Khalifa 404→`/en/`, ETA→`/eta`).
+7. **출발 준비 요약 개선**: 6개 잘림 제거 → **예약·신청(외부링크)/확인·준비(직접)** 2분할 + **여행 사용일순 정렬**(`tripDateKey`, 날짜없는 행정 최우선).
+8. **UX 심리스 네비**: `setView` 래핑 + `useLayoutEffect`로 **탭별 스크롤 위치 기억·복원**(첫 진입 상단, 재진입 이어보기). 기존엔 리셋 로직 없어 중간부터 보이던 버그 해소.
+9. **일정 '내 활동·할일'**(`day_items`): 일정 카드에 자유 할일 추가/체크/삭제(localStorage) + **Supabase 실시간 공유**(SYNC_KEYS·onRemote map 합류, 공유 안내 문구 갱신).
+10. **6/27 발도르차 드라이브**: 부온콘벤토·피엔차(Corsignano)·San Biagio(몬테풀치아노) DAY_RECS[13] 재구성 + day13 moves/hl/food/int(L→M). **DayRecs `r.q` 항목별 지도검색어** 추가(타지역 스팟이 챕터명으로 오검색되던 버그 방지).
+
+**중요 발견 / 원칙**
+- **실예약이 기존 가정을 뒤집음**: 7/3 환승→직항, 7/8 두바이→아부다비, 피렌체반납→로마반납. 데이터 받으면 일정·항공·체크리스트·잔재(Frecciarossa·Hertz·환승편)를 grep 전수 추적.
+- **새 state는 동기화 배선 누락 점검**: `SYNC_KEYS` + onRemote `map` **둘 다** 추가해야 공유됨. 실작동은 Supabase REST 왕복 스모크(201/200/204)로 검증.
+- **항공사 Etihad(귀국편)는 여전히 추정**. 출발편만 Cathay 확정.
+- 토스카나 블로그(blog.naver.com)는 Claude Code fetch 차단 → 사용자가 준 구글맵 3곳으로 코스 직접 설계(발도르차 남하 동선).
+
+**검증**: esbuild 인라인 JSX 0오류 · function 67 · ReactDOM.createRoot 1 · DAYS 27 · index.html 8187줄 · Supabase day_items 왕복 스모크 201/200/204.
+
+**종료 상태**: 코드 `64af8c4` 커밋, **미푸시**. sw.js 무변경 → SW v5 유지. (브라우저 자동 open 중단 — Tyler 직접 새로고침)
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **항공사·잔여 실데이터**: 귀국편 항공사 확정(Etihad 추정), 6/18 Eurostar·6/22 BA600·7/3 NAP편명·7/6·7/8 항공편명·가계부 통화·예산.
+- 🔴 **실기기 QA**: 출발편 확정 표시·스크롤 복원·일정 할일 추가/동기화(두 기기)·발도르차 추천 지도링크·예약요약 2분할.
+- 🟡 **Frecciarossa 기차표 이미 결제했다면** 환불 확인(일정은 운전으로 정리됨). 토스카나 점심 맛집 구체화·사이프러스 포토스팟은 선택 확장.
+- 🟢 동결 후: 사진/메모 Supabase Storage, PWA 예약 D-1 푸시.
+
+---
+
 ## 2026-06-07 (15차) — 귀국편 직항 확정·26박27일 재정리 + 영국 ETA·출발편 체크리스트
 
 **시작 상태**: `origin/main`==`3d40207`, 로컬 13·14차 2커밋(`a4979c2`·`df30c88`) 미푸시 ahead 상태에서 이어 작업.
