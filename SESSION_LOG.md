@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-06-09 (23차) — 여행 중(during) 실사용 강화: 오늘의 현지 도구
+
+**시작 상태**: `origin/main`==`2617430`. 로컬 7커밋 미푸시(19~22차)에서 이어 작업. 사용자 "계속 디벨롭" → plan mode 협의 후 **"여행 중 실사용 강화"** 방향 선택·승인. 탐색 결론: 여행 중 필요한 정보(환율·현지꿀팁·교통·드레스코드)는 이미 다 있으나 **여정 탭 12서브탭에 흩어져** 홈에서 닿으려면 2~3탭 필요 → "지금 이 도시" 컨텍스트로 홈에 모음.
+
+**한 일** (index.html, 커밋 `330439a`, 전부 기존 데이터 재사용·during 한정·추가 전용)
+1. **D1 딥링크 인프라**: `pendingLogiSub` 모듈변수(`pendingDayFocus` 패턴 복제) → `Logistics` mount 시 초기 subTab 1회 소비(`useState(pendingLogiSub ?? 'map')` + `useEffect` clear). Home `goLogi(sub)` 헬퍼(햅틱+`setView('logi')`).
+2. **D2 '🧭 오늘의 현지 도구' 카드**(신규 `LocalToolkit`, Today 카드 직후·`todayChapter.coords` 가드로 서막/귀국 제외): 2×2 탭 가능 미니셀 — ① 💱 통화(오늘 나라 1단위→KRW, `fx_cache` 읽기 재사용·오프라인 캐시 동작, 없으면 새로고침 유도)→fx ② 🔌 현지꿀팁(LOCAL_TIPS 전압 요약, `flag` 조인)→tips ③ 🚕 교통(CITY_TRANSIT 택시앱, `name` 조인)→flights ④ 👗 드레스코드(예약 🌟인 날)/🌤️ 날씨(그 외)→dress/weather. 신규 상수는 통화맵 `TOOLKIT_CURRENCY` 1개뿐.
+3. **D3 비상연락처 컨텍스트화**: `EmergencyContacts({ todayFlag })` — 오늘 위치 나라 대사관을 최상단+`· 오늘 위치` 배지+warning-bg(라벨이 국기로 시작 → flag 매칭, 이탈리아/그리스 하위도시도 정확). pre/post는 `todayFlag=null`로 원순서.
+4. **D4 클린업**: Today 카드 `nowPhase`(아침/오후/저녁) 중복 계산 2곳(지금포커스·동선타임라인) → Home 상단 1회 공용 계산. 동작 동일.
+
+**중요 발견 / 원칙**
+- 여행 중 정보는 "전부 있느냐"보다 **"지금 맥락에서 0~1탭에 닿느냐"** — 데이터는 그대로 두고 컨텍스트 집약만으로 실사용 가치↑(신규 데이터 0).
+- 딥링크는 기존 `pendingDayFocus` 모듈변수 패턴이 검증돼 있어 그대로 복제(새 prop 배선 불필요, 회귀 위험↓).
+- 조인 키는 **flag(꿀팁)·도시명(교통)·country(통화)** — 전부 CHAPTERS에 이미 있어 정확 일치(9도시 검증).
+- 환율은 네트워크 미추가, `fx_cache`만 읽음 → **오프라인서도 마지막 캐시로 동작**(비행기모드 안전), 캐시 없으면 계산기로 유도.
+
+**검증**: esbuild 인라인 JSX **0오류**(556KB 산출) · top-level `function` **69**(+LocalToolkit) · `ReactDOM.createRoot` **1** · `<>` Fragment **0** · index.html **8450줄** · 딥링크 타깃 5개(fx·tips·flights·dress·weather) Logistics 분기 존재 · CITY_TRANSIT 9도시=챕터 9도시명 일치 · LOCAL_TIPS flag 5 · 통화맵 5개국 커버 · `hour` 잔재 0. (헤드리스 Chrome 금지 → 런타임 시각검증은 Tyler 실기기.)
+
+**종료 상태**: 코드 `330439a`(23차 1of2) + 본 docs(2of2) 커밋. `origin/main`==`2617430` 기준 **로컬 9커밋 ahead 미푸시**(Tyler 수동 푸시 대기). sw.js 무변경 → **SW v5 유지**. 브라우저 자동 open 안 함.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실데이터**(Tyler): 귀국편 ET6973 코드 재확인, 6/18·6/22·7/3·7/6·7/8 편명, 가계부 통화·예산.
+- 🔴 **실기기 QA**: during phase는 6/15 이후(또는 TRIP_START 임시 당김)에 확인 — ① 오늘 도시 기준 4개 셀 값 정확 ② 각 셀 탭 → 여정 해당 서브탭 직행 ③ 비상연락처 오늘 나라 최상단·배지 ④ 시간대별 지금 포커스 무회귀 ⑤ 비행기모드서 통화 셀 캐시 폴백. (pre 현재는 LocalToolkit 미표시가 정상)
+- 🟢 동결 후: 사진/메모 Supabase Storage, Today 카드 본문 깊은 리디자인(실기기 확인 후). PWA 백그라운드 푸시는 서버리스라 구조적 불가(현행 '앱 열 때 알림' 유지).
+
+---
+
 ## 2026-06-09 (22차) — 기기 연동 UX 개선 + 헤더 동기화 상태 배지
 
 **시작 상태**: `origin/main`==`2617430`(19차 docs). 로컬 5커밋 미푸시(`1ed8137`·`801edae`·`cfd2e07` 온보딩·`cbcff35` 여정그룹·`65fc142` 20·21차 docs)에서 이어 작업. 동기화 기능은 "친구 초대" 프레이밍이었으나 실사용 1순위는 **내 폰↔PC 등 본인 다기기 연동**이라 UX를 그쪽으로 재정렬.
