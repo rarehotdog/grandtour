@@ -6314,55 +6314,55 @@ function TranslateWidget() {
 function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
   const [subTab, setSubTab] = useState('map');
 
-  const SUBTABS = [
-    { id: 'map', icon: '🗺️', label: '지도' },
-    { id: 'hotels', icon: '🏨', label: '호텔' },
-    { id: 'flights', icon: '✈️', label: '항공' },
-    { id: 'fx', icon: '💱', label: '환율' },
-    { id: 'weather', icon: '🌤️', label: '날씨' },
-    { id: 'food', icon: '🍽️', label: '미식' },
-    { id: 'costs', icon: '💰', label: '비용' },
-    { id: 'expense', icon: '🧾', label: '가계부' },
-    { id: 'translate', icon: '🌐', label: '번역' },
-    { id: 'spotify', icon: '🎵', label: '음악' },
-    { id: 'dress', icon: '👗', label: '복장' },
-    { id: 'tips', icon: '💡', label: '꿀팁' },
+  const TAB_META = {
+    map: { icon: '🗺️', label: '지도' }, hotels: { icon: '🏨', label: '호텔' }, flights: { icon: '✈️', label: '항공' },
+    fx: { icon: '💱', label: '환율' }, costs: { icon: '💰', label: '비용' }, expense: { icon: '🧾', label: '가계부' },
+    weather: { icon: '🌤️', label: '날씨' }, food: { icon: '🍽️', label: '미식' }, translate: { icon: '🌐', label: '번역' },
+    dress: { icon: '👗', label: '복장' }, tips: { icon: '💡', label: '꿀팁' }, spotify: { icon: '🎵', label: '음악' },
+  };
+  // 12개 평면 그리드 → 3그룹으로 묶어 위계·스캔성↑ (기능 동일)
+  const SUBTAB_GROUPS = [
+    { label: '이동 · 숙박', ids: ['map', 'flights', 'hotels'] },
+    { label: '돈 · 예산', ids: ['fx', 'costs', 'expense'] },
+    { label: '현지 생활', ids: ['weather', 'food', 'translate', 'dress', 'tips', 'spotify'] },
   ];
 
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>🧭 여정 정보</h2>
 
-      {/* Sub-tab grid — all options visible at once (no horizontal scroll) */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(4, 1fr)',
-        gap: '8px',
-        marginTop: '16px',
-        marginBottom: '20px',
-      }}>
-        {SUBTABS.map(t => {
-          const active = subTab === t.id;
-          return (
-            <button
-              key={t.id}
-              className="gt-chip"
-              onClick={() => { setSubTab(t.id); if (navigator.vibrate) navigator.vibrate(8); }}
-              style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
-                padding: '11px 4px',
-                background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
-                color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
-                border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
-                borderRadius: 'var(--radius-md)',
-                cursor: 'pointer', fontFamily: 'inherit',
-              }}
-            >
-              <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
-              <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: '0.2px' }}>{t.label}</span>
-            </button>
-          );
-        })}
+      {/* Sub-tab — 3그룹(이동·숙박 / 돈·예산 / 현지 생활)으로 묶어 표시 */}
+      <div style={{ marginTop: '16px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+        {SUBTAB_GROUPS.map(g => (
+          <div key={g.label}>
+            <div className="gt-eyebrow" style={{ marginBottom: '8px' }}>{g.label}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+              {g.ids.map(id => {
+                const t = TAB_META[id];
+                const active = subTab === id;
+                return (
+                  <button
+                    key={id}
+                    className="gt-chip"
+                    onClick={() => { setSubTab(id); if (navigator.vibrate) navigator.vibrate(8); }}
+                    style={{
+                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
+                      padding: '11px 4px',
+                      background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
+                      color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
+                      border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
+                      borderRadius: 'var(--radius-md)',
+                      cursor: 'pointer', fontFamily: 'inherit',
+                    }}
+                  >
+                    <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
+                    <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: '0.2px' }}>{t.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </div>
 
       {subTab === 'map' && <MapView />}
