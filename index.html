@@ -1434,6 +1434,8 @@ const getRelativeTime = (iso) => {
 
 let pendingDayFocus = null; // 홈 챕터 진행 → 일정 진입 시 펼칠 {chId,dayN}. Days mount 시 1회 소비.
 let pendingLogiSub = null; // 홈 현지도구 → 여정 진입 시 열 서브탭 id. Logistics mount 시 1회 소비.
+let lastLogiSub = 'map';   // 여정 탭 마지막 서브탭 — 재진입 시 위치 복원(딥링크 pendingLogiSub 우선).
+let lastPrivateSub = 'notes'; // 기록 탭 마지막 서브탭(notes/outputs/docs) — 재진입 시 복원.
 const getCurrentStatus = () => {
   const now = new Date();
   if (now < TRIP_START) {
@@ -1525,6 +1527,36 @@ function Onboarding({ onClose, setView }) {
       </div>
     </div>
   );
+}
+
+// =================== NATIVE BACK / SCROLL LOCK HOOKS ===================
+// 오버레이/서브뷰가 열리면 history에 sentinel 1개 push → 하드웨어/제스처 뒤로가기가 앱을 나가지 않고
+// 그 레이어만 닫게 한다(LIFO). UI 버튼으로 닫히면 cleanup이 남은 sentinel 1개를 정확히 소비.
+// close는 ref로 캡처 → effect 의존성은 [isOpen]만(재푸시 방지). close는 멱등이어야 함.
+function useBackClose(isOpen, close) {
+  const cb = React.useRef(close);
+  cb.current = close;
+  React.useEffect(() => {
+    if (!isOpen) return;
+    window.history.pushState({ gtOverlay: true }, '');
+    const onPop = () => cb.current();
+    window.addEventListener('popstate', onPop);
+    return () => {
+      window.removeEventListener('popstate', onPop);
+      // back이 아니라 UI로 닫힌 경우: sentinel이 아직 top이면 1개 소비
+      if (window.history.state && window.history.state.gtOverlay) window.history.back();
+    };
+  }, [isOpen]);
+}
+
+// 모달 열릴 때 배경 바디 스크롤 잠금(최소·iOS 안전 버전). 닫히면 이전 값 복원.
+function useScrollLock(isOpen) {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = prev; };
+  }, [isOpen]);
 }
 
 // =================== APP ===================
@@ -1987,6 +2019,16 @@ function App() {
     setView('private');
     alert('가져왔어요! 이제 내 앱에서 바로 편집할 수 있어요 🎉');
   };
+
+  // 네이티브 뒤로가기 — App 소유 레이어(온보딩 > fork preview > 비-home 탭)를 단일 sentinel로 닫음.
+  // 단일화 이유: 온보딩→탭 같은 '레이어 연속 열림'은 isOpen이 true로 유지돼 재푸시/비동기 back 충돌이 없음.
+  // 닫기 우선순위는 현재 상태로 분기(온보딩 먼저, 그 외는 홈으로). 라이트박스(기록 탭 위)는 별도 sentinel로 LIFO.
+  const appLayerOpen = showOnboard || view === 'forkpreview' || view !== 'home';
+  useBackClose(appLayerOpen, () => {
+    if (showOnboard) { closeOnboard(); return; }
+    setView('home');
+  });
+  useScrollLock(showOnboard);
 
   return (
     <div style={{
@@ -2774,7 +2816,8 @@ function DayRecs({ day, chapter }) {
 }
 
 function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutput, saveOutputContent, edits, onForkOpen }) {
-  const [view, setView] = useState('notes'); // 'notes' or 'outputs'
+  const [view, setView] = useState(lastPrivateSub); // 'notes' | 'outputs' | 'docs' — 마지막 위치 복원
+  useEffect(() => { lastPrivateSub = view; }, [view]);
 
   const writtenCount = Object.keys(notes).filter(k => notes[k]?.content).length;
   const outputDone = Object.values(outputs).filter(o => o.done).length;
@@ -3121,6 +3164,9 @@ function DocumentsInner() {
   const [lightbox, setLightbox] = useState(null);
   const load = async () => setDocs(await idb.all('documents'));
   useEffect(() => { load(); }, []);
+  // 문서 사진 뷰어: 뒤로가기로 닫기 + 배경 스크롤 락
+  useBackClose(!!lightbox, () => setLightbox(null));
+  useScrollLock(!!lightbox);
 
   const onPick = (cat) => async (e) => {
     const files = Array.from(e.target.files || []);
@@ -6401,9 +6447,10 @@ function TranslateWidget() {
 }
 
 function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
-  // 홈 '오늘의 현지 도구'에서 특정 서브탭으로 진입한 경우 그 탭으로 시작(모듈 변수 1회 소비)
-  const [subTab, setSubTab] = useState(pendingLogiSub ?? 'map');
+  // 진입 서브탭: 홈 현지도구 딥링크(pendingLogiSub) 우선, 없으면 마지막 위치(lastLogiSub) 복원
+  const [subTab, setSubTab] = useState(pendingLogiSub ?? lastLogiSub);
   useEffect(() => { pendingLogiSub = null; }, []);
+  useEffect(() => { lastLogiSub = subTab; }, [subTab]);
 
   const TAB_META = {
     map: { icon: '🗺️', label: '지도' }, hotels: { icon: '🏨', label: '호텔' }, flights: { icon: '✈️', label: '항공' },
