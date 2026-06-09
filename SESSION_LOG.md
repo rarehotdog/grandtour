@@ -5,6 +5,32 @@
 
 ---
 
+## 2026-06-09 (24차) — UX 고도화: 네이티브 뒤로가기 풀세트
+
+**시작 상태**: `origin/main`==`2617430`. 로컬 9커밋 미푸시(19~23차)에서 이어 작업. 사용자 "UX 관점 고도화" → plan mode 협의 후 **"네이티브 뒤로가기 풀세트"** 선택·승인. 탐색 결론: 탭 레벨 스크롤 복원(`scrollPos`)은 우아하나 ① 모달·서브뷰에서 하드웨어/제스처 뒤로가기가 앱을 나가버림 ② 모달 뒤 배경 스크롤 ③ 여정·기록 서브탭 재진입 시 리셋.
+
+**한 일** (index.html, 커밋 `4d985f7`, 전부 추가 전용·기존 닫기 affordance 무손상)
+1. **U1 재사용 훅 2개**(App 앞): `useBackClose(isOpen, close)` — 레이어 열리면 `history.pushState` sentinel 1개, `popstate` 시 `close()`. UI로 닫히면 cleanup이 sentinel 1개 정확히 소비. `close`는 ref 캡처(의존성 `[isOpen]`)·멱등. `useScrollLock(isOpen)` — `body.overflow:hidden` 토글.
+2. **U2 적용**: App은 **온보딩 > fork preview > 비-home 탭을 단일 sentinel 컨트롤러**(`appLayerOpen`)로 묶어 back=홈. DocumentsInner 문서 사진 뷰어는 별도 sentinel(기록 탭 위 LIFO 스택). + `useScrollLock`(온보딩·라이트박스).
+3. **U3 서브탭 위치 기억**: `lastLogiSub`·`lastPrivateSub` 모듈변수 → 여정·기록 재진입 시 마지막 서브탭 복원(홈 현지도구 딥링크 `pendingLogiSub` 우선).
+
+**중요 발견 / 원칙**
+- **비동기 `history.back()` 충돌**: 처음엔 레이어별 독립 `useBackClose` 4개로 배선했으나, 온보딩→여정('둘러보기') 같이 **한 레이어를 닫으며 다른 레이어를 같은 커밋에서 여는** 경로에서, 온보딩 cleanup의 비동기 back()이 새로 push된 탭 sentinel을 팝→의도와 달리 홈으로 튕기는 버그를 직접 트레이스로 발견. → **App 소유 레이어를 단일 컨트롤러로 통합**해 해결(연속 열림은 `isOpen` 불변 → 재푸시·back 없음). 닫기 우선순위는 현재 상태로 분기.
+- 라이트박스는 기록 탭(비-home) 위에 열리므로 탭 sentinel(1)+라이트박스 sentinel(1)=2 → back① 라이트박스, back② 홈으로 네이티브와 동일 LIFO.
+- 기존 history는 `replaceState`(URL 정리)만 → pushState sentinel과 무충돌(`?j=` fork도 push가 replaceState 뒤라 안전).
+- **한계(정직)**: iOS standalone(설치형) PWA는 시스템 백 제스처가 없어 history/popstate가 **Android·데스크톱·iOS Safari 탭**에서만 발동. 설치형 iOS는 기존 ×/백드롭 닫기 유지(이번 변경 무해).
+
+**검증**: esbuild 인라인 JSX **0오류**(557KB) · top-level `function` **71**(+useBackClose·useScrollLock) · `ReactDOM.createRoot` **1** · `<>` Fragment **0** · index.html **8497줄** · `useBackClose`/`useScrollLock` 각 3(정의1+호출2) · `gtOverlay` sentinel · `lastLogiSub`/`lastPrivateSub` 배선. (헤드리스 Chrome 금지 → 런타임 시각·제스처 검증은 Tyler 실기기.)
+
+**종료 상태**: 코드 `4d985f7`(24차 1of2) + 본 docs(2of2) 커밋. `origin/main`==`2617430` 기준 **로컬 11커밋 ahead 미푸시**(Tyler 수동 푸시 대기). sw.js 무변경 → **SW v5 유지**. 브라우저 자동 open 안 함.
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실데이터**(Tyler): 귀국편 ET6973 코드 재확인, 6/18·6/22·7/3·7/6·7/8 편명, 가계부 통화·예산.
+- 🔴 **실기기 QA** — 뒤로가기 매트릭스(**Android/데스크톱/Safari탭** 우선): ① 온보딩 → back → 닫힘(앱 안 나감) ② 문서 사진 뷰어 → back → 닫힘 ③ 기록서 사진 뷰어 → back×2 → 홈 ④ 여정/일정/체크/기록 → back → 홈 ⑤ fork(`?j=`) → back → 홈 ⑥ **이중 back 루프·조기 이탈 없음** ⑦ 모달 열릴 때 배경 스크롤 잠김 ⑧ 여정·기록 재진입 시 마지막 서브탭 유지 ⑨ iOS 설치형은 × 닫기 정상.
+- 🟢 동결 후: 사진/메모 Supabase Storage, Today 카드 본문 깊은 리디자인. (PWA 백그라운드 푸시는 서버리스라 구조적 불가.)
+
+---
+
 ## 2026-06-09 (23차) — 여행 중(during) 실사용 강화: 오늘의 현지 도구
 
 **시작 상태**: `origin/main`==`2617430`. 로컬 7커밋 미푸시(19~22차)에서 이어 작업. 사용자 "계속 디벨롭" → plan mode 협의 후 **"여행 중 실사용 강화"** 방향 선택·승인. 탐색 결론: 여행 중 필요한 정보(환율·현지꿀팁·교통·드레스코드)는 이미 다 있으나 **여정 탭 12서브탭에 흩어져** 홈에서 닿으려면 2~3탭 필요 → "지금 이 도시" 컨텍스트로 홈에 모음.
