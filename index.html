@@ -6468,49 +6468,38 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
     weather: { icon: '🌤️', label: '날씨' }, food: { icon: '🍽️', label: '미식' }, translate: { icon: '🌐', label: '번역' },
     dress: { icon: '👗', label: '복장' }, tips: { icon: '💡', label: '꿀팁' }, spotify: { icon: '🎵', label: '음악' },
   };
-  // 12개 평면 그리드 → 3그룹으로 묶어 위계·스캔성↑ (기능 동일)
-  const SUBTAB_GROUPS = [
-    { label: '이동 · 숙박', ids: ['map', 'flights', 'hotels'] },
-    { label: '돈 · 예산', ids: ['fx', 'costs', 'expense'] },
-    { label: '현지 생활', ids: ['weather', 'food', 'translate', 'dress', 'tips', 'spotify'] },
-  ];
+  // 12개 평면 아이콘 그리드(4열×3행) — 그룹 구분 제거, 한눈에 보고 탭 1번에 이동
+  const TAB_ORDER = ['map', 'flights', 'hotels', 'fx', 'costs', 'expense', 'weather', 'food', 'translate', 'dress', 'tips', 'spotify'];
 
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>🧭 여정 정보</h2>
 
-      {/* Sub-tab — 3그룹(이동·숙박 / 돈·예산 / 현지 생활)으로 묶어 표시 */}
-      <div style={{ marginTop: '16px', marginBottom: '20px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-        {SUBTAB_GROUPS.map(g => (
-          <div key={g.label}>
-            <div className="gt-eyebrow" style={{ marginBottom: '8px' }}>{g.label}</div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
-              {g.ids.map(id => {
-                const t = TAB_META[id];
-                const active = subTab === id;
-                return (
-                  <button
-                    key={id}
-                    className="gt-chip"
-                    onClick={() => { setSubTab(id); if (navigator.vibrate) navigator.vibrate(8); }}
-                    style={{
-                      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
-                      padding: '11px 4px',
-                      background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
-                      color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
-                      border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
-                      borderRadius: 'var(--radius-md)',
-                      cursor: 'pointer', fontFamily: 'inherit',
-                    }}
-                  >
-                    <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
-                    <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: 'var(--track-px-fine)' }}>{t.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+      {/* Sub-tab — 12개 평면 아이콘 그리드(4열) */}
+      <div style={{ marginTop: '16px', marginBottom: '20px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+        {TAB_ORDER.map(id => {
+          const t = TAB_META[id];
+          const active = subTab === id;
+          return (
+            <button
+              key={id}
+              className="gt-chip"
+              onClick={() => { setSubTab(id); if (navigator.vibrate) navigator.vibrate(8); }}
+              style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '5px',
+                padding: '11px 4px',
+                background: active ? 'var(--color-bg-inverse)' : 'var(--color-bg-surface)',
+                color: active ? 'var(--color-text-inverse)' : 'var(--color-text-soft)',
+                border: '1px solid ' + (active ? 'var(--color-bg-inverse)' : 'var(--color-border-default)'),
+                borderRadius: 'var(--radius-md)',
+                cursor: 'pointer', fontFamily: 'inherit',
+              }}
+            >
+              <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
+              <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: 'var(--track-px-fine)' }}>{t.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       {subTab === 'map' && <MapView />}
@@ -6755,7 +6744,7 @@ function MapView() {
               <g key={p.id} style={{ cursor: 'pointer' }} onClick={() => focusCity(p)}>
                 <circle cx={sp.x} cy={sp.y} r={sel ? 15 : 11} fill="#FFF" stroke={p.accent} strokeWidth={sel ? 3.5 : 2.5} />
                 <text x={sp.x} y={sp.y + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill={p.accent}>{p.order}</text>
-                {showLabel && <text x={sp.x} y={sp.y - 18} textAnchor="middle" fontSize="15">{p.flag}</text>}
+                {/* 국기 이모지는 SVG <text>에서 국가코드 알파벳(FR/GB/IT…)으로 깨져 제거 — 아래 도시명이 라벨 역할 */}
                 {showLabel && (
                   <text x={sp.x} y={sp.y + 26} textAnchor="middle" fontSize="10.5" fontWeight="700" fill="var(--color-atomic-navy-900)" style={{ paintOrder: 'stroke', stroke: 'var(--color-atomic-white)', strokeWidth: 3, strokeLinejoin: 'round' }}>{p.name}</text>
                 )}
@@ -6904,86 +6893,57 @@ function HotelsList({ HOTELS, saveEdit, resetEdit, isEdited }) {
   return (
     <div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', marginBottom: '16px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: 'var(--radius-sm)' }}>
-        💡 호텔명·예약번호 편집 가능 (✎) · 상태 라벨 탭하여 🔴→🟡→✅ 순환
+        💡 상태 아이콘 탭하여 🔴→🟡→✅ 순환 · 호텔명·Conf 편집 (✎)
       </div>
       <Card>
         <SectionTitle>호텔 13건 · 25박</SectionTitle>
         {HOTELS.map(h => {
-          const statusColor = h.status === 'urgent' ? 'var(--color-danger)' : h.status === 'pending' ? 'var(--color-warning-text)' : 'var(--color-success)';
-          const statusBg = h.status === 'urgent' ? 'var(--color-danger-bg)' : h.status === 'pending' ? 'var(--color-warning-bg)' : 'var(--color-success-soft)';
-          const statusLabel = h.status === 'urgent' ? '🔴 예약필요' : h.status === 'pending' ? '🟡 미예약' : '✅ 확정';
+          const statusIcon = h.status === 'urgent' ? '🔴' : h.status === 'pending' ? '🟡' : '✅';
+          const statusTitle = h.status === 'urgent' ? '예약필요' : h.status === 'pending' ? '미예약' : '확정';
           const hotelMapQuery = `${h.hotel.split('(')[0].trim()} ${h.city}`;
           return (
-            <div key={h.n} style={{
-              padding: '12px',
-              borderTop: '1px solid var(--color-border-soft)'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', marginBottom: '6px' }}>
-                <button
-                  className={h.status === 'ok' ? 'gt-gold-glow' : undefined}
-                  onClick={() => {
-                    const nextStatus = h.status === 'urgent' ? 'pending' : h.status === 'pending' ? 'ok' : 'urgent';
-                    saveEdit('hotel', h.n, 'status', nextStatus);
-                  }}
-                  style={{
-                    background: statusBg,
-                    color: statusColor,
-                    fontSize: 'var(--type-eyebrow)',
-                    padding: '7px 10px',
-                    borderRadius: 'var(--radius-sm)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    whiteSpace: 'nowrap',
-                    flexShrink: 0,
-                    fontWeight: 500
-                  }}
-                  title="탭하여 상태 변경"
-                >
-                  {statusLabel}
-                </button>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 'var(--type-body-sm)', fontWeight: 500, color: 'var(--color-text-strong)' }}>
-                    <EditableField
-                      value={h.hotel}
-                      onSave={(v) => saveEdit('hotel', h.n, 'hotel', v)}
-                      onReset={() => resetEdit('hotel', h.n, 'hotel')}
-                      edited={isEdited('hotel', h.n, 'hotel')}
-                      textStyle={{ fontSize: 'var(--type-body-sm)', fontWeight: 500, color: 'var(--color-text-strong)' }}
-                    />
-                  </div>
-                </div>
-              </div>
-              <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', marginTop: '2px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span>📍 {h.city} · {h.ci}~{h.co} ({h.nights}박)</span>
-                <a
-                  href={mapsUrl(hotelMapQuery)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    fontSize: 'var(--type-micro)',
-                    color: 'var(--color-accent-primary)',
-                    textDecoration: 'none',
-                    fontWeight: 500,
-                    padding: '2px 6px',
-                    background: 'rgba(201,169,97,0.1)',
-                    borderRadius: 'var(--radius-xs)'
-                  }}
-                >
-                  🗺️ Maps
-                </a>
-              </div>
-              <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '6px', marginLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                <span style={{ marginRight: '2px' }}>📋 Conf:</span>
-                <div style={{ flex: '1 1 auto', minWidth: 0 }}>
+            <div key={h.n} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '10px 4px', borderTop: '1px solid var(--color-border-soft)' }}>
+              <button
+                className={h.status === 'ok' ? 'gt-gold-glow' : undefined}
+                onClick={() => {
+                  const nextStatus = h.status === 'urgent' ? 'pending' : h.status === 'pending' ? 'ok' : 'urgent';
+                  saveEdit('hotel', h.n, 'status', nextStatus);
+                }}
+                title={`상태: ${statusTitle} (탭하여 변경)`}
+                style={{ flexShrink: 0, fontSize: '17px', lineHeight: 1, background: 'none', border: 'none', cursor: 'pointer', padding: '1px 0', marginTop: '1px' }}
+              >
+                {statusIcon}
+              </button>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 'var(--type-body-sm)', fontWeight: 500, color: 'var(--color-text-strong)' }}>
                   <EditableField
-                    value={h.conf}
-                    onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
-                    onReset={() => resetEdit('hotel', h.n, 'conf')}
-                    edited={isEdited('hotel', h.n, 'conf')}
-                    textStyle={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}
+                    value={h.hotel}
+                    onSave={(v) => saveEdit('hotel', h.n, 'hotel', v)}
+                    onReset={() => resetEdit('hotel', h.n, 'hotel')}
+                    edited={isEdited('hotel', h.n, 'hotel')}
+                    textStyle={{ fontSize: 'var(--type-body-sm)', fontWeight: 500, color: 'var(--color-text-strong)' }}
                   />
                 </div>
-                {h.conf && <CopyChip text={h.conf} label="Conf" icon="📋" />}
+                <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '3px', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  <span>📍 {h.city}</span>
+                  <a href={mapsUrl(hotelMapQuery)} target="_blank" rel="noopener noreferrer" title="지도에서 보기" style={{ textDecoration: 'none' }}>🗺️</a>
+                  <span style={{ color: 'var(--color-border-default)' }}>·</span>
+                  <span>📋</span>
+                  <span style={{ flex: '1 1 auto', minWidth: '80px' }}>
+                    <EditableField
+                      value={h.conf}
+                      onSave={(v) => saveEdit('hotel', h.n, 'conf', v)}
+                      onReset={() => resetEdit('hotel', h.n, 'conf')}
+                      edited={isEdited('hotel', h.n, 'conf')}
+                      textStyle={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}
+                    />
+                  </span>
+                  {h.conf && <CopyChip text={h.conf} label="Conf" icon="📋" />}
+                </div>
+              </div>
+              <div style={{ flexShrink: 0, textAlign: 'right', fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)', lineHeight: 1.35 }}>
+                <div>{h.ci}~{h.co}</div>
+                <div style={{ fontWeight: 700, color: 'var(--color-text-strong)' }}>{h.nights}박</div>
               </div>
             </div>
           );
