@@ -1433,6 +1433,7 @@ const getRelativeTime = (iso) => {
 };
 
 let pendingDayFocus = null; // 홈 챕터 진행 → 일정 진입 시 펼칠 {chId,dayN}. Days mount 시 1회 소비.
+let pendingLogiSub = null; // 홈 현지도구 → 여정 진입 시 열 서브탭 id. Logistics mount 시 1회 소비.
 const getCurrentStatus = () => {
   const now = new Date();
   if (now < TRIP_START) {
@@ -3870,7 +3871,7 @@ function ArrivalWeather({ chapter, dateStr }) {
 }
 
 // Emergency contacts card — collapsed by default, accessible always
-function EmergencyContacts() {
+function EmergencyContacts({ todayFlag }) {
   const [open, setOpen] = useState(false);
   const contacts = [
     { label: '🇰🇷 주한 영사관 콜센터', value: '+82-2-3210-0404', tel: '+82232100404' },
@@ -3883,6 +3884,9 @@ function EmergencyContacts() {
     { label: '국제 응급 (UAE)', value: '999', tel: '999' },
     { label: 'Amex Platinum (24h)', value: '1577-2000', tel: '15772000' },
   ];
+  // 여행 중: 오늘 위치한 나라 대사관을 최상단으로(라벨이 국기로 시작 → flag로 매칭). pre/post는 원순서.
+  const isHere = (c) => todayFlag && c.label.startsWith(todayFlag);
+  const ordered = todayFlag ? [...contacts.filter(isHere), ...contacts.filter(c => !isHere(c))] : contacts;
   return (
     <Card>
       <button onClick={() => setOpen(o => !o)} style={{
@@ -3894,13 +3898,16 @@ function EmergencyContacts() {
       </button>
       {open && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '10px' }}>
-          {contacts.map((c, i) => (
+          {ordered.map((c, i) => (
             <div key={i} style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-              padding: '10px 12px', background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', gap: '8px',
+              padding: '10px 12px', background: isHere(c) ? 'var(--color-warning-bg)' : 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', gap: '8px',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)' }}>{c.label}</div>
+                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)' }}>
+                  {c.label}
+                  {isHere(c) && <span style={{ marginLeft: '6px', fontSize: 'var(--type-nano)', fontWeight: 700, color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-label)' }}>· 오늘 위치</span>}
+                </div>
                 <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 500, fontVariantNumeric: 'tabular-nums' }}>{c.value}</div>
               </div>
               <div style={{ display: 'flex', gap: '6px', flexShrink: 0 }}>
@@ -4876,6 +4883,68 @@ const INT_LABEL = {
   'L':  { t: '🟢 여유', c: 'var(--color-success)' },
 };
 
+// 오늘의 현지 도구 — during 홈에서 '지금 이 도시' 컨텍스트로 통화·꿀팁·교통·복장/날씨를 5초 안에. 각 셀은 여정 해당 서브탭으로 딥링크.
+const TOOLKIT_CURRENCY = { France: 'EUR', Italy: 'EUR', Greece: 'EUR', 'United Kingdom': 'GBP', UAE: 'AED' };
+function LocalToolkit({ todayChapter, today, goLogi }) {
+  const [fxRates, setFxRates] = useState(null);
+  useEffect(() => {
+    let alive = true;
+    storage.get('fx_cache').then(c => { if (alive && c && c.rates) setFxRates(c.rates); });
+    return () => { alive = false; };
+  }, []);
+
+  const curCode = TOOLKIT_CURRENCY[todayChapter.country];
+  const curKRW = (fxRates && curCode && fxRates[curCode]) ? Math.round(1 / fxRates[curCode]) : null;
+  const tips = LOCAL_TIPS.find(t => t.flag === todayChapter.flag);
+  const transit = CITY_TRANSIT.find(t => t.city === todayChapter.name);
+  const hasReserve = today.food && today.food.includes('🌟');
+
+  const cells = [];
+  // 1) 통화 — 캐시된 환율로 1단위 환산(없으면 계산기로 유도). 오프라인서도 캐시 있으면 동작.
+  cells.push({
+    icon: '💱', label: curCode || '통화',
+    value: curKRW != null ? `1 ${curCode} ≈ ${curKRW.toLocaleString()}원` : '비용 탭에서 새로고침',
+    sub: '환율 계산기 →', go: 'fx',
+  });
+  // 2) 현지 꿀팁 — 전압 요약(상세는 꿀팁 탭)
+  if (tips) {
+    const volt = tips.items.find(i => (i.label || '').includes('전압'));
+    cells.push({
+      icon: '🔌', label: '현지 꿀팁',
+      value: volt ? volt.value.split('(')[0].trim() : '전압·팁·매너',
+      sub: '팁·영업·매너 →', go: 'tips',
+    });
+  }
+  // 3) 교통 — 택시앱/대중교통
+  if (transit) {
+    cells.push({ icon: '🚕', label: '교통', value: transit.apps, sub: '대중교통·앱 →', go: 'flights' });
+  }
+  // 4) 예약 있는 날엔 드레스코드, 아니면 오늘 날씨
+  if (hasReserve) {
+    cells.push({ icon: '👗', label: '드레스코드', value: '오늘 예약 식당 복장 확인', sub: '미식 예약 →', go: 'dress' });
+  } else {
+    cells.push({ icon: '🌤️', label: '날씨', value: `${todayChapter.name} 기온·강수`, sub: '도시별 날씨 →', go: 'weather' });
+  }
+
+  return (
+    <Card>
+      <SectionTitle>🧭 오늘의 현지 도구 · {todayChapter.flag} {todayChapter.name}</SectionTitle>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', marginTop: '12px' }}>
+        {cells.map((c, i) => (
+          <button key={i} onClick={() => goLogi(c.go)} className="gt-tap-card" aria-label={`${c.label} — 여정 탭에서 보기`} style={{ textAlign: 'left', background: 'var(--color-bg-page)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-8)', padding: '12px', cursor: 'pointer', fontFamily: 'var(--font-sans)', display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '6px' }}>
+              <span style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 700 }}>{c.icon} {c.label}</span>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--type-caption)', flexShrink: 0 }}>›</span>
+            </div>
+            <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-strong)', fontWeight: 600, lineHeight: 1.4, wordBreak: 'keep-all' }}>{c.value}</div>
+            <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-text-soft)' }}>{c.sub}</div>
+          </button>
+        ))}
+      </div>
+    </Card>
+  );
+}
+
 function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData, dayItems, toggleDayItem }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
@@ -4885,6 +4954,10 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
   const today = status.current ? DAYS.find(d => d.n === status.current.n) || DAYS[0] : DAYS[0];
   const todayChapter = C(today.c);
   const todayPhoto = photos[today.n];
+  // 여정 서브탭으로 직행(모듈 변수 세팅 후 view 전환) — '오늘의 현지 도구' 딥링크용
+  const goLogi = (sub) => { pendingLogiSub = sub; if (navigator.vibrate) navigator.vibrate(8); setView('logi'); };
+  // 현재 시각대(0 아침 / 1 오후 / 2 저녁) — Today 카드 지금포커스·동선 타임라인 공용(중복 제거)
+  const nowPhase = (() => { const h = new Date().getHours(); return h < 11 ? 0 : h < 17 ? 1 : 2; })();
 
   return (
     <div style={{ padding: '24px 0' }}>
@@ -4906,8 +4979,6 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
           <SectionTitle>오늘 · Day {today.n} · {today.d} ({today.w})</SectionTitle>
           {/* 지금 포커스 — 여행 중 홈 0클릭 다음 행동(현재 시각 기준) + 예약·내일 이동 알림 */}
           {(() => {
-            const hour = new Date().getHours();
-            const nowPhase = hour < 11 ? 0 : hour < 17 ? 1 : 2; // 아침/오후/저녁
             const steps = [
               { icon: '🚐', value: today.moves, ph: 0 },
               { icon: '✨', value: today.hl, ph: 1 },
@@ -4966,8 +5037,6 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
           </div>
           {/* 오늘 동선 타임라인 — 현재 시각 기준 '지금쯤 여기' 강조 */}
           {(() => {
-            const hour = new Date().getHours();
-            const nowPhase = hour < 11 ? 0 : hour < 17 ? 1 : 2; // 아침/오후/저녁
             const steps = [
               { icon: '🚐', label: '이동', value: today.moves, ph: 0 },
               { icon: '✨', label: '활동', value: today.hl, ph: 1 },
@@ -5038,6 +5107,11 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
         </Card>
       )}
 
+      {/* Today's Local Toolkit — during trip: 지금 이 도시 통화·꿀팁·교통·복장/날씨 5초 허브(서막·귀국 제외) */}
+      {status.phase === 'during' && status.current && todayChapter?.coords && (
+        <LocalToolkit todayChapter={todayChapter} today={today} goLogi={goLogi} />
+      )}
+
       {/* Current city timezone — only during trip */}
       {status.phase === 'during' && <TimezoneWidget status={status} DAYS={DAYS} />}
 
@@ -5087,7 +5161,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
       <OutputsProgress outputs={outputs} setView={setView} />
 
       {/* Emergency Contacts */}
-      <EmergencyContacts />
+      <EmergencyContacts todayFlag={status.phase === 'during' && todayChapter?.coords ? todayChapter.flag : null} />
 
       {/* Quick Links — public only */}
       <Card>
@@ -6327,7 +6401,9 @@ function TranslateWidget() {
 }
 
 function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
-  const [subTab, setSubTab] = useState('map');
+  // 홈 '오늘의 현지 도구'에서 특정 서브탭으로 진입한 경우 그 탭으로 시작(모듈 변수 1회 소비)
+  const [subTab, setSubTab] = useState(pendingLogiSub ?? 'map');
+  useEffect(() => { pendingLogiSub = null; }, []);
 
   const TAB_META = {
     map: { icon: '🗺️', label: '지도' }, hotels: { icon: '🏨', label: '호텔' }, flights: { icon: '✈️', label: '항공' },
