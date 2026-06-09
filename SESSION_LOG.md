@@ -14,6 +14,7 @@
 2. **Part B during-trip 흐름 심화**: 여행 중 홈에서 **Today 카드(지금 포커스)를 최상단**(EveningReminder 바로 뒤)으로. 작은 블록 3개(철학·TimezoneWidget·NextFlight, ~30줄)를 Today 카드 아래로 이동(137줄 카드 이동보다 안전). during: EveningReminder→Today→Timezone→NextFlight→철학→Recommendations. **pre 부수효과**: NextFlight가 철학 위로 옴(출발 카운트다운 상향, 무해).
 3. **Part C Today 카드 헤더**: "오늘 · Day N" → "오늘 · Day N · M/D (요일)". 밀집한 카드 본문은 during 시각검증 불가(D-7)라 재구성 안 함(안전 우선).
 4. **Part E 예약 요약 완료→제거**(사용자 요청): 체크탭 '지금 예약·신청할 것'·'직접 확인·준비할 것' 각 항목에 완료 체크 버튼(`toggleCheck(i.id)`) 추가 → 완료 시 `urgent && !checks` 필터로 요약에서 자동 제거. 행을 `<a>`→`div`(체크버튼+예약링크)로 재구성(button in anchor 회피).
+5. **Part F 빈 상태 톤 정리**(`1ed8137`, 19차 후속): 빈 상태 전수 점검 — 가계부·오늘 할일·백업·메모 검색은 이미 친근체 양호. 유일하게 무미건조하던 문서 금고 카테고리 빈 슬롯 "아직 없음" → "아직 없어요 — 위 +로 추가"(행동 유도형). 그 외 빈 상태는 억지 변경 안 함(이미 충분).
 
 **중요 발견 / 원칙**
 - **서브에이전트 결과 반환 실패 반복**: designer×2·Explore×2 모두 분석은 했으나 최종 메시지에 리스트 미반환(이 환경 특성). → 에이전트 의존 중단, 직접 grep 점검으로 전환.
@@ -23,7 +24,7 @@
 
 **검증**: esbuild 인라인 JSX 0오류 · function 67 · ReactDOM.createRoot 1 · DAYS 27 · `<>` 0 · "불러오는 중" 잔재 0 · `gt-skel` 11곳 · index.html 8300줄.
 
-**종료 상태**: 코드 `94525f7` 커밋, **미푸시**. sw.js 무변경 → SW v5 유지.
+**종료 상태**: 코드 `94525f7`(Part A~E) + `1ed8137`(Part F 빈상태) 커밋. **`94525f7`·docs `2617430`까지 푸시 완료**(`origin/main`==`2617430`). `1ed8137`은 **미푸시 1커밋**. sw.js 무변경 → SW v5 유지.
 
 **보류 / 다음 세션 ground truth**
 - 🔴 **실데이터**: 귀국편 ET6973 코드 재확인(EY?), 6/18·6/22·7/3·7/6·7/8 편명, 가계부 통화·예산.
