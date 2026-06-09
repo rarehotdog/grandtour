@@ -1995,7 +1995,7 @@ function App() {
       color: 'var(--color-text-strong)',
       paddingBottom: 'calc(80px + env(safe-area-inset-bottom))'
     }}>
-      <Header status={status} />
+      <Header status={status} setView={setView} />
       <OfflineBanner />
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
         {!loaded && (
@@ -2024,8 +2024,11 @@ function App() {
 }
 
 // =================== HEADER ===================
-function Header({ status }) {
-  const dDayLabel = status.phase === 'pre' 
+function Header({ status, setView }) {
+  const online = useOnlineStatus();
+  const syncTrip = gtSync.tripId();
+  const myName = actorName();
+  const dDayLabel = status.phase === 'pre'
     ? `D-${status.dDay}` 
     : status.phase === 'during' 
       ? `Day ${status.current?.n}/27`
@@ -2056,6 +2059,12 @@ function Header({ status }) {
           <div style={{ fontSize: 'var(--type-micro)', opacity: 0.6, letterSpacing: '1.5px', marginTop: '4px' }}>
             TAEHYEON · JUYEON
           </div>
+          {syncTrip && (
+            <button onClick={() => setView && setView('home')} aria-label="동기화 상태" className="gt-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginTop: '7px', padding: '2px 8px', background: 'rgba(250,246,239,0.12)', border: 'none', borderRadius: 'var(--radius-pill)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
+              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: online ? 'var(--color-success)' : 'rgba(250,246,239,0.5)', flexShrink: 0 }} />
+              <span style={{ fontSize: 'var(--type-nano)', color: 'rgba(250,246,239,0.85)', letterSpacing: '0.3px' }}>{online ? '동기화 중' : '오프라인'}{myName && myName !== '익명' ? ' · ' + myName : ''}</span>
+            </button>
+          )}
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
@@ -4769,7 +4778,7 @@ function SyncPanel() {
     location.reload(); // 깨끗한 구독 시작
   };
   const create = () => {
-    if (!confirm('새 공동작업 코드를 만들어 이 기기를 연결할까요?\n초대 링크를 친구에게 보내면 함께 편집할 수 있어요.')) return;
+    if (!confirm('연동 코드를 만들어 이 기기를 연결할까요?\n같은 코드(또는 링크)를 내 폰·주연 기기에서 열면 실시간으로 함께 이어져요.')) return;
     connect(gtSync.newCode());
   };
   const disconnect = () => {
@@ -4788,31 +4797,32 @@ function SyncPanel() {
   return (
     <Card>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-        <SectionTitle>🤝 공동작업 (친구 초대)</SectionTitle>
+        <SectionTitle>🔗 기기 연동 · 함께 쓰기</SectionTitle>
         {connected && (
           <span style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-success)', fontWeight: 600 }}>● 연결됨</span>
         )}
       </div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-        체크 · 패킹 · 미식 예약 · 가계부 · 일정(편집·할일) · <strong>메모</strong>가 실시간 공유돼요.<br/>
+        내 폰·PC를 같은 코드로 연결하면 체크 · 패킹 · 미식 예약 · 가계부 · 일정 · <strong>메모</strong>가 어디서나 실시간으로 이어져요. 주연과도 같은 방식.<br/>
         항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-accent-primary)' }}>관점·사진은 기기 로컬.</span>
       </div>
 
+      {/* 내 이름 — 항상 노출(연결 전에도 정해두면 '내 이름으로 연동'되는 느낌) */}
+      <div style={lblStyle}>내 이름 (수정 기록에 표시)</div>
+      <input
+        value={name} onChange={e => saveName(e.target.value)} placeholder="예: 태현"
+        style={{ width: '100%', padding: '9px 11px', marginBottom: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)', fontSize: 'var(--type-caption)', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', boxSizing: 'border-box', fontFamily: 'var(--font-sans)' }}
+      />
+
       {connected ? (
         <div>
-          <div style={lblStyle}>내 표시 이름 (수정 기록에 표시)</div>
-          <input
-            value={name} onChange={e => saveName(e.target.value)} placeholder="예: 태현"
-            style={{ width: '100%', padding: '9px 11px', marginBottom: '14px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)', fontSize: 'var(--type-caption)', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', boxSizing: 'border-box', fontFamily: 'var(--font-sans)' }}
-          />
-
-          <div style={lblStyle}>🔗 초대 링크 (친구에게 보내기 — 열면 바로 참여)</div>
+          <div style={lblStyle}>🔗 연결 링크 (다른 기기에서 열면 바로 연결)</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
             <code style={codeStyle}>{inviteUrl}</code>
             <CopyChip text={inviteUrl} label="링크" icon="🔗" />
           </div>
 
-          <div style={lblStyle}>또는 공유 코드 직접 전달</div>
+          <div style={lblStyle}>또는 연동 코드 직접 입력</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
             <code style={codeStyle}>{tripId}</code>
             <CopyChip text={tripId} label="코드" />
@@ -4826,11 +4836,16 @@ function SyncPanel() {
         </div>
       ) : (
         <div>
+          <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '11px 13px', marginBottom: '12px', fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7 }}>
+            <div><strong style={{ color: 'var(--color-text-strong)' }}>①</strong> 이 기기에서 ‘연동 코드 만들기’</div>
+            <div><strong style={{ color: 'var(--color-text-strong)' }}>②</strong> 다른 기기(폰)에서 같은 코드 입력 — 또는 만든 링크 열기</div>
+            <div><strong style={{ color: 'var(--color-text-strong)' }}>③</strong> 어디서 체크해도 양쪽에 실시간 반영돼요</div>
+          </div>
           <button onClick={create} style={{
             padding: '12px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
             border: 'none', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-caption)', cursor: 'pointer',
             fontWeight: 500, width: '100%', marginBottom: '10px'
-          }}>✨ 새 동기화 코드 만들기</button>
+          }}>✨ 연동 코드 만들기</button>
           <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', textAlign: 'center', marginBottom: '8px' }}>또는 받은 코드로 연결</div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input
