@@ -82,6 +82,16 @@
       --track-eyebrow: 0.18em;  /* uppercase micro labels */
       --track-label:   0.08em;  /* small caps-ish labels */
       --track-tight:   -0.02em; /* large display numerals */
+      /* px tracking scale — pixel-fixed inline values, value-identical (no em conversion) */
+      --track-px-0:     0px;
+      --track-px-fine:  0.2px;
+      --track-px-snug:  0.3px;
+      --track-px-soft:  0.4px;
+      --track-px-base:  0.5px;
+      --track-px-md:    1px;
+      --track-px-wide:  1.5px;
+      --track-px-xwide: 2px;
+      --track-px-neg:   -0.5px; /* negative tracking on large numerals */
 
       /* ── Spacing scale (4pt grid à la Wanted) ────────────────────── */
       --space-1: 4px;
@@ -295,7 +305,7 @@
       text-align: center;
       color: var(--text-3);
       font-size: 13px;
-      letter-spacing: 0.5px;
+      letter-spacing: var(--track-px-base);
       animation: gtFadeIn 0.4s ease-out;
     }
     .loading .logo {
@@ -304,7 +314,7 @@
       font-size: 32px;
       color: var(--navy);
       margin-bottom: 8px;
-      letter-spacing: 1px;
+      letter-spacing: var(--track-px-md);
     }
     /* Gold sweep loading bar — quiet luxury 스타일 */
     .loading-bar {
@@ -2094,18 +2104,18 @@ function Header({ status, setView }) {
             fontFamily: 'var(--font-serif)',
             fontSize: 'var(--type-h2)',
             fontWeight: 400,
-            letterSpacing: '0.5px',
+            letterSpacing: 'var(--track-px-base)',
             lineHeight: 1
           }}>
             Grand Tour
           </div>
-          <div style={{ fontSize: 'var(--type-micro)', opacity: 0.6, letterSpacing: '1.5px', marginTop: '4px' }}>
+          <div style={{ fontSize: 'var(--type-micro)', opacity: 0.6, letterSpacing: 'var(--track-px-wide)', marginTop: '4px' }}>
             TAEHYEON · JUYEON
           </div>
           {syncTrip && (
             <button onClick={() => setView && setView('home')} aria-label="동기화 상태" className="gt-chip" style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', marginTop: '7px', padding: '2px 8px', background: 'rgba(250,246,239,0.12)', border: 'none', borderRadius: 'var(--radius-pill)', cursor: 'pointer', fontFamily: 'var(--font-sans)' }}>
               <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: online ? 'var(--color-success)' : 'rgba(250,246,239,0.5)', flexShrink: 0 }} />
-              <span style={{ fontSize: 'var(--type-nano)', color: 'rgba(250,246,239,0.85)', letterSpacing: '0.3px' }}>{online ? '동기화 중' : '오프라인'}{myName && myName !== '익명' ? ' · ' + myName : ''}</span>
+              <span style={{ fontSize: 'var(--type-nano)', color: 'rgba(250,246,239,0.85)', letterSpacing: 'var(--track-px-snug)' }}>{online ? '동기화 중' : '오프라인'}{myName && myName !== '익명' ? ' · ' + myName : ''}</span>
             </button>
           )}
         </div>
@@ -2116,12 +2126,12 @@ function Header({ status, setView }) {
             fontWeight: 700,
             color: 'var(--color-accent-primary)',
             lineHeight: 1,
-            letterSpacing: '0px',
+            letterSpacing: 'var(--track-px-0)',
             fontVariantNumeric: 'tabular-nums',
           }}>
             {dDayLabel}
           </div>
-          <div style={{ fontSize: 'var(--type-micro)', opacity: 0.55, marginTop: '4px', letterSpacing: '0.5px' }}>
+          <div style={{ fontSize: 'var(--type-micro)', opacity: 0.55, marginTop: '4px', letterSpacing: 'var(--track-px-base)' }}>
             {dDaySubtitle}
           </div>
         </div>
@@ -2195,7 +2205,7 @@ function ChapterIntro({ chapter }) {
         position: 'absolute', right: '-8px', top: '50%', transform: 'translateY(-50%)',
         fontSize: '88px', opacity: 0.12, lineHeight: 1, pointerEvents: 'none', userSelect: 'none'
       }}>{chapter.flag}</div>
-      <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: '2px', fontWeight: 700, marginBottom: '8px', opacity: 0.65 }}>
+      <div style={{ fontSize: 'var(--type-micro)', color: chapter.accent, letterSpacing: 'var(--track-px-xwide)', fontWeight: 700, marginBottom: '8px', opacity: 0.65 }}>
         CHAPTER · {chapter.dates}
       </div>
       <div style={{ fontSize: '26px', fontFamily: 'var(--font-serif)', fontWeight: 600, color: chapter.accent, lineHeight: 1.1, marginBottom: '5px' }}>
@@ -2386,7 +2396,7 @@ function OfflineBanner() {
       display: 'flex',
       alignItems: 'center',
       gap: '8px',
-      letterSpacing: '0.3px'
+      letterSpacing: 'var(--track-px-snug)'
     }}>
       <span>📡</span>
       <span>오프라인 — 저장된 일정·메모·사진·캐시는 그대로 사용할 수 있어요</span>
@@ -3321,7 +3331,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
               </button>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '4px' }}>
-                  <span style={{ fontSize: 'var(--type-micro)', color: ch.accent, fontWeight: 500, letterSpacing: '0.5px' }}>
+                  <span style={{ fontSize: 'var(--type-micro)', color: ch.accent, fontWeight: 500, letterSpacing: 'var(--track-px-base)' }}>
                     Day {o.day} · {ch.flag} {ch.name}
                   </span>
                   {stars && <span style={{ fontSize: 'var(--type-micro)' }}>{stars}</span>}
@@ -3705,7 +3715,7 @@ function TimezoneWidget({ status, DAYS }) {
           <div style={{ fontSize: 'var(--type-micro)', color: ch.accent, letterSpacing: 'var(--track-label)', fontWeight: 500 }}>
             {ch.flag} {ch.name.toUpperCase()}
           </div>
-          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: 'var(--track-px-base)' }}>
             {localTime}
           </div>
           <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-text-soft)', marginTop: '2px' }}>현지</div>
@@ -3716,10 +3726,10 @@ function TimezoneWidget({ status, DAYS }) {
           borderRadius: 'var(--radius-md)',
           textAlign: 'center',
         }}>
-          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)', letterSpacing: '1.5px', fontWeight: 500 }}>
+          <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)', letterSpacing: 'var(--track-px-wide)', fontWeight: 500 }}>
             🇰🇷 SEOUL
           </div>
-          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: '0.5px' }}>
+          <div className="gt-serif" style={{ fontSize: '32px', color: 'var(--color-text-strong)', marginTop: '4px', fontWeight: 500, letterSpacing: 'var(--track-px-base)' }}>
             {kstTime}
           </div>
           <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-text-soft)', marginTop: '2px' }}>KST</div>
@@ -3787,7 +3797,7 @@ function NextFlight({ FLIGHTS, DAYS, status, setView }) {
             <div className="gt-serif" style={{ fontSize: isToday ? '20px' : '22px', fontWeight: 500, fontStyle: 'italic', lineHeight: 1 }}>
               {isToday ? '오늘' : isTomorrow ? '내일' : `D−${daysOut}`}
             </div>
-            <div style={{ fontSize: 'var(--type-micro)', color: isToday ? 'rgba(255,255,255,0.85)' : 'var(--color-text-muted)', marginTop: '3px', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: 'var(--type-micro)', color: isToday ? 'rgba(255,255,255,0.85)' : 'var(--color-text-muted)', marginTop: '3px', letterSpacing: 'var(--track-px-base)' }}>
               {next.d}
             </div>
           </div>
@@ -4014,7 +4024,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
       </div>
       <div className="gt-serif" style={{
         fontSize: '40px', fontWeight: 500, fontStyle: 'italic',
-        lineHeight: 1.05, letterSpacing: '-0.5px', color: 'var(--color-text-inverse)',
+        lineHeight: 1.05, letterSpacing: 'var(--track-px-neg)', color: 'var(--color-text-inverse)',
       }}>
         27일의 여정
       </div>
@@ -4042,7 +4052,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
             <div className="gt-num gt-serif" style={{ fontSize: '24px', fontWeight: 600, color: 'var(--color-text-inverse)', lineHeight: 1 }}>
               {s.value}<span style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.5)' }}>/{s.total}</span>
             </div>
-            <div style={{ fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.6)', marginTop: '3px', letterSpacing: '0.5px' }}>{s.label}</div>
+            <div style={{ fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.6)', marginTop: '3px', letterSpacing: 'var(--track-px-base)' }}>{s.label}</div>
           </button>
         ))}
       </div>
@@ -4067,7 +4077,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
       {/* Closing line */}
       <div className="gt-serif" style={{
         marginTop: 'var(--space-5)', textAlign: 'center',
-        fontSize: 'var(--type-h2)', color: 'var(--color-accent-soft)', letterSpacing: '0.3px',
+        fontSize: 'var(--type-h2)', color: 'var(--color-accent-soft)', letterSpacing: 'var(--track-px-snug)',
       }}>
         "우리, 이제 시작이다"
       </div>
@@ -4205,12 +4215,12 @@ function HeroCountdown({ status, setView }) {
                   display: 'flex', flexDirection: 'column',
                 }}>
                   {/* City label */}
-                  <div style={{ fontSize: 'var(--type-nano)', letterSpacing: '0.4px', color: 'rgba(201,169,97,0.85)', fontWeight: 700, marginBottom: '8px' }}>
+                  <div style={{ fontSize: 'var(--type-nano)', letterSpacing: 'var(--track-px-soft)', color: 'rgba(201,169,97,0.85)', fontWeight: 700, marginBottom: '8px' }}>
                     {label}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '5px', marginBottom: '10px' }}>
                     <span style={{ fontSize: 'var(--type-h3)' }}>{city.flag}</span>
-                    <span style={{ fontSize: 'var(--type-body-sm)', color: 'rgba(250,246,239,0.95)', fontWeight: 600, letterSpacing: '0.2px' }}>{city.name}</span>
+                    <span style={{ fontSize: 'var(--type-body-sm)', color: 'rgba(250,246,239,0.95)', fontWeight: 600, letterSpacing: 'var(--track-px-fine)' }}>{city.name}</span>
                   </div>
 
                   {w ? (
@@ -4223,7 +4233,7 @@ function HeroCountdown({ status, setView }) {
                         padding: '8px 10px',
                         minWidth: 0,
                       }}>
-                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.9)', letterSpacing: '0.3px', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
+                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.9)', letterSpacing: 'var(--track-px-snug)', fontWeight: 700, marginBottom: '5px' }}>오늘</div>
                         <div style={{ fontSize: 'var(--type-h1)', lineHeight: 1, marginBottom: '4px' }}>{wmoT ? wmoT.e : '—'}</div>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--type-h2)', fontWeight: 700, color: 'var(--color-accent-primary)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {w.today.max}°
@@ -4240,7 +4250,7 @@ function HeroCountdown({ status, setView }) {
                         padding: '8px 10px',
                         minWidth: 0,
                       }}>
-                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.65)', letterSpacing: '0.3px', fontWeight: 700, marginBottom: '5px' }}>내일</div>
+                        <div style={{ fontSize: 'var(--type-nano)', color: 'rgba(201,169,97,0.65)', letterSpacing: 'var(--track-px-snug)', fontWeight: 700, marginBottom: '5px' }}>내일</div>
                         <div style={{ fontSize: 'var(--type-h1)', lineHeight: 1, marginBottom: '4px' }}>{wmoN ? wmoN.e : '—'}</div>
                         <div style={{ fontFamily: 'var(--font-sans)', fontSize: 'var(--type-h2)', fontWeight: 700, color: 'rgba(201,169,97,0.75)', lineHeight: 1, fontVariantNumeric: 'tabular-nums' }}>
                           {wmoN ? w.tomorrow.max + '°' : '—'}
@@ -4383,7 +4393,7 @@ function TimelineStrip({ DAYS, status, setView }) {
                 position: 'relative',
               }}
             >
-              <div style={{ fontSize: 'var(--type-nano)', color: ch.accent, letterSpacing: '0.5px', fontWeight: 500 }}>
+              <div style={{ fontSize: 'var(--type-nano)', color: ch.accent, letterSpacing: 'var(--track-px-base)', fontWeight: 500 }}>
                 D{day.n}
               </div>
               <div style={{ fontSize: 'var(--type-h2)', lineHeight: 1 }}>{ch.flag}</div>
@@ -4494,7 +4504,7 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                   <div style={{ fontSize: 'var(--type-caption)', fontWeight: 500, color: ch.accent }}>
                     {ch.icon} {ch.name} <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>· {ch.theme.split('·')[0].trim()}</span>
                   </div>
-                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', letterSpacing: '0.5px', marginTop: '2px' }}>
+                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', letterSpacing: 'var(--track-px-base)', marginTop: '2px' }}>
                     {ch.dates} · {chapterDays.length}일
                   </div>
                 </div>
@@ -4673,7 +4683,7 @@ function LocationSnap({ setView }) {
         borderBottom: result ? '1px solid rgba(0,0,0,0.06)' : 'none',
       }}>
         <div>
-          <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: '1.5px', fontWeight: 700,
+          <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-px-wide)', fontWeight: 700,
             color: ch ? ch.accent : 'var(--color-text-muted)', textTransform: 'uppercase', marginBottom: '2px' }}>
             📍 현재 위치
           </div>
@@ -4842,7 +4852,7 @@ function SyncPanel() {
   const inviteUrl = tripId ? (location.origin + location.pathname + '?trip=' + tripId) : '';
   const lblStyle = { fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '6px' };
   const codeStyle = {
-    fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: '0.5px',
+    fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: 'var(--track-px-base)',
     background: 'var(--color-bg-page)', padding: '8px 10px', borderRadius: 'var(--radius-sm)',
     border: '1px solid var(--color-border-default)', wordBreak: 'break-all', flex: 1, minWidth: '140px'
   };
@@ -5060,7 +5070,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
                 {todayChapter?.theme.toUpperCase()}
               </div>
             </div>
-            <div className="gt-serif" style={{ fontSize: '21px', color: 'var(--color-text-strong)', letterSpacing: '0.2px', lineHeight: 1.4 }}>
+            <div className="gt-serif" style={{ fontSize: '21px', color: 'var(--color-text-strong)', letterSpacing: 'var(--track-px-fine)', lineHeight: 1.4 }}>
               "{todayChapter?.tag}"
             </div>
           </div>
@@ -5180,7 +5190,7 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
             borderBottom: '1px solid rgba(201,169,97,0.35)',
             padding: 'var(--space-4) 0',
           }}>
-            <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.9, color: 'var(--color-text-soft)', letterSpacing: '0.2px' }}>
+            <div className="gt-serif" style={{ fontSize: 'var(--type-h2)', lineHeight: 1.9, color: 'var(--color-text-soft)', letterSpacing: 'var(--track-px-fine)' }}>
               "우리는 무언가가 되기 위해 떠나는 게 아니라,<br />
               앞으로 무엇을 할지 결정하기 위해 떠난다."
             </div>
@@ -6494,7 +6504,7 @@ function Logistics({ HOTELS, FLIGHTS, saveEdit, resetEdit, isEdited }) {
                     }}
                   >
                     <span style={{ fontSize: '18px', lineHeight: 1 }}>{t.icon}</span>
-                    <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: '0.2px' }}>{t.label}</span>
+                    <span style={{ fontSize: 'var(--type-caption)', fontWeight: active ? 600 : 500, letterSpacing: 'var(--track-px-fine)' }}>{t.label}</span>
                   </button>
                 );
               })}
@@ -6831,7 +6841,7 @@ function MapView() {
             if (chapterDays.length === 0) return null;
             return (
               <div style={{ marginBottom: '16px' }}>
-                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: '0.4px', marginBottom: '10px' }}>
+                <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', fontWeight: 700, letterSpacing: 'var(--track-px-soft)', marginBottom: '10px' }}>
                   📍 우리 일정 · {chapterDays.length}일
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -7307,14 +7317,14 @@ function ExchangeRates() {
                 <div style={{
                   fontSize: '28px', fontFamily: 'var(--font-sans)', fontWeight: 700,
                   color: 'var(--color-text-strong)', marginBottom: '4px',
-                  fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', lineHeight: 1.2,
+                  fontVariantNumeric: 'tabular-nums', letterSpacing: 'var(--track-px-neg)', lineHeight: 1.2,
                 }}>
                   {krw.toLocaleString()}<span style={{ fontSize: 'var(--type-body)', fontWeight: 500, color: 'var(--color-text-soft)', marginLeft: '4px' }}>원</span>
                 </div>
                 <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '14px' }}>
                   {calcAmt} {calcCur} ≈ {krw.toLocaleString()} KRW
                 </div>
-                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '8px', fontWeight: 600, letterSpacing: '0.5px' }}>
+                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '8px', fontWeight: 600, letterSpacing: 'var(--track-px-base)' }}>
                   🇰🇷 한국에서 이만큼 살 수 있어요
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
@@ -7424,7 +7434,7 @@ function ExpenseTracker() {
         <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-accent-primary)', fontWeight: 700, textTransform: 'uppercase', marginBottom: '6px' }}>
           🧾 지출 합계
         </div>
-        <div style={{ fontSize: '32px', fontFamily: 'var(--font-sans)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.5px', lineHeight: 1.1 }}>
+        <div style={{ fontSize: '32px', fontFamily: 'var(--font-sans)', fontWeight: 700, fontVariantNumeric: 'tabular-nums', letterSpacing: 'var(--track-px-neg)', lineHeight: 1.1 }}>
           {totalKRW.toLocaleString()}<span style={{ fontSize: 'var(--type-body)', fontWeight: 500, opacity: 0.7, marginLeft: '4px' }}>원</span>
         </div>
         <div style={{ fontSize: 'var(--type-caption)', opacity: 0.65, marginTop: '4px' }}>
@@ -7758,7 +7768,7 @@ function DressCodeWidget() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {cities.map(city => (
           <div key={city.ch}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', letterSpacing: '1px', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>
+            <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', letterSpacing: 'var(--track-px-md)', fontWeight: 700, marginBottom: '6px', textTransform: 'uppercase' }}>
               {city.city}
             </div>
             {city.venues.map((v, i) => {
@@ -8058,7 +8068,7 @@ function WeatherWidget() {
                   <div style={{ fontSize: 'var(--type-caption)', color: isToday ? 'var(--color-accent-primary)' : 'var(--color-text-muted)', fontWeight: isToday ? 600 : 400 }}>
                     {monthDay} {dayStr}
                   </div>
-                  {isToday && <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-accent-primary)', letterSpacing: '0.5px', marginTop: '1px' }}>TODAY</div>}
+                  {isToday && <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-px-base)', marginTop: '1px' }}>TODAY</div>}
                 </div>
                 <div style={{ fontSize: 'var(--type-h1)', marginRight: '10px', flexShrink: 0, lineHeight: 1 }}>{wmo.e}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -8471,7 +8481,7 @@ function BottomNav({ view, setView }) {
             fontSize: 'var(--type-micro)',
             color: view === t.id ? 'var(--color-text-strong)' : 'var(--color-text-muted)',
             fontWeight: view === t.id ? 500 : 400,
-            letterSpacing: '0.3px',
+            letterSpacing: 'var(--track-px-snug)',
           }}>
             {t.label}
           </div>
