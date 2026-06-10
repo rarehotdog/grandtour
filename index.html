@@ -5033,65 +5033,17 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
       {status.phase === 'during' && status.current && (
         <Card>
           <SectionTitle>오늘 · Day {today.n} · {today.d} ({today.w})</SectionTitle>
-          {/* 지금 포커스 — 여행 중 홈 0클릭 다음 행동(현재 시각 기준) + 예약·내일 이동 알림 */}
-          {(() => {
-            const steps = [
-              { icon: '🚐', value: today.moves, ph: 0 },
-              { icon: '✨', value: today.hl, ph: 1 },
-              { icon: '🍽️', value: today.food, ph: 2 },
-            ].filter(s => s.value);
-            const cur = steps.find(s => s.ph === nowPhase) || steps[steps.length - 1];
-            if (!cur) return null;
-            const reserve = today.food && today.food.includes('🌟') && nowPhase >= 1;
-            const tomorrow = DAYS.find(d => d.n === today.n + 1);
-            const moveIcons = ['✈️', '🚄', '🚆', '🚐', '🚠', '🚖'];
-            const tmrwMove = nowPhase === 2 && tomorrow && moveIcons.some(ic => (tomorrow.moves || '').includes(ic)) ? tomorrow.moves : null;
-            return (
-              <div style={{ background: 'var(--color-bg-surface)', border: `1px solid ${todayChapter?.color}`, borderLeft: `4px solid ${todayChapter?.accent || 'var(--color-accent-primary)'}`, borderRadius: 'var(--radius-md)', padding: '12px 14px', marginBottom: '14px' }}>
-                <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: todayChapter?.accent, fontWeight: 700, textTransform: 'uppercase', marginBottom: '5px' }}>⏱️ 지금 포커스</div>
-                <div style={{ fontSize: 'var(--type-body)', fontWeight: 600, color: 'var(--color-text-strong)', lineHeight: 1.5 }}>
-                  {cur.icon} {cur.value}
-                </div>
-                {reserve && (
-                  <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: 'var(--color-accent-primary)', marginTop: '6px' }}>🌟 예약 식당 — 시간·드레스코드 확인</div>
-                )}
-                {tmrwMove && (
-                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginTop: '6px', paddingTop: '6px', borderTop: '1px solid var(--color-border-soft)' }}>
-                    🧳 내일 이동 — {tmrwMove} · 체크아웃 준비
-                  </div>
-                )}
-              </div>
-            );
-          })()}
-          <div style={{ background: todayChapter?.color, padding: '16px', borderRadius: 'var(--radius-8)', marginBottom: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-              <span style={{ fontSize: 'var(--type-h1)' }}>{todayChapter?.flag}</span>
-              <div style={{ fontSize: 'var(--type-caption)', color: todayChapter?.accent, letterSpacing: 'var(--track-label)' }}>
-                {todayChapter?.theme.toUpperCase()}
-              </div>
-            </div>
-            <div className="gt-serif" style={{ fontSize: '21px', color: 'var(--color-text-strong)', letterSpacing: 'var(--track-px-fine)', lineHeight: 1.4 }}>
-              "{todayChapter?.tag}"
-            </div>
-          </div>
-
-          {/* Today's Photo */}
-          <PhotoSlot dayId={today.n} photo={todayPhoto} savePhoto={savePhoto} deletePhoto={deletePhoto} compact />
-
-          {/* Inline Map */}
-          {todayChapter?.coords && (
-            <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} cacheKey={todayChapter.id} />
-          )}
-
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px', marginBottom: '8px' }}>
-            <div style={{ fontSize: 'var(--type-body)', lineHeight: 1.7, minWidth: 0 }}>
-              <strong>📍 {today.city}</strong> · 🏨 {today.hotel}
+          {/* ① 오늘 정체성 — 도시·숙소·강도를 최상단으로 (지도 아래 묻힘 해소) */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '12px' }}>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontSize: 'var(--type-h3)', fontWeight: 700, color: 'var(--color-text-strong)', lineHeight: 1.4 }}>📍 {today.city}</div>
+              <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6 }}>🏨 {today.hotel}</div>
             </div>
             {today.int && INT_LABEL[today.int] && (
-              <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: INT_LABEL[today.int].c }}>{INT_LABEL[today.int].t}</span>
+              <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: INT_LABEL[today.int].c, marginTop: '4px' }}>{INT_LABEL[today.int].t}</span>
             )}
           </div>
-          {/* 오늘 동선 타임라인 — 현재 시각 기준 '지금쯤 여기' 강조 */}
+          {/* ② 오늘 동선 타임라인 — 현재 시각 기준 '지금쯤 여기' 강조 (지금 포커스 배너와 중복이라 타임라인으로 단일화) */}
           {(() => {
             const steps = [
               { icon: '🚐', label: '이동', value: today.moves, ph: 0 },
@@ -5128,19 +5080,29 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
               </div>
             );
           })()}
-          <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '12px' }}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
-            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
-          </div>
-          <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: 'var(--radius-8)' }}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-warning-text)', marginBottom: '6px' }}>💕 커플 모먼트</div>
-            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.mo}</div>
-          </div>
-          {/* 오늘 내 할일 (day_items) — 표시·토글, 추가는 일정 탭 */}
+          {/* ③ 알림 칩 — 예약 식당(오후~)·내일 이동(저녁) 조건부 (구 지금 포커스 배너의 고유 정보만 분리 유지) */}
+          {(() => {
+            const reserve = today.food && today.food.includes('🌟') && nowPhase >= 1;
+            const tomorrow = DAYS.find(d => d.n === today.n + 1);
+            const moveIcons = ['✈️', '🚄', '🚆', '🚐', '🚠', '🚖'];
+            const tmrwMove = nowPhase === 2 && tomorrow && moveIcons.some(ic => (tomorrow.moves || '').includes(ic)) ? tomorrow.moves : null;
+            if (!reserve && !tmrwMove) return null;
+            return (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                {reserve && (
+                  <div style={{ background: 'var(--color-warning-bg)', borderRadius: 'var(--radius-8)', padding: '10px 12px', fontSize: 'var(--type-caption)', fontWeight: 700, color: 'var(--color-accent-primary)' }}>🌟 예약 식당 — 시간·드레스코드 확인</div>
+                )}
+                {tmrwMove && (
+                  <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '10px 12px', fontSize: 'var(--type-caption)', lineHeight: 1.5, color: 'var(--color-text-soft)' }}>🧳 내일 이동 — {tmrwMove} · 체크아웃 준비</div>
+                )}
+              </div>
+            );
+          })()}
+          {/* ④ 오늘 내 할일 (day_items) — 표시·토글, 추가는 일정 탭 */}
           {(() => {
             const items = (dayItems && dayItems[today.n]) || [];
             return (
-              <div style={{ marginTop: '12px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-8)', padding: '12px' }}>
+              <div style={{ marginBottom: '12px', background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-8)', padding: '12px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: items.length ? '8px' : '0' }}>
                   <span style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>✅ 오늘 할일{items.length ? ` (${items.filter(i => i.done).length}/${items.length})` : ''}</span>
                   <button onClick={() => goToDay(today.c, today.n)} className="gt-chip" style={{ background: 'none', border: 'none', color: 'var(--color-accent-primary)', fontSize: 'var(--type-caption)', fontWeight: 600, cursor: 'pointer', padding: 0 }}>+ 추가</button>
@@ -5160,6 +5122,33 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
               </div>
             );
           })()}
+
+          {/* ⑤ 오늘 사진 + 지도 */}
+          <PhotoSlot dayId={today.n} photo={todayPhoto} savePhoto={savePhoto} deletePhoto={deletePhoto} compact />
+          {todayChapter?.coords && (
+            <InlineMap lat={todayChapter.coords.lat} lng={todayChapter.coords.lng} label={todayChapter.search} height={200} cacheKey={todayChapter.id} />
+          )}
+
+          {/* ⑥ 사색 푸터 — 챕터 테마(컴팩트)·오늘의 질문·커플 모먼트 (행동 정보 아래로 분리) */}
+          <div style={{ background: todayChapter?.color, padding: '14px 16px', borderRadius: 'var(--radius-8)', margin: '12px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
+              <span style={{ fontSize: 'var(--type-h3)' }}>{todayChapter?.flag}</span>
+              <div style={{ fontSize: 'var(--type-caption)', color: todayChapter?.accent, letterSpacing: 'var(--track-label)' }}>
+                {todayChapter?.theme.toUpperCase()}
+              </div>
+            </div>
+            <div className="gt-serif" style={{ fontSize: 'var(--type-h3)', color: 'var(--color-text-strong)', letterSpacing: 'var(--track-px-fine)', lineHeight: 1.5 }}>
+              "{todayChapter?.tag}"
+            </div>
+          </div>
+          <div style={{ background: 'var(--color-bg-page)', padding: '12px', borderRadius: 'var(--radius-8)', marginBottom: '12px' }}>
+            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', marginBottom: '6px' }}>💭 오늘의 질문</div>
+            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.q}</div>
+          </div>
+          <div style={{ background: 'var(--color-warning-bg)', padding: '12px', borderRadius: 'var(--radius-8)' }}>
+            <div style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-warning-text)', marginBottom: '6px' }}>💕 커플 모먼트</div>
+            <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: 'var(--color-text-strong)' }}>{today.mo}</div>
+          </div>
         </Card>
       )}
 
