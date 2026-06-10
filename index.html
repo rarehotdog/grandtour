@@ -1499,7 +1499,7 @@ const wxFromCache = (weatherCache, chapterId, md) => {
 const LEG_ICON = { air: '🛫', train: '🚄', drive: '🚗', transfer: '🚐' };
 
 const buildConciergeItems = (ctx) => {
-  const { now, status, FLIGHTS, HOTELS, DAYS, checks, packing, restaurantStatus, weatherCache, lastFullBackupAt } = ctx;
+  const { now, status, FLIGHTS, HOTELS, DAYS, checks, packing, restaurantStatus, weatherCache, lastFullBackupAt, readiness, fxCache } = ctx;
   const items = [];
   const push = (urgency, icon, title, detail, action) => items.push({ urgency, icon, title, detail: detail || null, action: action || null });
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -1520,12 +1520,26 @@ const buildConciergeItems = (ctx) => {
     if (dDay <= 2 && (!lastFullBackupAt || Date.now() - lastFullBackupAt > 7 * 86400000)) {
       push('soon', '💾', '출발 전에 사진 포함 전체 백업 한 번 해두자', '홈 맨 아래 · 사진 포함 ON', null);
     }
+    // 레디니스 — 비행기 모드·로밍 끊김에 대비해 실제 준비물(IDB·캐시)을 직접 확인
+    if (dDay <= 3 && readiness) {
+      const tileTotal = CHAPTERS.filter(c => c.coords).length;
+      if (readiness.tiles != null && readiness.tiles < tileTotal) {
+        push('soon', '📥', `오프라인 지도 ${readiness.tiles}/${tileTotal} 도시 — 비행기 모드 대비해 받아두자`, null, { label: '지도', sub: 'map' });
+      }
+      if (readiness.docs === 0) {
+        push('soon', '🔐', '여권·바우처를 문서 금고에 담아두자 — 오프라인에서도 열려', null, { label: '문서', view: 'private', psub: 'docs' });
+      }
+    }
     if (dDay === 1) {
       const packTotal = Object.values(PACKING_ALL).reduce((acc, p) => acc + Object.values(p.sections).flat().length, 0);
       const packDone = Object.values(packing || {}).filter(Boolean).length;
       if (packDone < packTotal) push('soon', '🧳', `패킹 마감 — 아직 ${packTotal - packDone}개 남았어`, null, { label: '패킹', view: 'check' });
       const depMin = depLeg ? parseTimeHHMM(depLeg.t) : null;
       if (depMin != null && depMin - 180 > 0) push('info', '🛬', `내일 ${fmtMin(depMin)} 출발 — ${fmtMin(depMin - 180)}쯤 공항 도착 제안`, depLeg.route, null);
+    }
+    // 환율 캐시는 D−1 공항 제안보다 후순위 (같은 info끼리는 삽입 순서가 절삭 우선순위)
+    if (dDay <= 3 && !(fxCache && fxCache.rates)) {
+      push('info', '💱', '환율을 한 번 열어두면 현지 오프라인에서도 계산돼', null, { label: '환율', sub: 'fx' });
     }
     // 도착일 첫 도시 날씨 — 캐시에 그 날짜가 있을 때만 (여정 날씨 탭을 한 번 열면 채워짐)
     const firstCity = CHAPTERS.find(c => c.coords);
@@ -1538,6 +1552,11 @@ const buildConciergeItems = (ctx) => {
 
   if (status.phase === 'during' && status.current) {
     const today = status.current;
+    // 여행 중에도 데드라인 있는 urgent 미완료(예: 피렌체 ZTL은 6/25 도착 전)는 계속 보여준다
+    const dUrgent = Object.values(CHECKLIST).flat().filter(i => i.urgent && !(checks || {})[i.id]);
+    if (dUrgent.length) {
+      push('soon', '⚑', `아직 처리 안 된 것 — ${dUrgent[0].t}${dUrgent.length > 1 ? ` 외 ${dUrgent.length - 1}건` : ''}`, null, { label: '체크', view: 'check' });
+    }
     // 오늘 이동 leg 체인 — 다음 출발 카운트다운 + 이어지는 구간
     const legs = (FLIGHTS || []).filter(f => f.d === today.d).map(l => ({ ...l, min: parseTimeHHMM(l.t) }));
     const timed = legs.filter(l => l.min != null).sort((a, b) => a.min - b.min);
@@ -5133,16 +5152,65 @@ function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, setView, goLogi
 
   useEffect(() => {
     let alive = true;
-    Promise.all([storage.get('restaurant_status'), storage.get('weather_cache'), storage.get('lastFullBackupAt')])
-      .then(([rs, wc, lb]) => { if (alive) setExtra({ rs: rs || {}, wc: wc || null, lb: lb || null }); });
+    Promise.all([
+      storage.get('restaurant_status'), storage.get('weather_cache'), storage.get('lastFullBackupAt'),
+      storage.get('fx_cache'),
+      idb.all('maptiles').then(m => Object.keys(m || {}).length).catch(() => null),
+      idb.all('documents').then(m => Object.keys(m || {}).length).catch(() => null),
+    ]).then(([rs, wc, lb, fx, tiles, docs]) => {
+      if (alive) setExtra({ rs: rs || {}, wc: wc || null, lb: lb || null, fx: fx || null, tiles, docs });
+    });
     const t = setInterval(() => setTick(n => n + 1), 60000); // 출발 카운트다운 분 단위 갱신
     return () => { alive = false; clearInterval(t); };
   }, []);
+
+  // 자급 날씨 — 브리핑에 필요한 도시(출발 전: 첫 도시 / 여행 중: 오늘·다음 도시)만 캐시에 없으면 직접 채운다.
+  // weather_cache.savedAt은 건드리지 않아 WeatherWidget(9도시 전체 갱신) 동작 불변. 30분 스로틀, 실패 시 조용히 생략.
+  useEffect(() => {
+    if (!extra) return;
+    let alive = true;
+    (async () => {
+      const last = await storage.get('concierge_wx_at');
+      if (last && Date.now() - last < 1800000) return;
+      const wants = [];
+      if (status.phase === 'pre') {
+        const first = CHAPTERS.find(c => c.coords);
+        if (first) wants.push(first);
+      } else if (status.phase === 'during' && status.current) {
+        const cur = C(status.current.c);
+        if (cur && cur.coords) wants.push(cur);
+        const idx = CHAPTERS.findIndex(c => c.id === status.current.c);
+        const nxt = CHAPTERS.slice(idx + 1).find(c => c.coords);
+        if (nxt) wants.push(nxt);
+      }
+      const have = (extra.wc && extra.wc.data) || {};
+      const missing = wants.filter(c => !(have[c.id] && have[c.id].time));
+      if (!missing.length) return;
+      const fetched = {};
+      for (const c of missing) {
+        try {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 8000);
+          const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${c.coords.lat}&longitude=${c.coords.lng}&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_mean,weathercode&timezone=auto&forecast_days=16`, { signal: ctrl.signal });
+          clearTimeout(timer);
+          const json = await res.json();
+          if (json.daily) fetched[c.id] = json.daily;
+        } catch (e) {}
+      }
+      if (!Object.keys(fetched).length) return;
+      const merged = { data: { ...have, ...fetched }, savedAt: (extra.wc && extra.wc.savedAt) || 0 };
+      await storage.set('weather_cache', merged);
+      await storage.set('concierge_wx_at', Date.now());
+      if (alive) setExtra(prev => prev ? { ...prev, wc: merged } : prev);
+    })();
+    return () => { alive = false; };
+  }, [!!extra, status.phase, status.current && status.current.c]);
 
   if (!extra) return null;
   const items = buildConciergeItems({
     now: new Date(), status, FLIGHTS, HOTELS: HOTELS_DEFAULT, DAYS, checks, packing,
     restaurantStatus: extra.rs, weatherCache: extra.wc, lastFullBackupAt: extra.lb,
+    fxCache: extra.fx, readiness: { tiles: extra.tiles, docs: extra.docs },
   });
   if (!items.length) return null;
 
@@ -5165,7 +5233,7 @@ function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, setView, goLogi
             {it.action && (it.action.href ? (
               <a href={it.action.href} target="_blank" rel="noopener noreferrer" className="gt-chip" style={chip}>{it.action.label} ↗</a>
             ) : (
-              <button onClick={() => { if (it.action.sub) goLogi(it.action.sub); else if (it.action.view) setView(it.action.view); }} className="gt-chip" style={chip}>{it.action.label} →</button>
+              <button onClick={() => { if (it.action.sub) goLogi(it.action.sub); else if (it.action.view) { if (it.action.psub) lastPrivateSub = it.action.psub; setView(it.action.view); } }} className="gt-chip" style={chip}>{it.action.label} →</button>
             ))}
           </div>
         ))}
