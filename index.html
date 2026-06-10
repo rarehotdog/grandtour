@@ -1499,7 +1499,7 @@ const wxFromCache = (weatherCache, chapterId, md) => {
 const LEG_ICON = { air: '🛫', train: '🚄', drive: '🚗', transfer: '🚐' };
 
 const buildConciergeItems = (ctx) => {
-  const { now, status, FLIGHTS, HOTELS, DAYS, checks, packing, restaurantStatus, weatherCache, lastFullBackupAt, readiness, fxCache } = ctx;
+  const { now, status, FLIGHTS, HOTELS, DAYS, checks, packing, restaurantStatus, weatherCache, lastFullBackupAt, readiness, fxCache, notes, photos } = ctx;
   const items = [];
   const push = (urgency, icon, title, detail, action) => items.push({ urgency, icon, title, detail: detail || null, action: action || null });
   const nowMin = now.getHours() * 60 + now.getMinutes();
@@ -1603,6 +1603,13 @@ const buildConciergeItems = (ctx) => {
         if (wx) parts.push(wx);
         if (parts.length) push('info', '🌙', `내일(Day ${tomorrow.n} · ${tomorrow.city}) 미리 보기`, parts.join(' · '), null);
       }
+      // 빈 기록 넛지 — 사진과 메모가 둘 다 없을 때만(하나라도 있으면 침묵). 영원의 기록은 매일 한 조각에서 나온다.
+      const todayNote = notes && notes[today.n];
+      const hasNote = !!(todayNote && todayNote.content && todayNote.content.trim());
+      const hasPhoto = !!(photos && photos[today.n]);
+      if (!hasNote && !hasPhoto) {
+        push('info', '📔', '오늘 기록이 아직 비어 있어 — 사진 한 장이나 한 줄이면 충분해', null, { label: '기록', view: 'private', psub: 'notes' });
+      }
     }
   }
 
@@ -1652,7 +1659,7 @@ function Onboarding({ onClose, setView }) {
     { icon: '📅', t: '일정', d: '27일 코스·추천 동선·사진·메모' },
     { icon: '✓', t: '체크', d: '예약·준비물 체크리스트' },
     { icon: '🧭', t: '여정', d: '지도·호텔·항공·환율·미식·가계부' },
-    { icon: '📖', t: '기록', d: '둘만의 메모·관점 (PIN 잠금)' },
+    { icon: '📖', t: '기록', d: '둘만의 메모·관점 (둘이 함께 쓰는 기록)' },
   ];
   return (
     <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(27,42,74,0.55)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1100, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0' }}>
@@ -2214,7 +2221,7 @@ function App() {
         )}
         {loaded && (
           <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} setView={setView} goToDay={(chId, dayN) => { setDaysFocus({ chId, dayN }); setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} dayItems={dayItems} toggleDayItem={toggleDayItem} />}
+            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} saveNote={saveNote} notesMeta={notesMeta} setView={setView} goToDay={(chId, dayN) => { setDaysFocus({ chId, dayN }); setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} dayItems={dayItems} toggleDayItem={toggleDayItem} />}
             {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} focus={daysFocus} clearFocus={() => setDaysFocus(null)} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} dayItems={dayItems} addDayItem={addDayItem} toggleDayItem={toggleDayItem} deleteDayItem={deleteDayItem} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} checkMeta={checkMeta} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
@@ -2988,9 +2995,40 @@ function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutp
   return (
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>📖 기록</h2>
-      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-5)', lineHeight: 1.6 }}>
-        둘이 함께 남기는 사색 · 메모 {writtenCount}/28 · 관점 {outputDone}/19
+      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
+        둘이 함께 남기는 사색 · 메모 {writtenCount}/27 · 관점 {outputDone}/19
       </div>
+
+      {/* 기록 캘린더 — 27일이 얼마나 채워졌는지 한눈에 (사진=도시색 채움 · 골드 점=메모) */}
+      {(() => {
+        const cur = getCurrentStatus();
+        const todayN = cur.phase === 'during' && cur.current ? cur.current.n : null;
+        return (
+          <div style={{ marginBottom: 'var(--space-5)' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(9, 1fr)', gap: '4px' }}>
+              {DAYS.map(d => {
+                const ch = C(d.c);
+                const hasPhoto = !!(photos && photos[d.n]);
+                const hasNote = !!(notes[d.n] && notes[d.n].content && notes[d.n].content.trim());
+                return (
+                  <div key={d.n} aria-label={`Day ${d.n}${hasPhoto ? ' 사진' : ''}${hasNote ? ' 메모' : ''}`} style={{
+                    position: 'relative', height: '30px', borderRadius: 'var(--radius-4)',
+                    background: hasPhoto ? (ch && ch.color ? ch.color : 'var(--color-bg-page)') : 'var(--color-bg-page)',
+                    border: d.n === todayN ? '1.5px solid var(--color-accent-primary)' : '1px solid var(--color-border-soft)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <span style={{ fontSize: 'var(--type-micro)', color: hasPhoto ? (ch && ch.accent ? ch.accent : 'var(--color-text-strong)') : 'var(--color-text-muted)', fontWeight: hasPhoto ? 700 : 400 }}>{d.n}</span>
+                    {hasNote && <span style={{ position: 'absolute', top: '3px', right: '3px', width: '5px', height: '5px', borderRadius: '50%', background: 'var(--color-accent-primary)' }} />}
+                  </div>
+                );
+              })}
+            </div>
+            <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '6px' }}>
+              색 채움 = 사진 · <span style={{ display: 'inline-block', width: '5px', height: '5px', borderRadius: '50%', background: 'var(--color-accent-primary)', verticalAlign: 'middle' }} /> = 메모 · 칸 하나가 하루야
+            </div>
+          </div>
+        );
+      })()}
 
       <JourneyShareCard edits={edits} outputs={outputs} onForkOpen={onForkOpen} />
 
@@ -3635,9 +3673,11 @@ function EditableField({ value, onSave, onReset, edited, multiline = false, plac
 // =================== STABILITY WIDGETS ===================
 
 // Backup reminder — shows banner if no backup in last 14 days
-function EveningReminder({ status }) {
+function EveningReminder({ status, notes, saveNote, notesMeta, openNotes }) {
   const [visible, setVisible] = useState(false);
   const [notifPerm, setNotifPerm] = useState(null);
+  // 표시 모드는 배너가 뜨는 순간 1회 고정 — 타이핑 autosave로 notes가 갱신돼도 에디터가 도중에 바뀌지 않게
+  const [startedWithNote, setStartedWithNote] = useState(false);
 
   useEffect(() => {
     if (status.phase !== 'during' || !status.current) return;
@@ -3645,7 +3685,12 @@ function EveningReminder({ status }) {
     const totalMin = now.getHours() * 60 + now.getMinutes();
     if (totalMin < 1230 || totalMin > 1380) return; // 20:30~23:00
     const todayKey = 'evening_shown_' + now.toISOString().slice(0, 10);
-    storage.get(todayKey).then(shown => { if (!shown) setVisible(true); });
+    storage.get(todayKey).then(shown => {
+      if (shown) return;
+      const tn = notes && notes[status.current.n];
+      setStartedWithNote(!!(tn && tn.content && tn.content.trim()));
+      setVisible(true);
+    });
     if ('Notification' in window) setNotifPerm(Notification.permission);
   }, [status.phase]);
 
@@ -3685,9 +3730,34 @@ function EveningReminder({ status }) {
       <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-label)', fontWeight: 700, marginBottom: '8px' }}>
         🌙 오늘의 질문 · Day {status.current.n}
       </div>
-      <div style={{ fontSize: 'var(--type-body)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
+      <div style={{ fontSize: 'var(--type-body)', fontFamily: 'var(--font-serif)', fontStyle: 'italic', color: 'var(--color-text-inverse)', lineHeight: 1.75, marginBottom: '12px' }}>
         "{status.current.q}"
       </div>
+      {/* 질문을 본 자리에서 바로 한 줄 — 이미 적었으면 이어 쓰기 링크로 축약 */}
+      {(() => {
+        const n = status.current.n;
+        const todayNote = notes && notes[n];
+        if (startedWithNote) {
+          return (
+            <button onClick={openNotes} style={{
+              fontSize: 'var(--type-caption)', color: 'var(--color-accent-primary)', fontWeight: 600,
+              background: 'rgba(201,169,97,0.12)', border: '1px solid rgba(201,169,97,0.3)',
+              borderRadius: 'var(--radius-sm)', padding: '7px 12px', cursor: 'pointer', fontFamily: 'inherit',
+              marginBottom: notifPerm !== 'granted' ? '12px' : '0',
+            }}>오늘 기록 남김 ✓ · 이어 쓰기 →</button>
+          );
+        }
+        return (
+          <div style={{ marginBottom: notifPerm !== 'granted' ? '12px' : '0' }}>
+            <div style={{ fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.55)', marginBottom: '6px' }}>
+              하루가 사라지기 전에, 한 줄이면 충분해.
+            </div>
+            <div style={{ background: 'var(--color-bg-surface)', borderRadius: 'var(--radius-md)', padding: '10px 12px' }}>
+              <NoteEditor dayId={n} note={todayNote} save={saveNote} meta={notesMeta && notesMeta[n]} />
+            </div>
+          </div>
+        );
+      })()}
       {'Notification' in window && notifPerm !== 'granted' && (
         <button onClick={requestNotif} style={{
           fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)',
@@ -4150,8 +4220,8 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
   const daysSince = status.dDay; // days since TRIP_END
 
   const stats = [
-    { label: '메모', value: noteCount, total: 28, icon: '📝', action: 'private' },
-    { label: '사진', value: photoCount, total: 28, icon: '📸', action: 'days' },
+    { label: '메모', value: noteCount, total: 27, icon: '📝', action: 'private' },
+    { label: '사진', value: photoCount, total: 27, icon: '📸', action: 'days' },
     { label: '관점', value: outputDone, total: OUTPUTS.length, icon: '✦', action: 'private' },
   ];
 
@@ -4182,7 +4252,7 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
         27일의 여정
       </div>
       <div className="gt-body-soft" style={{ color: 'rgba(250,246,239,0.72)', marginTop: 'var(--space-2)' }}>
-        2026.06.15 → 07.12 · 9 도시 · 4 개국{daysSince > 0 ? ` · 귀국 ${daysSince}일째` : ''}
+        2026.06.15 → 07.11 · 9 도시 · 4 개국{daysSince > 0 ? ` · 귀국 ${daysSince}일째` : ''}
       </div>
 
       {/* 3-stat grid */}
@@ -5156,7 +5226,7 @@ function LocalToolkit({ todayChapter, today, goLogi }) {
 
 // =================== ConciergeCard — "지금 필요한 것" 브리핑 (홈 최상단) ===================
 // buildConciergeItems 규칙 엔진의 결과를 렌더. 아이템이 없으면 아예 안 뜬다(조용한 날은 조용하게).
-function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, setView, goLogi }) {
+function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, notes, photos, setView, goLogi }) {
   const [extra, setExtra] = useState(null);
   const [, setTick] = useState(0);
 
@@ -5218,7 +5288,7 @@ function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, setView, goLogi
 
   if (!extra) return null;
   const items = buildConciergeItems({
-    now: new Date(), status, FLIGHTS, HOTELS: HOTELS_DEFAULT, DAYS, checks, packing,
+    now: new Date(), status, FLIGHTS, HOTELS: HOTELS_DEFAULT, DAYS, checks, packing, notes, photos,
     restaurantStatus: extra.rs, weatherCache: extra.wc, lastFullBackupAt: extra.lb,
     fxCache: extra.fx, readiness: { tiles: extra.tiles, docs: extra.docs },
   });
@@ -5252,7 +5322,7 @@ function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, setView, goLogi
   );
 }
 
-function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData, dayItems, toggleDayItem }) {
+function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, setView, goToDay, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData, dayItems, toggleDayItem }) {
   const [withPhotos, setWithPhotos] = useState(false);
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
@@ -5269,10 +5339,10 @@ function Home({ status, checks, packing, outputs, notes, setView, goToDay, DAYS,
   return (
     <div style={{ padding: '24px 0' }}>
       {/* GT 컨시어지 — 시간×데이터 종합 '지금 필요한 것' (pre·during 공통, 아이템 없으면 미렌더) */}
-      <ConciergeCard status={status} FLIGHTS={FLIGHTS} DAYS={DAYS} checks={checks} packing={packing} setView={setView} goLogi={goLogi} />
+      <ConciergeCard status={status} FLIGHTS={FLIGHTS} DAYS={DAYS} checks={checks} packing={packing} notes={notes} photos={photos} setView={setView} goLogi={goLogi} />
 
-      {/* Evening question reminder — during trip, 20:30~23:00 only */}
-      <EveningReminder status={status} />
+      {/* Evening question reminder — during trip, 20:30~23:00. 질문을 본 자리에서 바로 한 줄 기록 */}
+      <EveningReminder status={status} notes={notes} saveNote={saveNote} notesMeta={notesMeta} openNotes={() => { lastPrivateSub = 'notes'; setView('private'); }} />
 
       {/* Hero Countdown — pre-trip only */}
       {status.phase === 'pre' && <HeroCountdown status={status} setView={setView} />}
