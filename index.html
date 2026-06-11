@@ -182,7 +182,9 @@
       -webkit-font-smoothing: antialiased;
       -moz-osx-font-smoothing: grayscale;
       font-synthesis: none;        /* no faux bold/italic — render only what the font defines */
-      text-rendering: optimizeLegibility;
+      /* optimizeLegibility는 모바일에서 긴 한글 본문의 커닝 재계산을 강제해
+         스크롤 중 텍스트 떨림·랙의 원인이 됨 → auto (31차) */
+      text-rendering: auto;
     }
 
     /* ===== Wanted DS-style Utility Classes ===== */
@@ -213,12 +215,14 @@
     main { -webkit-overflow-scrolling: touch; }
     main > div > div { scrollbar-width: thin; }
 
-    /* ===== Premium Micro-Interactions ===== */
+    /* ===== Premium Micro-Interactions =====
+       press 피드백은 opacity로 — transform scale은 버튼 안 텍스트를 비정수 배율로
+       래스터화해 iOS에서 스크롤 시작 시 글자가 긁혀 보이는 원인(31차 제거) */
     button {
-      transition: transform 0.12s var(--ease), box-shadow 0.18s var(--ease), background 0.18s var(--ease), opacity 0.18s var(--ease);
+      transition: box-shadow 0.18s var(--ease), background 0.18s var(--ease), opacity 0.18s var(--ease);
     }
     button:active:not(:disabled) {
-      transform: scale(0.97);
+      opacity: 0.72;
     }
     button:disabled { opacity: 0.5; cursor: not-allowed !important; }
 
@@ -244,7 +248,10 @@
       background-size: 100% 220%;
       box-shadow: inset -1px 0 1.5px rgba(255,255,255,0.7),
                   0 0 7px rgba(201,169,97,0.55);
-      animation: gtGoldSheen 4.5s var(--ease-out) infinite;
+      /* sheen은 등장 시 2회만 — background-position 무한 애니메이션은 매 프레임
+         paint라 스크롤과 경합해 텍스트 떨림을 만든다(31차). 정지 후에도
+         그라데이션·글로우·하이라이트는 정적으로 유지(글로시 외형 보존) */
+      animation: gtGoldSheen 4.5s var(--ease-out) 2;
       pointer-events: none;
     }
     @keyframes gtGoldSheen {
@@ -261,7 +268,7 @@
       height: 2px;
       background: linear-gradient(90deg, transparent, #E7CC83 18%, #FBEFC2 38%, #C9A961 50%, #FBEFC2 62%, #E7CC83 82%, transparent);
       background-size: 220% 100%;
-      animation: gtGoldSheenX 5s var(--ease-out) infinite;
+      animation: gtGoldSheenX 5s var(--ease-out) 2;
       pointer-events: none;
     }
     /* 확정 배지 — 의미색(초록=확정) 유지하면서 골드 광택 테두리만 절제 적용(정적) */
@@ -270,13 +277,14 @@
       .gt-gold-edge::before, .gt-gold-line::after { animation: none; }
     }
 
-    /* Smooth view transition */
+    /* Smooth view transition — opacity만: 화면 전체 텍스트에 transform을 걸면
+       전환 중 레이어 래스터화로 글자가 순간 흐려짐(iOS, 31차 제거) */
     .gt-view {
       animation: gtFadeIn 0.35s var(--ease-out);
     }
     @keyframes gtFadeIn {
-      from { opacity: 0; transform: translateY(6px); }
-      to   { opacity: 1; transform: translateY(0); }
+      from { opacity: 0; }
+      to   { opacity: 1; }
     }
 
     /* Accordion expand — 일정 카드 펼침 시 부드러운 등장 */
@@ -355,12 +363,14 @@
       transform: translateX(-50%) scaleX(1);
       background: linear-gradient(90deg, #C9A961, #FBEFC2, #C9A961);
       background-size: 200% 100%;
-      animation: gtGoldSheenX 4.5s var(--ease-out) infinite;
+      animation: gtGoldSheenX 4.5s var(--ease-out) 2;
     }
     .gt-tab .gt-tab-icon { transition: transform 0.25s var(--ease-out), opacity 0.25s; }
     .gt-tab.active .gt-tab-icon { transform: scale(1.08); }
 
-    /* Glass header */
+    /* Glass header — translateZ(0)로 자체 합성 레이어 고정:
+       sticky + backdrop-filter 조합이 iOS 스크롤 중 헤더·하단 텍스트를
+       지글거리게 하는 고전 버그 완화(31차) */
     .gt-header {
       position: sticky;
       top: 0;
@@ -369,6 +379,7 @@
       -webkit-backdrop-filter: saturate(180%) blur(14px);
       backdrop-filter: saturate(180%) blur(14px);
       box-shadow: 0 6px 18px rgba(27,42,74,0.18);
+      transform: translateZ(0);
     }
 
     /* Luxury serif utility */
