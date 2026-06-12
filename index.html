@@ -8205,13 +8205,31 @@ function wmoInfo(code) {
   return { e: '🌡️', t: '—' };
 }
 
+// 도시별 체류일 (DAYS 일정에서 도출) — 날씨 예보에서 "우리가 있는 날" 강조용
+const STAY_DATES = (() => {
+  const map = {};
+  DAYS_DEFAULT.forEach((day) => {
+    const iso = mdToIso(day.d);
+    if (!day.c || !iso) return;
+    (map[day.c] = map[day.c] || {})[iso] = day.n;
+  });
+  return map;
+})();
+
 function WeatherWidget() {
   const WEATHER_CITIES = CHAPTERS.filter(c => c.coords);
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [stale, setStale] = useState(false);
   const [updatedAt, setUpdatedAt] = useState(null);
-  const [selected, setSelected] = useState(WEATHER_CITIES[0].id);
+  // 여행 중엔 오늘 머무는 도시를 기본 선택 — 열자마자 '지금 여기' 날씨
+  const [selected, setSelected] = useState(() => {
+    try {
+      const st = getCurrentStatus();
+      if (st.phase === 'during' && st.current && WEATHER_CITIES.some(c => c.id === st.current.c)) return st.current.c;
+    } catch (e) {}
+    return WEATHER_CITIES[0].id;
+  });
 
   const load = async (force) => {
     setLoading(true);
@@ -8268,6 +8286,8 @@ function WeatherWidget() {
   const selectedChapter = WEATHER_CITIES.find(c => c.id === selected);
   const TODAY = new Date().toISOString().slice(0, 10);
   const DAY_NAMES = ['일', '월', '화', '수', '목', '금', '토'];
+  const stayMap = STAY_DATES[selected] || {};
+  const stayIsos = Object.keys(stayMap).sort();
 
   return (
     <Card>
@@ -8319,12 +8339,40 @@ function WeatherWidget() {
         })}
       </div>
 
-      {/* City dates + theme */}
+      {/* City theme */}
       {selectedChapter && (
-        <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-          {selectedChapter.dates} · {selectedChapter.theme}
+        <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
+          {selectedChapter.theme}
         </div>
       )}
+
+      {/* 체류일 스트립 — 이 도시에 "우리가 있는 날"을 먼저 말해줌 */}
+      {selectedChapter && stayIsos.length > 0 && (() => {
+        const fmtMD = (iso) => Number(iso.slice(5, 7)) + '/' + Number(iso.slice(8, 10));
+        const dayFirst = stayMap[stayIsos[0]];
+        const dayLast = stayMap[stayIsos[stayIsos.length - 1]];
+        const lastForecast = cityData && cityData.time ? cityData.time[cityData.time.length - 1] : null;
+        const outOfRange = lastForecast && stayIsos[0] > lastForecast;
+        // 16일 예보 윈도우 기준, 체류 첫날 예보가 보이기 시작하는 날
+        const visibleFrom = new Date(new Date(stayIsos[0] + 'T12:00:00').getTime() - 15 * 86400000);
+        return (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap',
+            background: selectedChapter.color, borderRadius: 'var(--radius-8)',
+            padding: '9px 12px', marginBottom: '12px',
+            boxShadow: 'inset 3px 0 0 ' + selectedChapter.accent,
+          }}>
+            <span style={{ fontSize: 'var(--type-caption)', fontWeight: 700, color: selectedChapter.accent }}>
+              🧳 우리가 있는 날 · {fmtMD(stayIsos[0])}{stayIsos.length > 1 ? '~' + fmtMD(stayIsos[stayIsos.length - 1]) : ''} (Day {dayFirst}{dayLast !== dayFirst ? '~' + dayLast : ''})
+            </span>
+            {outOfRange && (
+              <span style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-soft)' }}>
+                아직 예보 범위 밖 — {(visibleFrom.getMonth() + 1) + '/' + visibleFrom.getDate()}쯤부터 보여요
+              </span>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Loading skeleton */}
       {loading && !data && (
@@ -8345,20 +8393,28 @@ function WeatherWidget() {
             const dayStr = DAY_NAMES[d.getDay()];
             const monthDay = (d.getMonth() + 1) + '/' + d.getDate();
             const isToday = date === TODAY;
+            const stayDayN = stayMap[date]; // 이 날 우리가 이 도시에 머무는가 (Day n)
+            const isStay = stayDayN != null;
             return (
               <div key={date} style={{
                 display: 'flex',
                 alignItems: 'center',
-                padding: isToday ? '10px 8px' : '10px 0',
+                padding: (isToday || isStay) ? '10px 8px' : '10px 0',
                 borderBottom: '1px solid var(--color-border-default)',
-                borderRadius: isToday ? '6px' : '0',
-                background: isToday ? 'var(--color-bg-page)' : 'transparent'
+                borderRadius: (isToday || isStay) ? '6px' : '0',
+                background: isStay ? selectedChapter.color : (isToday ? 'var(--color-bg-page)' : 'transparent'),
+                boxShadow: isStay ? 'inset 3px 0 0 ' + selectedChapter.accent : 'none'
               }}>
                 <div style={{ width: '54px', flexShrink: 0 }}>
-                  <div style={{ fontSize: 'var(--type-caption)', color: isToday ? 'var(--color-accent-primary)' : 'var(--color-text-muted)', fontWeight: isToday ? 600 : 400 }}>
+                  <div style={{ fontSize: 'var(--type-caption)', color: isStay ? selectedChapter.accent : (isToday ? 'var(--color-accent-primary)' : 'var(--color-text-muted)'), fontWeight: (isToday || isStay) ? 700 : 400 }}>
                     {monthDay} {dayStr}
                   </div>
-                  {isToday && <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-px-base)', marginTop: '1px' }}>TODAY</div>}
+                  {isStay && (
+                    <div style={{ fontSize: 'var(--type-nano)', color: selectedChapter.accent, fontWeight: 700, letterSpacing: 'var(--track-px-base)', marginTop: '1px' }}>
+                      🧳 DAY {stayDayN}{isToday ? ' · 오늘' : ''}
+                    </div>
+                  )}
+                  {isToday && !isStay && <div style={{ fontSize: 'var(--type-nano)', color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-px-base)', marginTop: '1px' }}>TODAY</div>}
                 </div>
                 <div style={{ fontSize: 'var(--type-h1)', marginRight: '10px', flexShrink: 0, lineHeight: 1 }}>{wmo.e}</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
