@@ -419,13 +419,14 @@
        opacity는 인라인에서 dx에 따라 페이드(밀수록 사라짐), 여기선 그 변화만 부드럽게. */
     .gt-swipe-handle { transition: opacity 0.2s var(--ease-out); }
 
-    /* Tap feedback for <a> cards (Recommendations, DayRecs, LocalEats 등) */
+    /* Tap feedback for <a> cards (Recommendations, DayRecs, LocalEats 등)
+       press는 opacity만 — transform scale은 카드 안 텍스트를 비정수 배율로
+       래스터화해 스크롤 시작 시 글자가 긁혀 보임(31차 button과 동일 원리, 32차 정리) */
     .gt-tap-card {
-      transition: transform 0.12s var(--ease), box-shadow 0.18s var(--ease), opacity 0.12s var(--ease);
+      transition: box-shadow 0.18s var(--ease), opacity 0.12s var(--ease);
     }
     .gt-tap-card:active {
-      transform: scale(0.97);
-      opacity: 0.9;
+      opacity: 0.72;
     }
 
     /* Reduce motion respect */
@@ -2344,9 +2345,11 @@ function DayHero({ day, chapter }) {
       width: '100%', height: '200px', borderRadius: 'var(--radius-md)',
       overflow: 'hidden', position: 'relative', marginBottom: '12px',
     }}>
+      {/* crossOrigin: SW가 CORS 응답으로 캐시해야 오프라인(기내·로밍 끊김)에서도 사진 표시 */}
       <img
         src={day.themeImg}
         alt={day.themeAlt || chapter.name}
+        crossOrigin="anonymous"
         onError={() => setErr(true)}
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
@@ -6842,7 +6845,7 @@ function CityMomentHero({ chapter }) {
       boxShadow: '0 10px 26px rgba(27,42,74,0.13)', borderTop: `3px solid ${chapter.accent}`,
     }}>
       {hasPhoto ? (
-        <img src={photo.img} alt={photo.alt || chapter.name} onError={() => setErr(true)}
+        <img src={photo.img} alt={photo.alt || chapter.name} crossOrigin="anonymous" onError={() => setErr(true)}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
       ) : (
         <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(135deg, ${chapter.color} 0%, #ffffff 125%)` }} />
