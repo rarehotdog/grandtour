@@ -1343,14 +1343,26 @@ const gtSync = {
     this._applying = false;
     window.dispatchEvent(new CustomEvent('gt:remote', { detail: { key } }));
   },
-  // 접속 시 전체 당겨오기
+  // 접속 시 전체 당겨오기 + 초기 시딩
+  // 원격에 있는 키 = 원격 우선(LWW와 일관). 원격에 아직 없는 키 = 이 기기의 기존
+  // 데이터를 올려 시딩 — 폰에서 코드 만들고 PC에서 연결했을 때 "비어 보임" 방지
+  // (시딩 전엔 각 키를 한 번씩 수정해야만 원격에 올라갔음)
   async pullAll() {
     const tid = this.tripId();
     const c = getSupa();
     if (!tid || !c) return;
     try {
       const { data } = await c.from('gt_state').select('k,v').eq('trip_id', tid);
+      const remoteKeys = new Set((data || []).map(row => row.k));
       (data || []).forEach(row => this.applyRemote(row.k, row.v));
+      SYNC_KEYS.forEach((k) => {
+        if (remoteKeys.has(k)) return;
+        let v = null;
+        try { const raw = localStorage.getItem(k); v = raw == null ? null : JSON.parse(raw); } catch (e) {}
+        // 빈 값({}·[]·null)은 시딩하지 않음 — 새 기기가 노이즈 행을 만들지 않게
+        const empty = v == null || (typeof v === 'object' && Object.keys(v).length === 0);
+        if (!empty) this.push(k, v);
+      });
     } catch (e) {}
   },
   // Realtime 구독 — 다른 기기 변경 수신
