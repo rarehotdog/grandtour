@@ -5,6 +5,34 @@
 
 ---
 
+## 2026-06-12 (32차) — 끊김 없는 사용성: 느린 네트워크 즉시 부팅 + 사진 오프라인 + 카드 press 통일
+
+**시작 상태**: 31차 푸시·배포 직후(`origin/main`==`4c59e0a`, 라이브 마커 검증 완료). 사용자 방향: "**가서도 계속 끊기지 않고** 사용할 수 있어야 하고, **직관적이고 쉬워야** 한다 — 그 관점에서 디벨롭". 오프라인·연속성 렌즈로 sw.js↔index.html 외부 의존성 전수 감사 후 실행.
+
+**진단**: ① HTML network-first에 타임아웃이 없어 **느린 로밍·기내 와이파이에서 부팅이 하염없이 대기**(깨끗한 오프라인보다 흔하고 더 나쁜 케이스) ② supabase-js가 PRECACHE에 없음(런타임 캐시로 커버되나 보장 없음 — 초기화 가드는 이미 있어 부팅은 안전) ③ **일정 사진·도시 히어로(Unsplash/Wikimedia)가 오프라인에서 전멸**(SW cacheable 목록에 없어 폴백 그라데이션만 — Day 1이 비행날) ④ `.gt-tap-card:active scale(0.97)` — 31차 긁힘 수술의 마지막 잔존(추천·DayRecs·맛집 카드).
+
+**한 일** (index.html + sw.js)
+1. **SW v6 — 느린 네트워크 즉시 부팅**: navigation fetch에 **3.5초 타임아웃 레이스** — 제한 내 응답 없으면 캐시본으로 즉시 부팅, fetch는 `waitUntil`로 완주시켜 다음 부팅용 캐시 갱신(stale-while-revalidate 성격). 캐시조차 없으면(최초 방문) 네트워크 결과에 맡김.
+2. **사진 오프라인 생존**: `IMG_HOSTS`(images.unsplash.com·upload.wikimedia.org) 런타임 캐시 — 한 번 본 일정 사진·도시 히어로는 기내에서도 표시. img 2곳(DayHero·CityMomentHero)에 `crossOrigin="anonymous"`(두 CDN 모두 `ACAO:*` curl 확인) → CORS 200으로 정상 캐시, opaque도 IMG_HOSTS 한정 허용(누락 대비). 미지정 호스트 opaque는 비캐시 유지.
+3. **PRECACHE 보강**: supabase-js + Cormorant css2 추가(allSettled라 실패해도 설치 진행).
+4. **카드 press 통일**: `.gt-tap-card:active` scale(0.97)→opacity 0.72(버튼과 동일 press 언어) — 긁힘 잔존 제거 + 피드백 일관성.
+
+**중요 발견 / 원칙**
+- 여행 중 최빈 실패는 "오프라인"이 아니라 **"느리게 살아있는 네트워크"** — network-first는 타임아웃 레이스가 없으면 오프라인보다 이 케이스에서 더 나쁘게 동작한다(fetch 실패 대기).
+- 외부 이미지를 SW로 캐시하려면 `<img crossOrigin>`이 선행돼야 함 — 없으면 no-cors opaque(status 0)라 `status===200` 게이트에 걸림. opaque 허용은 호스트 allowlist 한정으로(무분별 캐시·쿼터 위험 방지).
+- press 피드백 채널(opacity)은 한 곳을 고치면 **같은 패턴 전수 grep**으로 잔존을 없애야 끝 — 31차 button 수술 때 `.gt-tap-card`를 놓쳤다.
+
+**검증**: **SW v6 단위 스모크 9/9**(vm 샌드박스 — 빠른망 fresh/느린망 3.5s 캐시 부팅/오프라인 폴백/unsplash 200·opaque 캐시/타 호스트 opaque 비캐시/오프라인 기캐시 사진/API passthrough) · esbuild 인라인 JSX **0오류** · `node --check sw.js` 통과 · `function` **72** · `createRoot` **1** · Fragment **0** · scale(0.97) **0** · 콘텐츠 infinite **0**(잔여 2=로딩 전용) · 8778줄. **sw.js 변경 → CACHE v5→v6 bump**(규칙 준수).
+
+**종료 상태**: 로컬 32차 2커밋(feat+docs) — **푸시 대기**("푸시해줘" 시 배포).
+
+**보류 / 다음 세션 ground truth**
+- 🔴 **실기기 확인(Tyler, 배포 후)**: QA_CHECKLIST §1 32차 3항목(느린 네트워크 부팅·사진 오프라인·PWA v6 갱신) + §4 카드 press. 특히 **출발 전 와이파이에서 일정 탭 전체 한 번 스크롤**(사진 캐시 적재) 후 비행기 모드 테스트.
+- 🔴 실데이터(편명 2건·ET6973)·실기기 QA 잔여(QA_CHECKLIST).
+- 🟢 귀국 무렵: 회고 리플레이.
+
+---
+
 ## 2026-06-12 (31차) — 모션 중 글자 긁힘(텍스트 래스터화 아티팩트) 수술
 
 **시작 상태**: `origin/main`==`5494787`(30차분 라이브 배포됨). 사용자 보고: **"움직일라 하면 글자가 긁히거나"** — 라이브 실기기에서 스크롤·전환 중 텍스트 왜곡. 헤드리스 금지라 정적 감사로 iOS 텍스트 아티팩트 유발 패턴 전수 식별.
