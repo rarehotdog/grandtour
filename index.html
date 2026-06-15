@@ -4586,24 +4586,26 @@ function HeroCountdown({ status, setView }) {
         {status.phase === 'during' && status.current ? (() => {
           const cur = CHAPTERS.find(c => c.id === status.current.c);
           const n = status.current.n;
-          // 현재 시각대(0 아침 / 1 오후 / 2 저녁) — '지금쯤' 강조용
-          const hNow = new Date().getHours();
-          const nowPhase = hNow < 11 ? 0 : hNow < 17 ? 1 : 2;
-          // 오늘 하루 플랜 — 숙소(맥락) + 이동/활동/식사(시간대별 '지금쯤')
-          const planSteps = [
-            { icon: '🏨', label: '숙소', value: status.current.hotel, ph: -1 },
-            { icon: '🚐', label: '이동', value: status.current.moves, ph: 0 },
-            { icon: '✨', label: '활동', value: status.current.hl, ph: 1 },
-            { icon: '🍽️', label: '식사', value: status.current.food, ph: 2 },
-          ].filter(s => s.value);
+          const intg = status.current.int && INT_LABEL[status.current.int];
+          // 가로 하루 진행 바 — 지금 시각을 07:00~23:00 구간에 매핑(지금쯤 위치). 활동(hl)을 '지금쯤'으로.
+          const nowD = new Date();
+          const nowMin = nowD.getHours() * 60 + nowD.getMinutes();
+          const dStart = 7 * 60, dEnd = 23 * 60;
+          const frac = Math.max(0, Math.min(1, (nowMin - dStart) / (dEnd - dStart)));
+          const nowDoing = status.current.hl || status.current.moves;
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div className="gt-serif" style={{
-                fontSize: '46px', fontWeight: 500, lineHeight: 1,
-                letterSpacing: 'var(--track-tight)', color: 'var(--ink-strong)', fontStyle: 'italic',
-              }}>
-                Day <span className="gt-num">{n}</span>
-                <span style={{ fontSize: '20px', fontStyle: 'normal', color: 'var(--color-accent-primary)', marginLeft: '6px' }}>/ 27</span>
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: '8px' }}>
+                <div className="gt-serif" style={{
+                  fontSize: '46px', fontWeight: 500, lineHeight: 1,
+                  letterSpacing: 'var(--track-tight)', color: 'var(--ink-strong)', fontStyle: 'italic',
+                }}>
+                  Day <span className="gt-num">{n}</span>
+                  <span style={{ fontSize: '20px', fontStyle: 'normal', color: 'var(--color-accent-primary)', marginLeft: '6px' }}>/ 27</span>
+                </div>
+                {intg && (
+                  <span style={{ flexShrink: 0, fontSize: 'var(--type-nano)', fontWeight: 700, color: 'var(--color-accent-primary)', letterSpacing: 'var(--track-px-snug)' }}>{intg.t}</span>
+                )}
               </div>
               <div style={{ marginTop: '8px' }}>
                 <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', fontWeight: 600, letterSpacing: 'var(--track-label)' }}>
@@ -4613,22 +4615,27 @@ function HeroCountdown({ status, setView }) {
                   📍 {status.current.city}
                 </div>
               </div>
-              {/* 오늘 하루 플랜 — 숙소·이동·활동·식사 위아래로, 현재 시각대 '지금쯤' 강조 */}
-              <div style={{ marginTop: '14px', borderTop: '1px solid var(--hairline)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
-                {planSteps.map((s, i) => {
-                  const active = s.ph === nowPhase;
-                  return (
-                    <div key={i} style={{ display: 'flex', gap: '9px', alignItems: 'flex-start' }}>
-                      <span style={{ fontSize: 'var(--type-body-sm)', flexShrink: 0, lineHeight: 1.3 }}>{s.icon}</span>
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <span style={{ fontSize: 'var(--type-nano)', letterSpacing: 'var(--track-px-snug)', color: active ? 'var(--color-accent-primary)' : 'rgba(201,169,97,0.7)', fontWeight: 700 }}>
-                          {s.label}{active ? ' · 지금쯤' : ''}
-                        </span>
-                        <div style={{ fontSize: 'var(--type-caption)', lineHeight: 1.5, color: active ? 'rgba(250,246,239,0.97)' : 'rgba(250,246,239,0.68)', fontWeight: active ? 600 : 400 }}>{s.value}</div>
-                      </div>
-                    </div>
-                  );
-                })}
+
+              {/* 가로 하루 진행 바 — 지금 시각 위치 + 지금쯤 활동 */}
+              <div style={{ marginTop: '16px' }}>
+                <div style={{ position: 'relative', height: '6px', background: 'rgba(250,246,239,0.14)', borderRadius: '3px' }}>
+                  <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: (frac * 100) + '%', background: 'var(--color-accent-primary)', borderRadius: '3px' }} />
+                  <div style={{ position: 'absolute', left: (frac * 100) + '%', top: '50%', transform: 'translate(-50%,-50%)', width: '12px', height: '12px', borderRadius: '50%', background: 'var(--color-accent-primary)', boxShadow: '0 0 0 3px var(--hero-bg)' }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '5px', fontSize: 'var(--type-nano)', color: 'rgba(250,246,239,0.4)', letterSpacing: 'var(--track-px-snug)' }}>
+                  <span>🌅 아침</span><span>🌙 밤</span>
+                </div>
+                {nowDoing && (
+                  <div style={{ marginTop: '10px', fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.95)', lineHeight: 1.5 }}>
+                    <span style={{ color: 'var(--color-accent-primary)', fontWeight: 700 }}>🕐 지금쯤</span> · {nowDoing}
+                  </div>
+                )}
+              </div>
+
+              {/* 확인 — 숙소 · 이동(오늘 동선) */}
+              <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid var(--hairline)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {status.current.hotel && <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.82)', lineHeight: 1.45 }}>🏨 {status.current.hotel}</div>}
+                {status.current.moves && <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.82)', lineHeight: 1.45 }}>🚐 {status.current.moves}</div>}
               </div>
             </div>
           );
