@@ -4518,15 +4518,20 @@ function HeroCountdown({ status, setView }) {
   const wxCities = React.useMemo(() => {
     if (status.phase === 'pre') {
       const first = CHAPTERS.find(c => c.coords);
-      return [SEOUL, first ? { id: first.id, flag: first.flag, name: first.name, lat: first.coords.lat, lng: first.coords.lng } : null].filter(Boolean);
+      return [
+        { ...SEOUL, role: 'home' },
+        first ? { id: first.id, flag: first.flag, name: first.name, lat: first.coords.lat, lng: first.coords.lng, role: 'dest' } : null,
+      ].filter(Boolean);
     }
     if (status.phase === 'during') {
       const cur = CHAPTERS.find(c => c.id === status.current?.c);
       const curIdx = CHAPTERS.findIndex(c => c.id === status.current?.c);
       const next = CHAPTERS.slice(curIdx + 1).find(c => c.coords);
+      // 현재 챕터에 좌표가 없으면(비행/서막/귀국일) 다음 도시는 '도착지'로 표기 — '현재 도시' 오기 방지
+      const curHasCoords = !!(cur && cur.coords);
       return [
-        cur && cur.coords ? { id: cur.id, flag: cur.flag, name: cur.name, lat: cur.coords.lat, lng: cur.coords.lng } : null,
-        next ? { id: next.id, flag: next.flag, name: next.name, lat: next.coords.lat, lng: next.coords.lng } : null,
+        curHasCoords ? { id: cur.id, flag: cur.flag, name: cur.name, lat: cur.coords.lat, lng: cur.coords.lng, role: 'current' } : null,
+        next ? { id: next.id, flag: next.flag, name: next.name, lat: next.coords.lat, lng: next.coords.lng, role: curHasCoords ? 'next' : 'dest' } : null,
       ].filter(Boolean);
     }
     return [];
@@ -4669,9 +4674,7 @@ function HeroCountdown({ status, setView }) {
               const wmoT = w ? wmoInfo(w.today.code) : null;
               const wmoN = w && w.tomorrow ? wmoInfo(w.tomorrow.code) : null;
               const isLast = idx === wxCities.length - 1;
-              const label = idx === 0
-                ? (status.phase === 'pre' ? '지금 있는 곳' : '현재 도시')
-                : '다음 행선지';
+              const label = { home: '지금 있는 곳', dest: '도착지 날씨', current: '현재 도시', next: '다음 행선지' }[city.role] || '다음 행선지';
               return (
                 <div key={city.id} style={{
                   flex: 1, minWidth: 0,
