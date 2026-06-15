@@ -1299,8 +1299,13 @@ const storage = {
 // push: storage.set 래핑으로 전 키 자동 커버. pull: Realtime → 'gt:remote' 이벤트로 UI 재로딩.
 const SUPA_URL = 'https://gjpnaadgzdybeekfiewd.supabase.co';
 const SUPA_KEY = 'sb_publishable_q-IugXVWCMCgBAiBZTSoTA_vW3TpAtO';
-// 메모·관점·사진·캐시(fx/weather)는 동기화 제외 — 의도적 (용량·기기 로컬, 둘 다 같은 기기에서 보는 전제)
-const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses', 'notes', 'check_meta', 'notes_meta', 'day_items'];
+// 동기화 키 — 체크·패킹·일정편집·예약·가계부·메모·할일 + 관점(outputs, 부모님 관전 공유용으로 합류)
+// 사진·캐시(fx/weather)·PIN은 제외(용량·기기 로컬). notes·outputs는 사용자 동의 하에 공유.
+const SYNC_KEYS = ['check', 'packing', 'packing_custom', 'packing_edits', 'edits', 'restaurant_status', 'expenses', 'notes', 'check_meta', 'notes_meta', 'day_items', 'outputs'];
+
+// 관전(읽기 전용) 모드 — ?view= 링크로 들어온 기기. 클라우드 push를 막아 둘의 데이터를
+// 절대 못 바꾸게 한다(부모님 공유 안전장치). 로드 시 1회 평가.
+let VIEW_ONLY = (() => { try { return localStorage.getItem('gt_view_only') === '1'; } catch (e) { return false; } })();
 
 let _supaClient = null;
 function getSupa() {
@@ -1324,7 +1329,7 @@ const gtSync = {
   _lastPushAt: {},         // 키별 마지막 push 시각 (자기 에코 무시용)
   // 로컬 변경 → 원격 upsert
   async push(key, value) {
-    if (this._applying) return;
+    if (this._applying || VIEW_ONLY) return; // 관전 모드는 원격에 절대 쓰지 않음
     const tid = this.tripId();
     if (!tid || !SYNC_KEYS.includes(key)) return;
     const c = getSupa();
@@ -1868,7 +1873,7 @@ function App() {
     } catch (e) {}
   }, [loaded]);
 
-  // 친구 초대 링크 자동감지 (?trip=code) — 공동 워크스페이스 참여
+  // 친구 초대 링크 자동감지 (?trip=code) — 공동 워크스페이스 참여(편집 가능)
   useEffect(() => {
     if (!loaded) return;
     try {
@@ -1882,9 +1887,29 @@ function App() {
             const nm = prompt('공동작업에서 보일 내 이름 (예: 태현, 주연)');
             if (nm && nm.trim()) localStorage.setItem('actor_name', nm.trim());
           }
+          try { localStorage.removeItem('gt_view_only'); } catch (e) {} // 편집 참여 → 관전 해제
           gtSync.setTripId(code);
           location.reload();
         }
+      }
+    } catch (e) {}
+  }, [loaded]);
+
+  // 부모님 관전 링크 자동감지 (?view=code) — 읽기 전용으로 즉시 연동(마찰 없이). push 차단으로 둘의 데이터 안전.
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const v = new URLSearchParams(location.search).get('view');
+      if (!v) return;
+      const code = v.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+      history.replaceState(null, '', location.origin + location.pathname);
+      if (code.length >= 8 && !(VIEW_ONLY && code === gtSync.tripId())) {
+        try {
+          localStorage.setItem('gt_view_only', '1');
+          if (!localStorage.getItem('actor_name')) localStorage.setItem('actor_name', '함께 보는 중');
+        } catch (e) {}
+        gtSync.setTripId(code);
+        location.reload();
       }
     } catch (e) {}
   }, [loaded]);
@@ -1902,6 +1927,7 @@ function App() {
       packing_edits: setPackingEdits,
       edits: setEdits,
       day_items: setDayItems,
+      outputs: setOutputs,
     };
     const onRemote = (e) => {
       const k = e.detail?.key;
@@ -2238,6 +2264,7 @@ function App() {
     }}>
       <Header status={status} setView={setView} />
       <OfflineBanner />
+      <ViewerBanner />
       <main style={{ maxWidth: '720px', margin: '0 auto', padding: '0 16px' }}>
         {!loaded && (
           <div style={{ padding: '32px 0' }}>
@@ -2571,6 +2598,28 @@ function useOnlineStatus() {
 }
 
 // 전역 오프라인 배너 — 연결 끊김을 명확히 알림 (지도·환율·날씨는 캐시로 동작)
+// 관전(읽기 전용) 모드 배너 — 부모님 등 ?view 링크로 들어온 기기에 상시 노출 + 나가기
+function ViewerBanner() {
+  if (!VIEW_ONLY) return null;
+  const leave = () => {
+    if (!confirm('관전(읽기 전용)을 끝낼까요? 내 기기의 보기 데이터는 비워지고 처음 화면으로 돌아갑니다.')) return;
+    try { localStorage.removeItem('gt_view_only'); } catch (e) {}
+    gtSync.setTripId(null);
+    location.reload();
+  };
+  return (
+    <div style={{
+      maxWidth: '720px', margin: '0 auto 4px', padding: '7px 16px',
+      background: 'var(--color-atomic-navy-900, #101a30)', color: 'var(--color-accent-soft, #e8d8a8)',
+      fontSize: 'var(--type-eyebrow)', fontWeight: 600, display: 'flex', alignItems: 'center',
+      justifyContent: 'space-between', gap: '8px', letterSpacing: 'var(--track-px-snug)'
+    }}>
+      <span>👀 함께 보는 중 · 읽기 전용 (편집·동기화 안 됨)</span>
+      <button onClick={leave} style={{ flexShrink: 0, background: 'rgba(250,246,239,0.12)', color: 'var(--color-text-inverse)', border: 'none', borderRadius: 'var(--radius-pill, 999px)', padding: '3px 10px', fontSize: 'var(--type-micro)', fontWeight: 600, cursor: 'pointer' }}>나가기</button>
+    </div>
+  );
+}
+
 function OfflineBanner() {
   const online = useOnlineStatus();
   if (online) return null;
@@ -4537,7 +4586,16 @@ function HeroCountdown({ status, setView }) {
         {status.phase === 'during' && status.current ? (() => {
           const cur = CHAPTERS.find(c => c.id === status.current.c);
           const n = status.current.n;
-          const pctTrip = Math.round(n / 27 * 100);
+          // 현재 시각대(0 아침 / 1 오후 / 2 저녁) — '지금쯤' 강조용
+          const hNow = new Date().getHours();
+          const nowPhase = hNow < 11 ? 0 : hNow < 17 ? 1 : 2;
+          // 오늘 하루 플랜 — 숙소(맥락) + 이동/활동/식사(시간대별 '지금쯤')
+          const planSteps = [
+            { icon: '🏨', label: '숙소', value: status.current.hotel, ph: -1 },
+            { icon: '🚐', label: '이동', value: status.current.moves, ph: 0 },
+            { icon: '✨', label: '활동', value: status.current.hl, ph: 1 },
+            { icon: '🍽️', label: '식사', value: status.current.food, ph: 2 },
+          ].filter(s => s.value);
           return (
             <div style={{ display: 'flex', flexDirection: 'column' }}>
               <div className="gt-serif" style={{
@@ -4554,15 +4612,23 @@ function HeroCountdown({ status, setView }) {
                 <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--ink)', letterSpacing: 'var(--track-label)', marginTop: '3px', lineHeight: 1.4 }}>
                   📍 {status.current.city}
                 </div>
-                {status.current.hl && (
-                  <div style={{ fontSize: 'var(--type-micro)', color: 'var(--ink-faint)', letterSpacing: 'var(--track-label)', marginTop: '2px', lineHeight: 1.4 }}>
-                    오늘 · {status.current.hl}
-                  </div>
-                )}
               </div>
-              {/* 여정 진행 바 — D-day 자리의 시각 균형 유지 */}
-              <div style={{ marginTop: '12px', height: '4px', background: 'var(--hairline)', borderRadius: '2px', overflow: 'hidden' }}>
-                <div style={{ width: pctTrip + '%', height: '100%', background: 'var(--color-accent-primary)' }} />
+              {/* 오늘 하루 플랜 — 숙소·이동·활동·식사 위아래로, 현재 시각대 '지금쯤' 강조 */}
+              <div style={{ marginTop: '14px', borderTop: '1px solid var(--hairline)', paddingTop: '12px', display: 'flex', flexDirection: 'column', gap: '9px' }}>
+                {planSteps.map((s, i) => {
+                  const active = s.ph === nowPhase;
+                  return (
+                    <div key={i} style={{ display: 'flex', gap: '9px', alignItems: 'flex-start' }}>
+                      <span style={{ fontSize: 'var(--type-body-sm)', flexShrink: 0, lineHeight: 1.3 }}>{s.icon}</span>
+                      <div style={{ minWidth: 0, flex: 1 }}>
+                        <span style={{ fontSize: 'var(--type-nano)', letterSpacing: 'var(--track-px-snug)', color: active ? 'var(--color-accent-primary)' : 'rgba(201,169,97,0.7)', fontWeight: 700 }}>
+                          {s.label}{active ? ' · 지금쯤' : ''}
+                        </span>
+                        <div style={{ fontSize: 'var(--type-caption)', lineHeight: 1.5, color: active ? 'rgba(250,246,239,0.97)' : 'rgba(250,246,239,0.68)', fontWeight: active ? 600 : 400 }}>{s.value}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           );
@@ -5238,10 +5304,33 @@ function SyncPanel() {
   };
   const disconnect = () => {
     if (!confirm('공동작업을 끊을까요? 데이터는 기기에 그대로 남고, 더 이상 공유되지 않습니다.')) return;
+    try { localStorage.removeItem('gt_view_only'); } catch (e) {}
     gtSync.setTripId(null);
     location.reload();
   };
-  const inviteUrl = tripId ? (location.origin + location.pathname + '?trip=' + tripId) : '';
+  const base = location.origin + location.pathname;
+  const inviteUrl = tripId ? (base + '?trip=' + tripId) : '';
+  const viewUrl = tripId ? (base + '?view=' + tripId) : '';
+
+  // 관전(읽기 전용)으로 들어온 기기 — 컨트롤 대신 안내만
+  if (VIEW_ONLY) {
+    const leave = () => {
+      if (!confirm('관전을 끝낼까요? 처음 화면으로 돌아갑니다.')) return;
+      try { localStorage.removeItem('gt_view_only'); } catch (e) {}
+      gtSync.setTripId(null);
+      location.reload();
+    };
+    return (
+      <Card>
+        <SectionTitle>👀 함께 보는 중 (읽기 전용)</SectionTitle>
+        <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7, margin: '8px 0 12px' }}>
+          태현·주연의 여정을 실시간으로 보고 있어요. 일정·지도·날씨·예약·가계부·메모·관점이 자동으로 업데이트돼요.<br/>
+          <span style={{ color: 'var(--color-text-muted)' }}>보기 전용이라 내용은 바뀌지 않아요.</span>
+        </div>
+        <button onClick={leave} style={{ padding: '10px 12px', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-caption)', cursor: 'pointer', fontWeight: 500, width: '100%' }}>관전 끝내기</button>
+      </Card>
+    );
+  }
   const lblStyle = { fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '6px' };
   const codeStyle = {
     fontSize: 'var(--type-caption)', fontWeight: 600, letterSpacing: 'var(--track-px-base)',
@@ -5278,9 +5367,21 @@ function SyncPanel() {
           </div>
 
           <div style={lblStyle}>또는 연동 코드 직접 입력</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
             <code style={codeStyle}>{tripId}</code>
             <CopyChip text={tripId} label="코드" />
+          </div>
+
+          {/* 부모님 공유 — 읽기 전용 관전 링크 (받은 분은 보기만, 편집 불가) */}
+          <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '12px 13px', marginBottom: '14px', border: '1px solid var(--color-border-default)' }}>
+            <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-strong)', fontWeight: 700, marginBottom: '4px' }}>👨‍👩‍👧 부모님 공유 (읽기 전용)</div>
+            <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '9px' }}>
+              이 링크를 받은 분은 우리 여정을 <strong>보기만</strong> 해요 — 일정·지도·날씨·예약·가계부·메모·관점이 실시간으로 보이고, 실수로 고쳐질 걱정은 없어요.
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <code style={codeStyle}>{viewUrl}</code>
+              <CopyChip text={viewUrl} label="관전 링크" icon="👀" />
+            </div>
           </div>
 
           <button onClick={disconnect} style={{
