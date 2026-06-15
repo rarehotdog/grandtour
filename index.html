@@ -5354,8 +5354,7 @@ function SyncPanel() {
         )}
       </div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-        내 폰·PC를 같은 코드로 연결하면 체크 · 패킹 · 미식 예약 · 가계부 · 일정 · <strong>메모</strong>가 어디서나 실시간으로 이어져요. 주연과도 같은 방식.<br/>
-        항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-accent-primary)' }}>관점·사진은 기기 로컬.</span>
+        같은 코드로 연결하면 체크·패킹·예약·가계부·일정·메모·관점이 내 폰·PC·주연 기기에서 실시간으로 이어져요. 항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-accent-primary)' }}>사진은 기기 로컬.</span>
       </div>
 
       {/* 내 이름 — 항상 노출(연결 전에도 정해두면 '내 이름으로 연동'되는 느낌) */}
@@ -5367,23 +5366,23 @@ function SyncPanel() {
 
       {connected ? (
         <div>
-          <div style={lblStyle}>🔗 연결 링크 (다른 기기에서 열면 바로 연결)</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+          {/* A. 함께 편집 — 주연·내 다른 기기 (편집 가능) */}
+          <div style={lblStyle}>🔗 함께 편집 — 주연·내 다른 기기 (열면 바로 연결)</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
             <code style={codeStyle}>{inviteUrl}</code>
             <CopyChip text={inviteUrl} label="링크" icon="🔗" />
           </div>
-
-          <div style={lblStyle}>또는 연동 코드 직접 입력</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
-            <code style={codeStyle}>{tripId}</code>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+            <span style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', flexShrink: 0 }}>코드 직접 입력용</span>
+            <code style={{ ...codeStyle, fontSize: 'var(--type-micro)', minWidth: '110px' }}>{tripId}</code>
             <CopyChip text={tripId} label="코드" />
           </div>
 
-          {/* 부모님 공유 — 읽기 전용 관전 링크 (받은 분은 보기만, 편집 불가) */}
-          <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '12px 13px', marginBottom: '14px', border: '1px solid var(--color-border-default)' }}>
-            <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-strong)', fontWeight: 700, marginBottom: '4px' }}>👨‍👩‍👧 부모님 공유 (읽기 전용)</div>
+          {/* B. 부모님께 보여드리기 — 읽기 전용 관전 링크 (받은 분은 보기만, 편집 불가) */}
+          <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '12px 13px', marginBottom: '16px', border: '1px solid var(--color-border-default)' }}>
+            <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-strong)', fontWeight: 700, marginBottom: '4px' }}>👨‍👩‍👧 부모님께 보여드리기 (읽기 전용)</div>
             <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '9px' }}>
-              이 링크를 받은 분은 우리 여정을 <strong>보기만</strong> 해요 — 일정·지도·날씨·예약·가계부·메모·관점이 실시간으로 보이고, 실수로 고쳐질 걱정은 없어요.
+              이 링크를 받은 분은 <strong>보기만</strong> 해요 — 일정·지도·날씨·예약·메모·관점이 실시간으로 보이고, 실수로 고쳐질 걱정은 없어요. (사진은 기기 로컬이라 아직 안 보여요.)
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <code style={codeStyle}>{viewUrl}</code>
@@ -5610,8 +5609,6 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
   const todayPhoto = photos[today.n];
   // 여정 서브탭으로 직행(모듈 변수 세팅 후 view 전환) — '오늘의 현지 도구' 딥링크용
   const goLogi = (sub) => { pendingLogiSub = sub; if (navigator.vibrate) navigator.vibrate(8); setView('logi'); };
-  // 현재 시각대(0 아침 / 1 오후 / 2 저녁) — Today 카드 지금포커스·동선 타임라인 공용(중복 제거)
-  const nowPhase = (() => { const h = new Date().getHours(); return h < 11 ? 0 : h < 17 ? 1 : 2; })();
 
   return (
     <div style={{ padding: '24px 0' }}>
@@ -5633,55 +5630,10 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       {/* Today's Card — during trip: 여행 중엔 '지금 다음 행동'을 최상단으로 */}
       {status.phase === 'during' && status.current && (
         <Card>
-          <SectionTitle>오늘 · Day {today.n} · {today.d} ({today.w})</SectionTitle>
-          {/* ① 오늘 정체성 — 도시·숙소·강도를 최상단으로 (지도 아래 묻힘 해소) */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '8px', marginBottom: '12px' }}>
-            <div style={{ minWidth: 0 }}>
-              <div style={{ fontSize: 'var(--type-h3)', fontWeight: 700, color: 'var(--color-text-strong)', lineHeight: 1.4 }}>📍 {today.city}</div>
-              <div style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-soft)', lineHeight: 1.6 }}>🏨 {today.hotel}</div>
-            </div>
-            {today.int && INT_LABEL[today.int] && (
-              <span style={{ flexShrink: 0, fontSize: 'var(--type-micro)', fontWeight: 700, color: INT_LABEL[today.int].c, marginTop: '4px' }}>{INT_LABEL[today.int].t}</span>
-            )}
-          </div>
-          {/* ② 오늘 동선 타임라인 — 현재 시각 기준 '지금쯤 여기' 강조 (지금 포커스 배너와 중복이라 타임라인으로 단일화) */}
-          {(() => {
-            const steps = [
-              { icon: '🚐', label: '이동', value: today.moves, ph: 0 },
-              { icon: '✨', label: '활동', value: today.hl, ph: 1 },
-              { icon: '🍽️', label: '식사', value: today.food, ph: 2, reserve: today.food && today.food.includes('🌟') },
-            ].filter(s => s.value);
-            return (
-              <div style={{ margin: '4px 0 12px' }}>
-                {steps.map((s, i) => {
-                  const active = s.ph === nowPhase;
-                  return (
-                    <div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', flexShrink: 0 }}>
-                        <div style={{
-                          width: active ? '12px' : '9px', height: active ? '12px' : '9px',
-                          borderRadius: '50%', marginTop: '4px',
-                          background: active ? (todayChapter?.accent || 'var(--color-accent-primary)') : 'var(--color-border-strong)',
-                          boxShadow: active ? `0 0 0 4px ${todayChapter?.color || 'var(--color-warning-bg)'}` : 'none',
-                        }} />
-                        {i < steps.length - 1 && <div style={{ width: '2px', flex: 1, minHeight: '24px', background: 'var(--color-border-default)' }} />}
-                      </div>
-                      <div style={{ paddingBottom: '14px', flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 'var(--type-micro)', letterSpacing: 'var(--track-label)', color: active ? (todayChapter?.accent || 'var(--color-accent-primary)') : 'var(--color-text-muted)', fontWeight: 700, marginBottom: '2px' }}>
-                          {s.icon} {s.label}{active && ' · 지금쯤'}
-                          {s.reserve && <span style={{ marginLeft: '6px', color: 'var(--color-accent-primary)' }}>예약 확인!</span>}
-                        </div>
-                        <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.6, color: active ? 'var(--color-text-strong)' : 'var(--color-text-soft)', fontWeight: active ? 600 : 400 }}>
-                          {s.value}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            );
-          })()}
-          {/* ③ 오늘 내 할일 (day_items) — 표시·토글, 추가는 일정 탭. (예약·내일 이동 알림은 홈 상단 컨시어지가 종합) */}
+          {/* 정체성·동선은 상단 히어로(Day N·도시·하루 진행 바·숙소·이동)가 담당 →
+              이 카드는 '할일·기록·사색'만 (중복 제거, 39차 가로 바 정리 후속) */}
+          <SectionTitle>오늘의 할일 · 기록 · Day {today.n}</SectionTitle>
+          {/* ① 오늘 내 할일 (day_items) — 표시·토글, 추가는 일정 탭. (예약·내일 이동 알림은 홈 상단 컨시어지가 종합) */}
           {(() => {
             const items = (dayItems && dayItems[today.n]) || [];
             return (
