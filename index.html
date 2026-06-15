@@ -5318,9 +5318,13 @@ function SyncPanel() {
     gtSync.setTripId(null);
     location.reload();
   };
-  const base = location.origin + location.pathname;
-  const inviteUrl = tripId ? (base + '?trip=' + tripId) : '';
-  const viewUrl = tripId ? (base + '?view=' + tripId) : '';
+  // 공유 링크는 항상 배포 주소(Vercel)로 — 로컬 미리보기(localhost)·file:// 에서 복사해도
+  // 부모님·다른 기기가 못 여는 localhost 링크가 생성되지 않도록 강제.
+  const PROD_URL = 'https://grandtour-lilac.vercel.app';
+  const isLocalHost = /^(localhost$|127\.|0\.0\.0\.0$|\[?::1)/.test(location.hostname) || location.protocol === 'file:';
+  const shareBase = (isLocalHost ? PROD_URL : (location.origin + location.pathname.replace(/\/[^/]*$/, '/'))).replace(/\/?$/, '/');
+  const inviteUrl = tripId ? (shareBase + '?trip=' + tripId) : '';
+  const viewUrl = tripId ? (shareBase + '?view=' + tripId) : '';
 
   // 관전(읽기 전용)으로 들어온 기기 — 컨트롤 대신 안내만
   if (VIEW_ONLY) {
@@ -5385,7 +5389,7 @@ function SyncPanel() {
           <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '12px 13px', marginBottom: '16px', border: '1px solid var(--color-border-default)' }}>
             <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-strong)', fontWeight: 700, marginBottom: '4px' }}>👨‍👩‍👧 부모님께 보여드리기 (읽기 전용)</div>
             <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '9px' }}>
-              이 링크를 받은 분은 <strong>보기만</strong> 해요 — 일정·지도·날씨·예약·메모·관점이 실시간으로 보이고, 실수로 고쳐질 걱정은 없어요. (사진은 기기 로컬이라 아직 안 보여요.)
+              이 링크를 받은 분은 <strong>보기만</strong> 해요 — 일정·지도·날씨·예약·메모·관점이 실시간으로 보이고, 실수로 고쳐질 걱정은 없어요. <strong style={{ color: 'var(--color-accent-primary)' }}>내 폰·PC가 꺼져 있어도 항상 열려요</strong>(데이터는 클라우드 보관). 사진은 아직 안 보여요.
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
               <code style={codeStyle}>{viewUrl}</code>

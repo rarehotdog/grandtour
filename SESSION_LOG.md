@@ -5,6 +5,24 @@
 
 ---
 
+## 2026-06-15 (42차) — 공유 링크 항상 Vercel 주소로(localhost 함정 차단)
+
+**시작 상태**: 41차 푸시 직후. 사용자 질문: 공유 링크가 localhost면 컴퓨터 꺼져도 부모님이 볼 수 있나, 아니면 Vercel?
+
+**핵심**: localhost 링크는 부모님이 못 봄(그 기기 자신을 가리킴 + 컴퓨터 켜져 있어야). 데이터는 Supabase 클라우드라 **기기 꺼져도 Vercel 주소면 항상 열림**. 함정 = 로컬 미리보기(localhost:8123) 화면에서 링크 복사 시 `localhost...` 링크 생성.
+
+**한 일** (index.html — SyncPanel)
+- 공유 링크(`inviteUrl`·`viewUrl`)를 **항상 배포 주소로 강제**: `location.hostname`이 localhost/127./::1 또는 `file:` 이면 `PROD_URL`(https://grandtour-lilac.vercel.app)로, 아니면 현재 origin 사용. node로 5개 호스트(localhost·/index.html·vercel·file) 전부 `https://grandtour-lilac.vercel.app/?view=CODE` 생성 확인.
+- 부모님 박스에 "**내 폰·PC가 꺼져 있어도 항상 열려요**(데이터는 클라우드 보관)" 안내 추가.
+
+**검증**: esbuild **0오류** · `function` **74** · Fragment **0** · shareBase 5케이스 통과.
+
+**종료 상태**: 42차 1커밋 → 명시 요청으로 origin 푸시.
+
+**보류 / 다음**: 사진 관전 공유·ET6973·실기기 QA.
+
+---
+
 ## 2026-06-15 (41차) — 히어로 날씨 라벨 정확화(비행/서막일) + 36~41차 푸시
 
 **시작 상태**: 40차 직후. "한번 더 디벨롭 + 푸시" 요청.
