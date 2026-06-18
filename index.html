@@ -3594,6 +3594,144 @@ const OUTPUTS_TIERS = [
   { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
 ];
 
+// 도시별 관점 렌즈 — 이 도시에선 어떤 경제·역사·정치 관점을 읽을 수 있는지.
+// 톤: 공동(우리)·친근체. 각 도시 테마와 연결. 사색의 '왜'를 도시 단위로 더 깊게.
+const CITY_LENS = {
+  paris: {
+    econ: '럭셔리·문화가 곧 수출품인 도시야. LVMH·케링 같은 명품 대기업의 본진이고, 정보는 공짜여도 "안목"은 비싸다는 걸 거리 부티크와 카페 물가가 증명해.',
+    hist: '1789년 혁명으로 절대왕정을 무너뜨렸고, 19세기 오스만의 대개조가 중세 골목을 넓은 대로로 갈아엎어 지금의 파리를 만들었어 — 도시계획이 곧 권력의 언어였던 흔적.',
+    pol: '중앙집권 공화국의 심장이자 정교분리(라이시테)의 나라. 동시에 노란 조끼처럼 거리에서 직접 정치를 하는 전통이 살아있어.',
+  },
+  london: {
+    econ: '제조가 아니라 자본·보험·법률 같은 보이지 않는 서비스로 굴러가는 금융 허브 "The City". 브렉시트 이후에도 유럽 돈이 모이는 곳이야.',
+    hist: '동인도회사부터 대영제국까지 "스케일"을 발명한 도시. 대영박물관의 유물은 전 세계에서 모아온 제국의 수집품 — 수집·독점·전시라는 문법이 오늘의 빅테크와 닮았어.',
+    pol: '의회민주주의(웨스트민스터)의 원형. 성문 헌법 없이 관습으로 굴러가는 입헌군주국이라, 왕은 상징이고 권력은 의회에 있어.',
+  },
+  dol: {
+    econ: '관광과 알파인 낙농이 주력. 1차대전 전선이던 험지가 지금은 유네스코 자연유산이 되어, 자연 자체가 가장 큰 자산이 된 경제야.',
+    hist: '원래 오스트리아-헝가리(남티롤) 땅이었다가 1차대전 후 이탈리아로 편입됐어. 지명이 독일어·이탈리아어 두 개씩인 이유가 여기 있어.',
+    pol: '이탈리아 안에서 높은 자치권과 세제 혜택을 가진 남티롤 특별자치주 — 언어·문화 소수자 보호의 모범 사례로 꼽혀.',
+  },
+  flo: {
+    econ: '르네상스를 돈으로 산 도시. 메디치 가문의 은행 자본이 예술·과학을 후원해 도시 전체를 작품으로 만들었고, 지금은 그 유산으로 먹고사는 관광·가죽·패션 경제야.',
+    hist: '메디치라는 한 가문이 은행→정치→교황까지 쥔 "후원의 권력화" 표본. 예술은 권력의 PR이자 투자이기도 했어.',
+    pol: '상인 과두정 공화국이었고, 마키아벨리의 『군주론』이 태어난 곳 — 현실 정치(권모술수)를 처음 솔직하게 적은 도시.',
+  },
+  rom: {
+    econ: '고대엔 지중해 전역을 묶은 도로·수도·화폐 시스템의 중심이었어. "모든 길은 로마로"가 곧 물류 표준화의 원형이야.',
+    hist: '공화정→제국→교황령→통일이탈리아 수도. 2000년을 버틴 판테온처럼, 한 번 잘 설계한 시스템이 천 년을 가는 걸 도시 전체가 증명해.',
+    pol: '로마법은 오늘날 대륙법의 뿌리. 도시 안에 또 다른 주권국 바티칸이 있어, 정치와 종교 권력이 겹친 독특한 구조야.',
+  },
+  pos: {
+    econ: '절벽 마을이 통째로 고급 휴양 상품이 된 곳. 한때 가난한 어촌이었다가 20세기 문인·예술가들이 발견해 "쉼"을 파는 경제로 변신했어.',
+    hist: '중세엔 아말피 해상공화국의 일부로 지중해 무역 거점이었어. 쇠락해 잊혔다가 관광으로 다시 살아났지.',
+    pol: '작은 코무네(기초자치) — 관광 수용력과 환경 보호 사이에서 줄타기하는 지방정치의 축소판이야.',
+  },
+  san: {
+    econ: '화산 칼데라 풍경 하나로 굴러가는 관광 모노컬처. 화산토 와인·관광이 주력이지만, 과잉관광의 대표 사례이기도 해.',
+    hist: '기원전 대분화로 미노아 문명을 묻은 화산섬. 파괴된 자리 위에 다시 마을을 세운 "재탄생"의 지질학적 증거이자 아틀란티스 전설의 유력 후보야.',
+    pol: '국가 부도(2010년대)를 겪은 그리스에서 관광이 곧 국가 재정인 만큼, 섬의 관광 정책이 나라 살림과 바로 연결돼.',
+  },
+  ath: {
+    econ: '민주주의·철학의 발상지가 근대엔 채무위기의 상징이 됐어. 해운·관광이 버팀목이지만, 2010년대 구제금융이 남긴 긴축의 그림자가 도시에 남아있어.',
+    hist: '직접민주주의(아고라)와 서양 철학이 태어난 도시. 파르테논은 "시민이 주인"이라는 실험의 기념비야.',
+    pol: '민주주의(demokratia)라는 단어 자체의 고향. 다만 당시 "시민"은 일부였다는 점에서, 포용의 범위를 누가 정하나라는 질문도 같이 줘.',
+  },
+  dxb: {
+    econ: '석유 의존을 벗어나려 금융·물류·관광·부동산으로 다각화한 도시. 아부다비는 오일머니로 국부펀드를 키우고 두바이는 "중동의 허브"를 자처해 — 자원을 미래 자본으로 바꾸는 실험이야.',
+    hist: '반세기 전만 해도 진주잡이 어촌. 1958년 석유 발견 후 한 세대 만에 마천루 도시로 — 상상을 콘크리트로 굳히는 속도의 표본이야.',
+    pol: '세습 군주들의 연방(UAE). 선거 없는 안정과 빠른 의사결정으로 개발을 밀어붙이는, 서구 민주주의와는 다른 통치 모델이야.',
+  },
+};
+const CITY_LENS_ORDER = ['paris', 'london', 'dol', 'flo', 'rom', 'pos', 'san', 'ath', 'dxb'];
+const LENS_ROWS = [
+  { key: 'econ', icon: '💰', label: '경제' },
+  { key: 'hist', icon: '📜', label: '역사' },
+  { key: 'pol', icon: '🏛️', label: '정치' },
+];
+
+// 도시별 경제·역사·정치 관점 — 도시 칩을 누르면 펼쳐짐(한 번에 하나)
+function CityLensSection() {
+  const [open, setOpen] = useState(null);
+  return (
+    <div style={{ marginBottom: '18px' }}>
+      <div style={{ fontSize: 'var(--type-eyebrow)', fontWeight: 600, color: 'var(--color-text-muted)', letterSpacing: 'var(--track-label)', textTransform: 'uppercase', marginBottom: '8px' }}>
+        🔭 도시별 관점 렌즈 · 경제 · 역사 · 정치
+      </div>
+      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.6, marginBottom: '10px' }}>
+        이 도시에선 어떤 경제·역사·정치의 결을 읽을 수 있을까. 도시를 눌러 펼쳐봐.
+      </div>
+      {CITY_LENS_ORDER.map(id => {
+        const ch = C(id);
+        const lens = CITY_LENS[id];
+        if (!ch || !lens) return null;
+        const isOpen = open === id;
+        return (
+          <div key={id} style={{ marginBottom: '8px', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', overflow: 'hidden', background: 'var(--color-bg-surface)' }}>
+            <button
+              onClick={() => setOpen(isOpen ? null : id)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', padding: '11px 14px', background: 'transparent', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+            >
+              <span style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: 0 }}>
+                <span style={{ width: '4px', height: '20px', borderRadius: '2px', background: ch.accent, flexShrink: 0 }} />
+                <span style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-text-strong)' }}>{ch.flag} {ch.name}</span>
+                <span style={{ fontSize: 'var(--type-micro)', color: ch.accent, fontWeight: 500 }}>{ch.theme}</span>
+              </span>
+              <span style={{ fontSize: 'var(--type-body)', color: 'var(--color-text-muted)', transform: isOpen ? 'rotate(90deg)' : 'none', transition: 'transform 0.2s' }}>›</span>
+            </button>
+            {isOpen && (
+              <div style={{ padding: '2px 14px 14px' }}>
+                {LENS_ROWS.map(r => (
+                  <div key={r.key} style={{ marginTop: '10px' }}>
+                    <div style={{ fontSize: 'var(--type-micro)', fontWeight: 700, color: ch.accent, marginBottom: '3px', letterSpacing: 'var(--track-label)' }}>
+                      {r.icon} {r.label}
+                    </div>
+                    <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7, wordBreak: 'keep-all' }}>
+                      {lens[r.key]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+// 관점 기록 textarea — 적은 만큼 칸이 자동으로 늘어남(uncontrolled, blur 저장 유지)
+function OutputNote({ id, content, save }) {
+  const ref = useRef(null);
+  const autosize = (el) => { if (!el) return; el.style.height = 'auto'; el.style.height = Math.max(60, el.scrollHeight) + 'px'; };
+  useEffect(() => { autosize(ref.current); }, []);
+  return (
+    <textarea
+      ref={ref}
+      placeholder="이 여정이 남긴 관점을 적어봐 — 무엇을 새로 보게 됐는지…"
+      defaultValue={content || ''}
+      onInput={(e) => autosize(e.target)}
+      onBlur={(e) => save(id, e.target.value)}
+      style={{
+        width: '100%',
+        minHeight: '60px',
+        marginTop: '12px',
+        padding: '8px 10px',
+        fontSize: 'var(--type-caption)',
+        lineHeight: 1.6,
+        border: '1px solid var(--color-border-default)',
+        borderRadius: 'var(--radius-sm)',
+        background: 'var(--color-bg-surface)',
+        color: 'var(--color-text-strong)',
+        fontFamily: 'inherit',
+        resize: 'none',
+        overflow: 'hidden',
+        boxSizing: 'border-box'
+      }}
+    />
+  );
+}
+
 function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
   // 진행 요약 — 홈 OutputsProgress와 동일 티어(싱크)
   const tiers = OUTPUTS_TIERS;
@@ -3635,6 +3773,8 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
           Seceda 정상 · Pantheon · Nike · "우리, 이제 시작이다" 봉인
         </div>
       </div>
+
+      <CityLensSection />
 
       {OUTPUTS.map(o => {
         const ch = C(o.ch);
@@ -3680,26 +3820,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
                 </div>
               </div>
             </div>
-            <textarea
-              placeholder="이 여정이 남긴 관점을 적어봐 — 무엇을 새로 보게 됐는지…"
-              defaultValue={state.content || ''}
-              onBlur={(e) => saveOutputContent(o.id, e.target.value)}
-              style={{
-                width: '100%',
-                minHeight: '60px',
-                marginTop: '12px',
-                padding: '8px 10px',
-                fontSize: 'var(--type-caption)',
-                lineHeight: 1.6,
-                border: '1px solid var(--color-border-default)',
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--color-bg-surface)',
-                color: 'var(--color-text-strong)',
-                fontFamily: 'inherit',
-                resize: 'vertical',
-                boxSizing: 'border-box'
-              }}
-            />
+            <OutputNote id={o.id} content={state.content} save={saveOutputContent} />
           </div>
         );
       })}
@@ -5472,16 +5593,19 @@ function SyncPanel() {
       ) : (
         <div>
           <div style={{ background: 'var(--color-bg-page)', borderRadius: 'var(--radius-8)', padding: '11px 13px', marginBottom: '12px', fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.7 }}>
-            <div><strong style={{ color: 'var(--color-text-strong)' }}>①</strong> 이 기기에서 ‘연동 코드 만들기’</div>
-            <div><strong style={{ color: 'var(--color-text-strong)' }}>②</strong> 다른 기기(폰)에서 같은 코드 입력 — 또는 만든 링크 열기</div>
+            <div><strong style={{ color: 'var(--color-text-strong)' }}>①</strong> <strong>한 기기에서만</strong> ‘연동 코드 만들기’ (예: PC)</div>
+            <div><strong style={{ color: 'var(--color-text-strong)' }}>②</strong> 다른 기기(폰)에서 <strong>그 링크를 열거나</strong> 같은 코드를 아래에 입력</div>
             <div><strong style={{ color: 'var(--color-text-strong)' }}>③</strong> 어디서 체크해도 양쪽에 실시간 반영돼요</div>
+          </div>
+          <div style={{ background: 'var(--color-warning-bg-deep)', borderRadius: 'var(--radius-sm)', padding: '8px 11px', marginBottom: '12px', fontSize: 'var(--type-micro)', color: 'var(--color-warning-text)', lineHeight: 1.6 }}>
+            ⚠️ <strong>두 기기에서 각각 ‘만들기’를 누르면</strong> 코드가 서로 달라져 연결이 안 돼요. <strong>한쪽에서만 만들고</strong>, 반대쪽은 그 링크를 열거나 같은 코드를 입력하세요.
           </div>
           <button onClick={create} style={{
             padding: '12px', background: 'var(--color-bg-inverse)', color: 'var(--color-text-inverse)',
             border: 'none', borderRadius: 'var(--radius-8)', fontSize: 'var(--type-caption)', cursor: 'pointer',
             fontWeight: 500, width: '100%', marginBottom: '10px'
-          }}>✨ 연동 코드 만들기</button>
-          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', textAlign: 'center', marginBottom: '8px' }}>또는 받은 코드로 연결</div>
+          }}>✨ 연동 코드 만들기 (첫 기기만)</button>
+          <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', textAlign: 'center', marginBottom: '8px' }}>다른 기기에서 이미 만들었다면 — 그 코드로 연결 ↓</div>
           <div style={{ display: 'flex', gap: '8px' }}>
             <input
               value={input}
