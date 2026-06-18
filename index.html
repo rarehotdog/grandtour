@@ -1340,6 +1340,31 @@ const gtSync = {
       await c.from('gt_state').upsert({ trip_id: tid, k: key, v: value, updated_at: at });
     } catch (e) { /* 오프라인 등 — 다음 변경 때 재반영 */ }
   },
+  // 사진 동기화 — 사진은 IndexedDB라 SYNC_KEYS(localStorage) 밖. 일자별 photo_<n> 행으로 개별 upsert.
+  // photo=null 이면 삭제. 한 번에 바뀐 한 장만 올라가 2.8MB 통짜 행을 피한다.
+  async pushPhoto(n, photo) {
+    if (this._applying || VIEW_ONLY) return; // 관전 모드는 원격에 절대 쓰지 않음
+    const tid = this.tripId();
+    if (!tid) return;
+    const c = getSupa();
+    if (!c) return;
+    const k = 'photo_' + n;
+    const at = new Date().toISOString();
+    this._lastPushAt[k] = at;
+    try {
+      await c.from('gt_state').upsert({ trip_id: tid, k, v: photo, updated_at: at });
+    } catch (e) { /* 오프라인 등 — 다음 연결 때 시드로 재반영 */ }
+  },
+  // 연결 시 원격 사진 전수 당겨오기 — [{ n, photo }]
+  async pullPhotos() {
+    const tid = this.tripId();
+    const c = getSupa();
+    if (!tid || !c) return [];
+    try {
+      const { data } = await c.from('gt_state').select('k,v').eq('trip_id', tid).like('k', 'photo_%');
+      return (data || []).map(row => ({ n: row.k.slice(6), photo: row.v }));
+    } catch (e) { return []; }
+  },
   // 원격 값 → 로컬 적용 (storage.set 우회로 에코 방지 + UI 알림)
   applyRemote(key, value) {
     if (!SYNC_KEYS.includes(key)) return;
@@ -1382,6 +1407,10 @@ const gtSync = {
           const row = payload.new;
           if (!row || !row.k) return;
           if (this._lastPushAt[row.k] && row.updated_at <= this._lastPushAt[row.k]) return; // 자기 에코 무시
+          if (row.k.indexOf('photo_') === 0) { // 사진은 IDB+React 상태라 별도 이벤트로
+            window.dispatchEvent(new CustomEvent('gt:remote-photo', { detail: { n: row.k.slice(6), photo: row.v } }));
+            return;
+          }
           this.applyRemote(row.k, row.v);
         })
       .subscribe();
@@ -1933,11 +1962,48 @@ function App() {
       const k = e.detail?.key;
       if (map[k]) storage.get(k).then(v => { if (v != null) map[k](v); });
     };
+    // 사진은 IDB+React 상태라 별도 경로 — 원격 변경을 받아 IDB·화면에 반영.
+    // 관전 모드(부모님)는 사진 제외(38차 결정 유지) — 편집 기기끼리만 동기화.
+    const onRemotePhoto = (e) => {
+      if (VIEW_ONLY) return;
+      const n = e.detail?.n;
+      const photo = e.detail?.photo;
+      if (n == null) return;
+      if (photo && photo.data) {
+        setPhotos(prev => ({ ...prev, [n]: photo }));
+        idb.put(String(n), photo);
+      } else {
+        setPhotos(prev => { const x = { ...prev }; delete x[n]; return x; });
+        idb.delete(String(n));
+      }
+    };
     window.addEventListener('gt:remote', onRemote);
+    window.addEventListener('gt:remote-photo', onRemotePhoto);
     gtSync.pullAll();
+    // 사진 양방향 시드/머지 — savedAt 기준 LWW. 관전 모드는 사진 동기화 자체를 건너뜀.
+    if (!VIEW_ONLY) gtSync.pullPhotos().then(rows => {
+      const remote = {};
+      rows.forEach(r => { if (r.photo && r.photo.data) remote[r.n] = r.photo; });
+      // 원격 → 로컬: 원격이 새롭거나 로컬에 없으면 채택
+      Object.keys(remote).forEach(n => {
+        const rp = remote[n], lp = photos[n];
+        if (!lp || (rp.savedAt && (!lp.savedAt || rp.savedAt > lp.savedAt))) {
+          setPhotos(prev => ({ ...prev, [n]: rp }));
+          idb.put(String(n), rp);
+        }
+      });
+      // 로컬 → 원격: 로컬이 새롭거나 원격에 없으면 올림(시드)
+      Object.keys(photos).forEach(n => {
+        const lp = photos[n], rp = remote[n];
+        if (lp && lp.data && (!rp || (lp.savedAt && (!rp.savedAt || lp.savedAt > rp.savedAt)))) {
+          gtSync.pushPhoto(n, lp);
+        }
+      });
+    });
     const ch = gtSync.subscribe();
     return () => {
       window.removeEventListener('gt:remote', onRemote);
+      window.removeEventListener('gt:remote-photo', onRemotePhoto);
       if (ch) { try { getSupa()?.removeChannel(ch); } catch (e) {} }
     };
   }, [loaded]);
@@ -2060,6 +2126,7 @@ function App() {
     const photo = { data: base64, savedAt: new Date().toISOString() };
     setPhotos(prev => ({ ...prev, [dayId]: photo }));
     await idb.put(String(dayId), photo);
+    gtSync.pushPhoto(dayId, photo); // PC↔폰 동기화 (연결 시에만, 관전 모드 차단)
   };
 
   const deletePhoto = async (dayId) => {
@@ -2069,6 +2136,7 @@ function App() {
       return next;
     });
     await idb.delete(String(dayId));
+    gtSync.pushPhoto(dayId, null); // 원격 삭제 전파
   };
 
   // Packing item edit (change text/source of any item)
@@ -2537,7 +2605,6 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
           ref={fileInputRef}
           type="file"
           accept="image/*"
-          capture="environment"
           onChange={handleFile}
           style={{ display: 'none' }}
         />
@@ -2572,7 +2639,6 @@ function PhotoSlot({ dayId, photo, savePhoto, deletePhoto, compact = false }) {
         ref={fileInputRef}
         type="file"
         accept="image/*"
-        capture="environment"
         onChange={handleFile}
         style={{ display: 'none' }}
       />
@@ -5361,7 +5427,7 @@ function SyncPanel() {
         )}
       </div>
       <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-muted)', marginBottom: '12px', lineHeight: 1.5 }}>
-        같은 코드로 연결하면 체크·패킹·예약·가계부·일정·메모·관점이 내 폰·PC·주연 기기에서 실시간으로 이어져요. 항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-accent-primary)' }}>사진은 기기 로컬.</span>
+        같은 코드로 연결하면 체크·패킹·예약·가계부·일정·메모·관점·<span style={{ color: 'var(--color-accent-primary)' }}>사진</span>이 내 폰·PC·주연 기기에서 실시간으로 이어져요. 항목을 옆으로 밀면 누가·언제 고쳤는지 보여요. <span style={{ color: 'var(--color-text-soft)' }}>(PIN은 기기 로컬)</span>
       </div>
 
       {/* 내 이름 — 항상 노출(연결 전에도 정해두면 '내 이름으로 연동'되는 느낌) */}
@@ -6224,6 +6290,16 @@ function NoteEditor({ dayId, note, save, meta }) {
   const [conflict, setConflict] = useState(null); // 공동작업 동시편집 충돌 { by, at, content }
   const timerRef = useRef(null);
   const baseRef = useRef(note?.content || ''); // 마지막으로 동기화/저장된 기준값
+  const taRef = useRef(null);
+
+  // 입력량만큼 칸 높이 자동 확대 — 스크롤 없이 적은 만큼 늘어남(min 80px)
+  const autosize = () => {
+    const el = taRef.current;
+    if (!el) return;
+    el.style.height = 'auto';
+    el.style.height = Math.max(80, el.scrollHeight) + 'px';
+  };
+  useEffect(() => { autosize(); }, [val]);
 
   // 원격(공동작업) 변경 감지 — 편집 중이 아니면 그대로 수용, 편집 중이면 내 입력을 보존하고 충돌 배너로 알림.
   // (기존엔 무조건 setVal로 덮어써 동시편집 시 내 글이 조용히 사라졌음 = LWW 손실)
@@ -6279,9 +6355,11 @@ function NoteEditor({ dayId, note, save, meta }) {
         </div>
       )}
       <textarea
+        ref={taRef}
         value={val}
         onChange={handleChange}
         placeholder="오늘의 답을 1-2문단으로..."
+        rows={1}
         style={{
           width: '100%',
           minHeight: '80px',
@@ -6293,7 +6371,8 @@ function NoteEditor({ dayId, note, save, meta }) {
           background: 'var(--color-bg-surface)',
           color: 'var(--color-text-strong)',
           fontFamily: 'inherit',
-          resize: 'vertical',
+          resize: 'none',
+          overflow: 'hidden',
           boxSizing: 'border-box'
         }}
       />

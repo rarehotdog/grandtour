@@ -5,6 +5,33 @@
 
 ---
 
+## 2026-06-18 (43차) — 사진 기존 갤러리 선택 + 메모칸 auto-grow + 사진 PC↔폰 동기화
+
+**시작 상태**: 42차 푸시 직후(`b411a22`, origin 동기화). 여행 4일차(Day 4). 사용자 요청 3건: ① 일정 사진 추가 시 **기존 갤러리 사진**도 넣게, ② 메모 기록 칸이 **입력량만큼 유동적으로** 늘어나게, ③ **컴에서도 동시 진행**(PC↔폰 동기화).
+
+**한 일** (index.html)
+1. **기존 사진 선택**: `PhotoSlot`의 `capture="environment"` 2곳 제거. 카메라 강제가 사라져 iOS에선 "사진 보관함/사진 찍기/파일 선택" 시트, 데스크탑에선 파일 선택이 떠 **기존 사진 추가 가능**.
+2. **메모칸 auto-grow**: `NoteEditor` textarea에 `taRef` + `autosize()`(`height=auto`→`scrollHeight`, min 80px) + `useEffect([val])`. `rows={1}`·`resize:none`·`overflow:hidden`으로 **입력한 만큼만 칸이 늘어남**(스크롤 없음). 원격 수신·상대버전 채택 시에도 val 변화로 재계산.
+3. **사진 PC↔폰 동기화**(핵심): 사진은 IndexedDB라 `storage.set` 래퍼·`SYNC_KEYS` 밖이라 그동안 동기화 0이었음 → `gt_state`에 **일자별 `photo_<n>` 행**으로 개별 upsert.
+   - `gtSync.pushPhoto(n, photo)`(null=삭제, VIEW_ONLY·미연결 차단)·`gtSync.pullPhotos()`(`like 'photo_%'`).
+   - `subscribe()` 핸들러가 `photo_` 행이면 `gt:remote-photo` 이벤트로 분기(나머지는 기존 `applyRemote`).
+   - `savePhoto`/`deletePhoto`가 IDB 쓴 뒤 `pushPhoto` 호출.
+   - 연결 effect: `gt:remote-photo` 리스너(IDB+state 반영) + `pullPhotos` 후 **savedAt 기준 LWW 양방향 시드/머지**(원격 새것↓·로컬 새것↑).
+   - **관전 모드(부모님)는 사진 동기화 전면 제외**(38차 결정 유지): `pushPhoto`는 VIEW_ONLY 가드, 수신/풀도 `if(!VIEW_ONLY)`·`onRemotePhoto` 첫 줄 `if(VIEW_ONLY)return`. 관전자용 "사진은 아직 안 보여요" 문구 그대로 유효.
+   - SyncPanel 편집 기기 안내 문구에 **사진** 추가, "사진은 기기 로컬"→"(PIN은 기기 로컬)"로 정정.
+
+**중요 발견 / 원칙**
+- 사진은 IDB라 자동 동기화 파이프(`storage.set`→`push`)를 안 타므로 **별도 경로**(전용 메서드+이벤트)가 필수. 통짜 한 행(2.8MB) 대신 **바뀐 한 장만 `photo_<n>` 행**으로 올려 부하·실시간 페이로드를 최소화.
+- 동기화 범위 확장 시 **기존 결정(38차: 관전자 사진 제외)과 UI 문구**를 함께 점검해야 — 가드 없이 켜면 부모님께 사진이 새는 모순.
+
+**검증**: esbuild 인라인 JSX **0오류** · `function` **74** · `createRoot` **1** · Fragment **0** · `capture` 잔존 **0** · **사진 동기화 LWW 머지 단위테스트 12/12**(폰 전용 시드·원격 다운·양방향 최신우선·관전 0·null 삭제행 무시) · sw.js 무변경 → SW v6 유지.
+
+**종료 상태**: 43차 **미푸시**(working tree에 index.html·문서 변경). "푸시해줘" 시 origin 반영 예정.
+
+**보류 / 다음**: 🔴 배포 후 실측 — PC·폰 같은 코드 연결 후 한쪽에서 사진 추가 시 반대편 반영(실시간/새로고침), 부모님 `?view`엔 사진 안 보임 확인. 실시간 페이로드(사진 ~130KB)가 큰 경우 realtime이 누락해도 재연결·새로고침 시 `pullPhotos`가 보강. ET6973·QA_CHECKLIST 누적은 동일.
+
+---
+
 ## 2026-06-15 (42차) — 공유 링크 항상 Vercel 주소로(localhost 함정 차단)
 
 **시작 상태**: 41차 푸시 직후. 사용자 질문: 공유 링크가 localhost면 컴퓨터 꺼져도 부모님이 볼 수 있나, 아니면 Vercel?
