@@ -1373,18 +1373,32 @@ const gtSync = {
     this._applying = false;
     window.dispatchEvent(new CustomEvent('gt:remote', { detail: { key } }));
   },
-  // 접속 시 전체 당겨오기 + 초기 시딩
-  // 원격에 있는 키 = 원격 우선(LWW와 일관). 원격에 아직 없는 키 = 이 기기의 기존
-  // 데이터를 올려 시딩 — 폰에서 코드 만들고 PC에서 연결했을 때 "비어 보임" 방지
-  // (시딩 전엔 각 키를 한 번씩 수정해야만 원격에 올라갔음)
+  // 접속 시 전체 당겨오기 + 초기 시딩 (LWW: 로컬 타임스탬프 비교로 오프라인 데이터 보호)
+  // 원격 updated_at vs 로컬 _ts_<key> 비교:
+  //   원격 더 최신 → applyRemote (원격 우선)
+  //   로컬 더 최신 → push 로컬→원격 (오프라인 작성분 보존)
+  //   타임스탬프 없음(구버전 로컬) → 원격 우선 (기존 동작 유지)
+  // 원격에 없는 키 → 이 기기 값으로 시딩
   async pullAll() {
     const tid = this.tripId();
     const c = getSupa();
     if (!tid || !c) return;
     try {
-      const { data } = await c.from('gt_state').select('k,v').eq('trip_id', tid);
+      const { data } = await c.from('gt_state').select('k,v,updated_at').eq('trip_id', tid);
       const remoteKeys = new Set((data || []).map(row => row.k));
-      (data || []).forEach(row => this.applyRemote(row.k, row.v));
+      (data || []).forEach(row => {
+        if (row.k.indexOf('photo_') === 0) return; // 사진은 pullPhotos에서 별도 LWW 처리
+        const localTs = localStorage.getItem('_ts_' + row.k);
+        if (localTs && localTs > (row.updated_at || '')) {
+          // 로컬이 더 최신 — 오프라인에서 쓴 내용을 원격에 업로드
+          let localVal = null;
+          try { const raw = localStorage.getItem(row.k); localVal = raw == null ? null : JSON.parse(raw); } catch (e) {}
+          if (localVal !== null) this.push(row.k, localVal);
+        } else {
+          // 원격이 더 최신(또는 타임스탬프 없음) — 원격 우선
+          this.applyRemote(row.k, row.v);
+        }
+      });
       SYNC_KEYS.forEach((k) => {
         if (remoteKeys.has(k)) return;
         let v = null;
@@ -1422,6 +1436,8 @@ const gtSync = {
 const _storageSet = storage.set.bind(storage);
 storage.set = async function (key, value) {
   const ok = await _storageSet(key, value);
+  // LWW용 로컬 타임스탬프 — pullAll이 원격 덮어쓰기 전 비교에 사용
+  try { localStorage.setItem('_ts_' + key, new Date().toISOString()); } catch (e) {}
   gtSync.push(key, value);
   return ok;
 };
