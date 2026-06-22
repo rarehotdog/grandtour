@@ -1327,18 +1327,48 @@ const gtSync = {
   },
   _applying: false,        // 원격 적용 중 push 에코 방지
   _lastPushAt: {},         // 키별 마지막 push 시각 (자기 에코 무시용)
-  // 로컬 변경 → 원격 upsert
+  // 로컬 변경 → 원격 upsert. 오프라인이면 _sync_queue 적재 → 온라인 복귀 시 자동 플러시.
   async push(key, value) {
-    if (this._applying || VIEW_ONLY) return; // 관전 모드는 원격에 절대 쓰지 않음
+    if (this._applying || VIEW_ONLY) return;
     const tid = this.tripId();
     if (!tid || !SYNC_KEYS.includes(key)) return;
+    if (!navigator.onLine) { this._queueOffline(key); return; }
     const c = getSupa();
     if (!c) return;
     const at = new Date().toISOString();
     this._lastPushAt[key] = at;
     try {
       await c.from('gt_state').upsert({ trip_id: tid, k: key, v: value, updated_at: at });
-    } catch (e) { /* 오프라인 등 — 다음 변경 때 재반영 */ }
+    } catch (e) { this._queueOffline(key); } // 네트워크 실패 → 큐에 적재
+  },
+  // 오프라인 대기열 — 키만 기록, 플러시 시점에 현재 로컬 값을 올림
+  _queueOffline(key) {
+    try {
+      const q = JSON.parse(localStorage.getItem('_sync_queue') || '[]');
+      if (!q.includes(key)) { q.push(key); localStorage.setItem('_sync_queue', JSON.stringify(q)); }
+    } catch (e) {}
+  },
+  // 대기열 플러시 — pullAll 전 또는 온라인 복귀 이벤트 시 호출
+  // 로컬 현재 값을 Supabase에 올린 뒤 큐 초기화. 여전히 오프라인이면 큐 유지.
+  async _flushQueue() {
+    if (VIEW_ONLY) return;
+    const c = getSupa();
+    const tid = this.tripId();
+    if (!c || !tid || !navigator.onLine) return;
+    let q = [];
+    try { q = JSON.parse(localStorage.getItem('_sync_queue') || '[]'); } catch (e) {}
+    if (!q.length) return;
+    const at = new Date().toISOString();
+    const rows = q.map(k => {
+      let v = null;
+      try { const raw = localStorage.getItem(k); v = raw == null ? null : JSON.parse(raw); } catch (e) {}
+      return v !== null ? { trip_id: tid, k, v, updated_at: at } : null;
+    }).filter(Boolean);
+    if (!rows.length) { localStorage.removeItem('_sync_queue'); return; }
+    try {
+      await c.from('gt_state').upsert(rows);
+      localStorage.removeItem('_sync_queue');
+    } catch (e) {} // 여전히 실패하면 큐 유지 — 다음 복귀 시 재시도
   },
   // 사진 동기화 — 사진은 IndexedDB라 SYNC_KEYS(localStorage) 밖. 일자별 photo_<n> 행으로 개별 upsert.
   // photo=null 이면 삭제. 한 번에 바뀐 한 장만 올라가 2.8MB 통짜 행을 피한다.
@@ -1380,6 +1410,7 @@ const gtSync = {
   //   타임스탬프 없음(구버전 로컬) → 원격 우선 (기존 동작 유지)
   // 원격에 없는 키 → 이 기기 값으로 시딩
   async pullAll() {
+    await this._flushQueue(); // 오프라인 중 쌓인 대기열 먼저 올리기 — 로컬이 원격보다 항상 최신
     const tid = this.tripId();
     const c = getSupa();
     if (!tid || !c) return;
@@ -1995,6 +2026,9 @@ function App() {
     };
     window.addEventListener('gt:remote', onRemote);
     window.addEventListener('gt:remote-photo', onRemotePhoto);
+    // 오프라인 → 온라인 복귀 시 큐 플러시 (비행기 착륙 후 자동 동기화)
+    const onOnline = () => gtSync._flushQueue();
+    window.addEventListener('online', onOnline);
     gtSync.pullAll();
     // 사진 양방향 시드/머지 — savedAt 기준 LWW. 관전 모드는 사진 동기화 자체를 건너뜀.
     if (!VIEW_ONLY) gtSync.pullPhotos().then(rows => {
@@ -2020,6 +2054,7 @@ function App() {
     return () => {
       window.removeEventListener('gt:remote', onRemote);
       window.removeEventListener('gt:remote-photo', onRemotePhoto);
+      window.removeEventListener('online', onOnline);
       if (ch) { try { getSupa()?.removeChannel(ch); } catch (e) {} }
     };
   }, [loaded]);
