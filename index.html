@@ -4534,6 +4534,9 @@ function EmergencyContacts({ todayFlag }) {
 function ReplayOverlay({ notes, photos, onClose }) {
   const [idx, setIdx] = useState(0);
   const [broken, setBroken] = useState({});
+  // 열자마자 영화처럼 자동으로 흐른다(5초/장). 손으로 넘기는 순간 관객 → 감독(일시정지).
+  const [playing, setPlaying] = useState(true);
+  const touchX = useRef(null);
   useBackClose(true, onClose);
   useScrollLock(true);
   const last = DAYS_DEFAULT.length - 1;
@@ -4545,7 +4548,28 @@ function ReplayOverlay({ notes, photos, onClose }) {
   const note = notes && notes[day.n] && notes[day.n].content && notes[day.n].content.trim();
   const go = (d) => {
     try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
+    setPlaying(false);
     setIdx(i => Math.min(last, Math.max(0, i + d)));
+  };
+  // 자동 재생 — 슬라이드당 setTimeout(수동 이동 시 go가 멈춤), 마지막 장에서 정지
+  useEffect(() => {
+    if (!playing) return;
+    if (idx >= last) { setPlaying(false); return; }
+    const t = setTimeout(() => setIdx(i => Math.min(last, i + 1)), 5000);
+    return () => clearTimeout(t);
+  }, [playing, idx]);
+  const togglePlay = () => {
+    try { if (navigator.vibrate) navigator.vibrate(6); } catch (e) {}
+    if (!playing && idx >= last) setIdx(0); // 끝에서 ▶ 누르면 처음부터 다시
+    setPlaying(p => !p);
+  };
+  // 사진 영역 좌우 스와이프 — 탭 절반 버튼과 공존(움직이면 click 미발생)
+  const onTouchStart = (e) => { touchX.current = e.touches[0].clientX; };
+  const onTouchEnd = (e) => {
+    if (touchX.current == null) return;
+    const dx = e.changedTouches[0].clientX - touchX.current;
+    touchX.current = null;
+    if (Math.abs(dx) > 44) go(dx < 0 ? 1 : -1);
   };
   // PC(33차 연동)에서도 보게 됐으니 ←/→/ESC 지원
   useEffect(() => {
@@ -4569,8 +4593,8 @@ function ReplayOverlay({ notes, photos, onClose }) {
         background: 'rgba(250,246,239,0.18)', color: 'var(--color-atomic-white)', fontSize: 'var(--type-h2)', cursor: 'pointer',
       }}>×</button>
 
-      {/* 사진 — 좌/우 절반 탭으로 이전/다음 */}
-      <div style={{ position: 'relative', height: '52vh', flexShrink: 0, background: ch.color }}>
+      {/* 사진 — 좌/우 절반 탭 또는 스와이프로 이전/다음 */}
+      <div onTouchStart={onTouchStart} onTouchEnd={onTouchEnd} style={{ position: 'relative', height: '52vh', flexShrink: 0, background: ch.color }}>
         {img && !broken[day.n] ? (
           <img key={day.n} src={img} alt={day.city} crossOrigin="anonymous"
             onError={() => setBroken(b => ({ ...b, [day.n]: true }))}
@@ -4614,12 +4638,64 @@ function ReplayOverlay({ notes, photos, onClose }) {
       {/* 하단 내비 */}
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '12px 18px calc(env(safe-area-inset-bottom) + 14px)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'linear-gradient(transparent, rgba(16,26,48,0.92) 40%)' }}>
         <button onClick={() => go(-1)} disabled={idx === 0} style={{ width: '46px', height: '46px', borderRadius: '50%', border: '1px solid rgba(201,169,97,0.4)', background: 'rgba(250,246,239,0.08)', color: 'var(--color-text-inverse)', fontSize: 'var(--type-h3)', cursor: 'pointer' }}>‹</button>
-        <span className="gt-num" style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.65)' }}>{idx + 1} / {last + 1}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button onClick={togglePlay} aria-label={playing ? '일시정지' : '자동 재생'} style={{ width: '38px', height: '38px', borderRadius: '50%', border: '1px solid rgba(201,169,97,0.55)', background: playing ? 'var(--color-accent-primary)' : 'rgba(250,246,239,0.08)', color: playing ? 'var(--color-bg-inverse)' : 'var(--color-accent-soft)', fontSize: 'var(--type-caption)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>{playing ? '⏸' : '▶'}</button>
+          <span className="gt-num" style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.65)' }}>{idx + 1} / {last + 1}</span>
+        </div>
         {idx === last ? (
-          <button onClick={() => setIdx(0)} style={{ height: '46px', padding: '0 16px', borderRadius: '23px', border: 'none', background: 'var(--color-accent-primary)', color: 'var(--color-bg-inverse)', fontSize: 'var(--type-caption)', fontWeight: 700, cursor: 'pointer' }}>↺ 처음부터</button>
+          <button onClick={() => { setIdx(0); setPlaying(true); }} style={{ height: '46px', padding: '0 16px', borderRadius: '23px', border: 'none', background: 'var(--color-accent-primary)', color: 'var(--color-bg-inverse)', fontSize: 'var(--type-caption)', fontWeight: 700, cursor: 'pointer' }}>↺ 처음부터</button>
         ) : (
           <button onClick={() => go(1)} style={{ width: '46px', height: '46px', borderRadius: '50%', border: '1px solid rgba(201,169,97,0.4)', background: 'rgba(250,246,239,0.08)', color: 'var(--color-text-inverse)', fontSize: 'var(--type-h3)', cursor: 'pointer' }}>›</button>
         )}
+      </div>
+    </div>
+  );
+}
+
+// =================== MEMORY OF TODAY (오늘의 추억 한 조각) ===================
+// post 전용 — 날짜 기반으로 매일 다른 여행일 하나를 결정적으로 골라(랜덤 없음) 사진·메모를 다시 보여준다.
+// 귀국 후에도 홈을 여는 이유. 그날 메모가 비어 있으면 채우기 넛지로 전환(날조 0).
+function MemoryOfToday({ notes, photos, goToDay, setView }) {
+  const [broken, setBroken] = useState(false);
+  const now = new Date();
+  const localDay = Math.floor((now.getTime() - now.getTimezoneOffset() * 60000) / 86400000);
+  const day = DAYS_DEFAULT[localDay % DAYS_DEFAULT.length];
+  const ch = C(day.c) || { name: '', flag: '', color: '#F5F5F4', accent: '#C9A961' };
+  const myPhoto = photos && photos[day.n] && photos[day.n].data;
+  const img = myPhoto || (THEME_IMAGES[day.n] || {}).themeImg;
+  const note = notes && notes[day.n] && notes[day.n].content && notes[day.n].content.trim();
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} };
+  const openDay = () => { buzz(); goToDay(day.c, day.n); };
+  const openNote = () => { buzz(); lastPrivateSub = 'notes'; setView('private'); };
+  const chip = { flexShrink: 0, fontSize: 'var(--type-eyebrow)', fontWeight: 600, padding: '6px 11px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border-default)', background: 'var(--color-bg-page)', color: 'var(--color-text-strong)', cursor: 'pointer', fontFamily: 'var(--font-sans)', whiteSpace: 'nowrap' };
+  return (
+    <div className="gt-card" style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-lg)', overflow: 'hidden', marginBottom: 'var(--space-5)', boxShadow: 'var(--shadow-sm)' }}>
+      {/* 사진 — 탭하면 그날 일정 펼침 */}
+      <button onClick={openDay} aria-label={`Day ${day.n} ${day.city} 일정 보기`} style={{ position: 'relative', display: 'block', width: '100%', height: '170px', padding: 0, border: 'none', cursor: 'pointer', background: ch.color, textAlign: 'left' }}>
+        {img && !broken ? (
+          <img src={img} alt={day.city} onError={() => setBroken(true)} style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+        ) : (
+          <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '48px', background: `linear-gradient(135deg, ${ch.color} 0%, #ffffff 130%)` }}>{ch.icon || ch.flag}</div>
+        )}
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(transparent 40%, rgba(16,26,48,0.78))' }} />
+        <div style={{ position: 'absolute', left: '16px', right: '16px', bottom: '12px', color: 'var(--color-text-inverse)' }}>
+          <div className="gt-eyebrow" style={{ color: 'var(--color-accent-soft)' }}>📸 오늘의 추억 한 조각</div>
+          <div className="gt-serif" style={{ fontSize: 'var(--type-h3)', fontWeight: 600, marginTop: '2px', lineHeight: 1.3 }}>
+            Day {day.n} · {day.d}({day.w}) · {ch.flag} {day.city}
+          </div>
+        </div>
+        {myPhoto && <span style={{ position: 'absolute', top: '10px', left: '12px', background: 'rgba(16,26,48,0.65)', color: 'var(--color-accent-soft)', fontSize: 'var(--type-micro)', fontWeight: 600, padding: '3px 9px', borderRadius: 'var(--radius-pill, 999px)' }}>📸 우리의 사진</span>}
+      </button>
+      <div style={{ padding: '14px 16px' }}>
+        {note ? (
+          <div style={{ fontSize: 'var(--type-body-sm)', lineHeight: 1.7, color: 'var(--color-text-strong)', whiteSpace: 'pre-wrap', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden', wordBreak: 'keep-all' }}>{note}</div>
+        ) : (
+          <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', lineHeight: 1.6, wordBreak: 'keep-all' }}>이 날의 메모는 아직 비어 있어 — 기억이 생생할 때 한 줄 남겨볼까?</div>
+        )}
+        <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+          <button onClick={openDay} className="gt-chip" style={chip}>그날 일정 →</button>
+          <button onClick={openNote} className="gt-chip" style={chip}>{note ? '메모 이어 쓰기' : '✍️ 한 줄 남기기'}</button>
+        </div>
       </div>
     </div>
   );
@@ -4709,6 +4785,18 @@ function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
           </button>
         ))}
       </div>
+
+      {/* 빈 기록 채우기 넛지 — 기억이 휘발되기 전에 (메모가 다 차면 사라짐) */}
+      {noteCount < 27 && (
+        <button onClick={() => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} lastPrivateSub = 'notes'; setView('private'); }} style={{
+          width: '100%', marginTop: 'var(--space-3)', padding: '10px 14px',
+          background: 'transparent', border: '1px dashed rgba(201,169,97,0.45)', borderRadius: 'var(--radius-md)',
+          color: 'rgba(250,246,239,0.78)', fontSize: 'var(--type-caption)', textAlign: 'left',
+          cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1.5, wordBreak: 'keep-all',
+        }}>
+          ✍️ 메모가 비어 있는 {27 - noteCount}일 — 기억이 생생할 때 채워두자 →
+        </button>
+      )}
 
       {/* Lifetime outputs highlight */}
       <div style={{
@@ -5907,6 +5995,9 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
 
       {/* Retrospective Hero — post-trip only */}
       {status.phase === 'post' && <RetrospectHero status={status} notes={notes} photos={photos} outputs={outputs} setView={setView} goLogi={goLogi} />}
+
+      {/* 오늘의 추억 한 조각 — post 전용, 매일 다른 여행일 회상 */}
+      {status.phase === 'post' && <MemoryOfToday notes={notes} photos={photos} goToDay={goToDay} setView={setView} />}
 
       {/* Trip Summary — pre-trip compact widget (D-7 임박: 준비 현황·예약을 철학 위로) */}
       {status.phase === 'pre' && <TripSummaryCard status={status} setView={setView} checks={checks} packing={packing} />}
