@@ -4625,8 +4625,23 @@ function ReplayOverlay({ notes, photos, onClose }) {
   );
 }
 
-function RetrospectHero({ status, notes, photos, outputs, setView }) {
+function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
   const [replay, setReplay] = useState(false);
+  // 여행 가계부 결산 — 기록이 있을 때만 노출(날조 0). 환율 캐시 없으면 건수만.
+  const [expSummary, setExpSummary] = useState(null);
+  useEffect(() => {
+    (async () => {
+      const e = await storage.get('expenses');
+      const items = Array.isArray(e) ? e : [];
+      if (!items.length) return;
+      const fx = await storage.get('fx_cache');
+      const rates = fx && fx.rates;
+      const totalKRW = rates
+        ? items.reduce((s, x) => s + (rates[x.cur] ? Math.round((Number(x.amount) || 0) / rates[x.cur]) : 0), 0)
+        : null;
+      setExpSummary({ count: items.length, totalKRW });
+    })();
+  }, []);
   const noteCount = Object.values(notes || {}).filter(n => n && n.content && n.content.trim()).length;
   const photoCount = Object.keys(photos || {}).length;
   const outputDone = OUTPUTS.filter(o => outputs[o.id] && outputs[o.id].done).length;
@@ -4711,6 +4726,27 @@ function RetrospectHero({ status, notes, photos, outputs, setView }) {
           {lifetimeDone} / {lifetimeTotal} 완성
         </div>
       </div>
+
+      {/* 여행 가계부 결산 — 지출 기록이 있을 때만, 탭하면 가계부로 */}
+      {expSummary && (
+        <button onClick={() => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} if (goLogi) goLogi('expense'); }} style={{
+          width: '100%',
+          marginTop: 'var(--space-2)',
+          padding: 'var(--space-3) var(--space-4)',
+          background: 'rgba(250,246,239,0.06)',
+          border: '1px solid rgba(201,169,97,0.30)',
+          borderRadius: 'var(--radius-md)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)',
+          cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+        }}>
+          <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.85)' }}>
+            🧾 여행 가계부 결산
+          </div>
+          <div className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
+            {expSummary.totalKRW != null ? `${expSummary.totalKRW.toLocaleString()}원 · ${expSummary.count}건` : `${expSummary.count}건 기록`}
+          </div>
+        </button>
+      )}
 
       {/* Closing line */}
       <div className="gt-serif" style={{
@@ -5870,7 +5906,7 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       {(status.phase === 'pre' || status.phase === 'during') && <HeroCountdown status={status} setView={setView} />}
 
       {/* Retrospective Hero — post-trip only */}
-      {status.phase === 'post' && <RetrospectHero status={status} notes={notes} photos={photos} outputs={outputs} setView={setView} />}
+      {status.phase === 'post' && <RetrospectHero status={status} notes={notes} photos={photos} outputs={outputs} setView={setView} goLogi={goLogi} />}
 
       {/* Trip Summary — pre-trip compact widget (D-7 임박: 준비 현황·예약을 철학 위로) */}
       {status.phase === 'pre' && <TripSummaryCard status={status} setView={setView} checks={checks} packing={packing} />}
@@ -5975,8 +6011,8 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
         <Recommendations chapterId={todayChapter.id} chapter={todayChapter} />
       )}
 
-      {/* Stats Grid — checklist only (D-day shown in HeroCountdown) */}
-      {status.phase !== 'pre' && (
+      {/* Stats Grid — checklist only (D-day shown in HeroCountdown). 여행 후엔 준비 지표가 무의미 → during만 */}
+      {status.phase === 'during' && (
         <div style={{ margin: '20px 0' }}>
           <StatCard label="체크리스트" value={`${checkDone}/${checkTotal}`} sub={`${Math.round((checkDone/checkTotal)*100)}% 완료`} onClick={() => setView('check')} />
         </div>
@@ -5988,17 +6024,27 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       {/* Outputs 3-tier Progress */}
       <OutputsProgress outputs={outputs} setView={setView} />
 
-      {/* Emergency Contacts */}
-      <EmergencyContacts todayFlag={status.phase === 'during' && todayChapter?.coords ? todayChapter.flag : null} />
+      {/* Emergency Contacts — 여행 후엔 불필요 */}
+      {status.phase !== 'post' && (
+        <EmergencyContacts todayFlag={status.phase === 'during' && todayChapter?.coords ? todayChapter.flag : null} />
+      )}
 
-      {/* Quick Links — public only */}
+      {/* Quick Links — public only. post엔 회고 동선(기록·가계부), 그 전엔 준비 동선(체크·패킹) */}
       <Card>
         <SectionTitle>빠른 이동</SectionTitle>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
           <button onClick={() => setView('days')} style={btnLightStyle}>📅 27일 일정</button>
           <button onClick={() => setView('logi')} style={btnLightStyle}>🗺️ 지도·예약</button>
-          <button onClick={() => setView('check')} style={btnLightStyle}>✓ 체크리스트</button>
-          <button onClick={() => setView('check')} style={btnLightStyle}>👔 패킹 리스트</button>
+          {status.phase === 'post' ? (
+            <button onClick={() => setView('private')} style={btnLightStyle}>📖 기록·사진</button>
+          ) : (
+            <button onClick={() => setView('check')} style={btnLightStyle}>✓ 체크리스트</button>
+          )}
+          {status.phase === 'post' ? (
+            <button onClick={() => goLogi('expense')} style={btnLightStyle}>🧾 가계부 결산</button>
+          ) : (
+            <button onClick={() => setView('check')} style={btnLightStyle}>👔 패킹 리스트</button>
+          )}
         </div>
       </Card>
 
