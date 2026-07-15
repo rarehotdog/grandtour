@@ -4701,8 +4701,195 @@ function MemoryOfToday({ notes, photos, goToDay, setView }) {
   );
 }
 
+// =================== MEMOIR EXPORT (회고록 내보내기) ===================
+// "27일 한 편"을 파일 하나로 — 사진(내 사진 base64 임베드)+메모 전문+관점+가계부 결산을 담은
+// 자립형 HTML 회고록. 그대로 영구 보관해도 되고, 브라우저 인쇄로 PDF를 만들 수도 있다.
+// 가진 데이터만 담는다(날조 0) — 빈 메모는 블록 생략, 관점·가계부는 기록 없으면 섹션째 생략.
+function buildMemoirHtml({ notes, photos, outputs, expenses, fxRates, exportedAt }) {
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const noteOf = (n) => {
+    const v = notes && notes[n] && notes[n].content;
+    return v && v.trim() ? v.trim() : null;
+  };
+  const photoOf = (n) => (photos && photos[n] && photos[n].data) || null;
+  const noteCount = DAYS_DEFAULT.filter(d => noteOf(d.n)).length;
+  const photoCount = DAYS_DEFAULT.filter(d => photoOf(d.n)).length;
+  const outputDone = OUTPUTS.filter(o => outputs && outputs[o.id] && outputs[o.id].done).length;
+
+  // 챕터별 일자 그룹핑 (여정 순서 유지 — 같은 챕터가 연속인 동안 한 블록)
+  const chapterBlocks = [];
+  DAYS_DEFAULT.forEach(day => {
+    const lastBlock = chapterBlocks[chapterBlocks.length - 1];
+    if (!lastBlock || lastBlock.ch.id !== day.c) {
+      chapterBlocks.push({ ch: C(day.c) || { id: day.c, name: '', flag: '', theme: '', tag: '', accent: '#C9A961', color: '#F5F5F4' }, days: [day] });
+    } else {
+      lastBlock.days.push(day);
+    }
+  });
+
+  const dayHtml = (day, ch) => {
+    const my = photoOf(day.n);
+    const img = my || (THEME_IMAGES[day.n] || {}).themeImg;
+    const note = noteOf(day.n);
+    return '<article class="day">'
+      + (img
+        ? '<div class="day-photo"><img src="' + esc(img) + '" alt="' + esc(day.city) + '" loading="lazy" onerror="this.parentNode.style.display=\'none\'">'
+          + (my ? '<span class="badge">📸 우리의 사진</span>' : '')
+          + '</div>'
+        : '')
+      + '<div class="day-body">'
+      + '<div class="eyebrow" style="color:' + esc(ch.accent) + '">Day ' + day.n + ' · ' + esc(day.d) + '(' + esc(day.w) + ') · ' + esc(ch.flag) + ' ' + esc(ch.name) + '</div>'
+      + '<h3>' + esc(day.city) + '</h3>'
+      + (day.hl ? '<div class="hl">' + esc(day.hl) + '</div>' : '')
+      + (day.q ? '<div class="q">“' + esc(day.q) + '”</div>' : '')
+      + (note ? '<div class="note"><div class="note-label">우리의 기록</div>' + esc(note) + '</div>' : '')
+      + '</div></article>';
+  };
+
+  const chaptersHtml = chapterBlocks.map(b => '<section class="chapter">'
+    + '<div class="chapter-head" style="background:' + esc(b.ch.color) + '">'
+    + '<div class="chapter-theme" style="color:' + esc(b.ch.accent) + '">' + esc(b.ch.flag) + ' ' + esc(b.ch.name) + (b.ch.theme ? ' · ' + esc(b.ch.theme) : '') + '</div>'
+    + (b.ch.tag ? '<div class="chapter-tag">' + esc(b.ch.tag) + '</div>' : '')
+    + '</div>'
+    + b.days.map(d => dayHtml(d, b.ch)).join('')
+    + '</section>').join('');
+
+  // 관점 — 내용을 적었거나 완성 표시한 것만 (티어 그룹, 손대지 않은 관점은 생략)
+  const MEMOIR_TIER_TONE = { 3: '#9A3412', 2: '#854D0E', 1: '#6B6760' };
+  const tiersHtml = OUTPUTS_TIERS.map(tier => {
+    const rows = OUTPUTS.filter(o => o.star === tier.star).map(o => {
+      const st = outputs && outputs[o.id];
+      const content = st && st.content && st.content.trim();
+      const done = st && st.done;
+      if (!content && !done) return null;
+      return '<div class="output"><h4>' + esc(o.t) + (done ? ' <span class="done">✓ 완성</span>' : '') + '</h4>'
+        + '<div class="output-meta">Day ' + o.day + (C(o.ch) ? ' · ' + esc(C(o.ch).name) : '') + '</div>'
+        + (content ? '<div class="content">' + esc(content) + '</div>' : '')
+        + '</div>';
+    }).filter(Boolean);
+    if (!rows.length) return '';
+    return '<div class="tier"><div class="tier-label" style="color:' + MEMOIR_TIER_TONE[tier.star] + '">' + esc(tier.label) + '</div>' + rows.join('') + '</div>';
+  }).join('');
+  const outputsSection = tiersHtml
+    ? '<section class="section"><h2>✦ 우리가 가져온 관점</h2><div class="sub">여행이 남긴 생각의 기록</div>' + tiersHtml + '</section>'
+    : '';
+
+  // 가계부 결산 — 기록이 있을 때만. 환산식은 ExpenseTracker와 동일(미지 통화 0 기여).
+  const expItems = Array.isArray(expenses) ? expenses : [];
+  let expenseSection = '';
+  if (expItems.length) {
+    const toKRW = (a, code) => (fxRates && fxRates[code]) ? Math.round((Number(a) || 0) / fxRates[code]) : 0;
+    const totalKRW = fxRates ? expItems.reduce((s, x) => s + toKRW(x.amount, x.cur), 0) : null;
+    let rowsHtml = '';
+    if (fxRates) {
+      const byCat = {};
+      expItems.forEach(x => { byCat[x.cat] = (byCat[x.cat] || 0) + toKRW(x.amount, x.cur); });
+      rowsHtml = EXPENSE_CATS
+        .map(c => ({ ...c, sum: byCat[c.id] || 0 }))
+        .filter(c => c.sum > 0)
+        .sort((a, b) => b.sum - a.sum)
+        .map(c => '<tr><td>' + esc(c.icon) + ' ' + esc(c.label) + '</td><td>' + c.sum.toLocaleString() + '원</td></tr>')
+        .join('');
+    }
+    expenseSection = '<section class="section"><h2>🧾 여행 가계부 결산</h2><div class="sub">' + expItems.length + '건의 기록</div>'
+      + '<div class="exp"><div class="exp-label">지출 합계</div>'
+      + '<div class="total">' + (totalKRW != null ? totalKRW.toLocaleString() + '<span class="won">원</span>' : expItems.length + '건 기록') + '</div>'
+      + (rowsHtml ? '<table>' + rowsHtml + '</table>' : '')
+      + '</div></section>';
+  }
+
+  return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width, initial-scale=1">\n'
+    + '<title>Grand Tour 2026 — 27일의 여정</title>\n<style>\n'
+    + '*{margin:0;padding:0;box-sizing:border-box}\n'
+    + "body{font-family:-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo',Pretendard,sans-serif;background:#FAF6EF;color:#1B2A4A;line-height:1.6;word-break:keep-all;-webkit-font-smoothing:antialiased}\n"
+    + '.hint{background:#1B2A4A;color:#FAF6EF;font-size:13px;padding:10px 16px;text-align:center}\n'
+    + '.wrap{max-width:720px;margin:0 auto;padding:0 20px 60px}\n'
+    + '.cover{text-align:center;padding:72px 20px 56px}\n'
+    + '.cover-eyebrow{font-size:12px;letter-spacing:3px;color:#C9A961;text-transform:uppercase;font-weight:700}\n'
+    + ".cover h1{font-family:Georgia,'Times New Roman',serif;font-size:44px;font-style:italic;font-weight:500;margin:14px 0 10px}\n"
+    + '.cover-sub{color:#6B6760;font-size:15px}\n'
+    + '.cover-stats{margin-top:18px;font-size:14px}\n'
+    + ".cover-quote{margin-top:28px;font-family:Georgia,'Times New Roman',serif;font-size:20px;color:#C9A961}\n"
+    + '.chapter{margin-top:48px}\n'
+    + '.chapter-head{padding:18px 20px;border-radius:14px;margin-bottom:20px}\n'
+    + '.chapter-theme{font-size:17px;font-weight:700}\n'
+    + '.chapter-tag{font-size:13px;color:#57534E;margin-top:3px}\n'
+    + '.day{background:#fff;border:1px solid #E7E0D4;border-radius:14px;overflow:hidden;margin-bottom:20px;box-shadow:0 1px 3px rgba(27,42,74,0.06)}\n'
+    + '.day-photo{position:relative;height:260px;background:#EFEAE0}\n'
+    + '.day-photo img{width:100%;height:100%;object-fit:cover;display:block}\n'
+    + '.badge{position:absolute;top:10px;left:12px;background:rgba(16,26,48,0.65);color:#EAD9A8;font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px}\n'
+    + '.day-body{padding:16px 18px 18px}\n'
+    + '.eyebrow{font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase}\n'
+    + ".day-body h3{font-family:Georgia,'Times New Roman',serif;font-size:22px;margin:4px 0 2px;font-weight:600}\n"
+    + '.hl{font-size:13px;color:#6B6760}\n'
+    + ".q{font-family:Georgia,'Times New Roman',serif;font-style:italic;font-size:15px;color:#9C7C42;margin-top:10px;line-height:1.55}\n"
+    + '.note{margin-top:12px;padding:12px 14px;background:#FAF6EF;border-left:3px solid #C9A961;border-radius:8px;font-size:14px;white-space:pre-wrap}\n'
+    + '.note-label{font-size:11px;color:#9C7C42;font-weight:700;margin-bottom:6px;letter-spacing:1px}\n'
+    + '.section{margin-top:56px}\n'
+    + ".section h2{font-family:Georgia,'Times New Roman',serif;font-size:26px;text-align:center;margin-bottom:6px}\n"
+    + '.section .sub{text-align:center;color:#6B6760;font-size:13px;margin-bottom:22px}\n'
+    + '.tier{margin-bottom:22px}\n'
+    + '.tier-label{font-size:12px;font-weight:700;margin-bottom:10px;letter-spacing:1px}\n'
+    + '.output{background:#fff;border:1px solid #E7E0D4;border-radius:12px;padding:14px 16px;margin-bottom:10px}\n'
+    + '.output h4{font-size:15px}\n'
+    + '.output .done{color:#C9A961;font-size:12px;font-weight:700}\n'
+    + '.output-meta{font-size:11px;color:#A8A39A;margin-top:2px}\n'
+    + '.output .content{font-size:14px;white-space:pre-wrap;color:#3A3630;margin-top:8px}\n'
+    + '.exp{background:#1B2A4A;color:#FAF6EF;border-radius:14px;padding:22px 20px}\n'
+    + '.exp-label{font-size:11px;letter-spacing:2px;color:#C9A961;font-weight:700;text-transform:uppercase;margin-bottom:6px}\n'
+    + '.exp .total{font-size:30px;font-weight:700;font-variant-numeric:tabular-nums}\n'
+    + '.exp .won{font-size:16px;font-weight:500;opacity:0.7;margin-left:4px}\n'
+    + '.exp table{width:100%;border-collapse:collapse;margin-top:14px;font-size:14px}\n'
+    + '.exp td{padding:6px 0;border-top:1px solid rgba(250,246,239,0.15)}\n'
+    + '.exp td:last-child{text-align:right;font-variant-numeric:tabular-nums}\n'
+    + 'footer{margin-top:64px;text-align:center;color:#A8A39A;font-size:12px;line-height:1.7}\n'
+    + '@media print{.hint{display:none}body{background:#fff}.day{page-break-inside:avoid;box-shadow:none}.cover{page-break-after:always;padding-top:180px}.chapter{page-break-before:always;margin-top:0;padding-top:24px}.chapter:first-of-type{page-break-before:auto}}\n'
+    + '</style>\n</head>\n<body>\n'
+    + '<div class="hint">💡 이 파일은 그대로 간직해도 되고, 브라우저 인쇄(공유 → 프린트)에서 PDF로 저장할 수도 있어.</div>\n'
+    + '<div class="wrap">\n'
+    + '<header class="cover">'
+    + '<div class="cover-eyebrow">⊹ Grand Tour 2026 ⊹</div>'
+    + '<h1>27일의 여정</h1>'
+    + '<div class="cover-sub">2026.06.15 → 07.11 · 9 도시 · 4 개국</div>'
+    + '<div class="cover-stats">📸 사진 ' + photoCount + '장 · 📝 메모 ' + noteCount + '일 · ✦ 관점 ' + outputDone + '개</div>'
+    + '<div class="cover-quote">"우리, 이제 시작이다"</div>'
+    + '</header>\n'
+    + chaptersHtml + '\n'
+    + outputsSection + '\n'
+    + expenseSection + '\n'
+    + '<footer>Grand Tour 2026 앱에서 ' + esc(exportedAt) + ' 내보냄<br>Taehyeon &amp; Juyeon</footer>\n'
+    + '</div>\n</body>\n</html>';
+}
+
 function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
   const [replay, setReplay] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  // 회고록 내보내기 — 백업과 동일한 Blob 다운로드 패턴 (iOS PWA 검증된 경로)
+  const exportMemoir = async () => {
+    try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
+    setExporting(true);
+    try {
+      const [exp, fx] = await Promise.all([storage.get('expenses'), storage.get('fx_cache')]);
+      const d = new Date();
+      const stamp = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+      const html = buildMemoirHtml({
+        notes, photos, outputs,
+        expenses: Array.isArray(exp) ? exp : [],
+        fxRates: (fx && fx.rates) || null,
+        exportedAt: stamp,
+      });
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grand-tour-memoir-' + d.toISOString().slice(0, 10) + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  };
   // 여행 가계부 결산 — 기록이 있을 때만 노출(날조 0). 환율 캐시 없으면 건수만.
   const [expSummary, setExpSummary] = useState(null);
   useEffect(() => {
@@ -4852,6 +5039,18 @@ function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
         fontSize: 'var(--type-body-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
       }}>▶ 27일을 한 편으로 — 리플레이</button>
       {replay && <ReplayOverlay notes={notes} photos={photos} onClose={() => setReplay(false)} />}
+
+      {/* 회고록 내보내기 — 사진·메모·관점·가계부를 파일 하나로 영구 보관 */}
+      <button onClick={exportMemoir} disabled={exporting} style={{
+        width: '100%', marginTop: 'var(--space-2)', padding: 'var(--space-3)',
+        background: 'rgba(250,246,239,0.08)', color: 'var(--color-accent-soft)',
+        border: '1px solid rgba(201,169,97,0.4)', borderRadius: 'var(--radius-md)',
+        fontSize: 'var(--type-caption)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
+        opacity: exporting ? 0.6 : 1,
+      }}>{exporting ? '회고록 만드는 중…' : '📕 회고록 파일로 간직하기'}</button>
+      <div style={{ marginTop: '6px', fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.5)', textAlign: 'center', wordBreak: 'keep-all' }}>
+        사진·메모·관점·가계부를 한 파일로 — 브라우저 인쇄로 PDF 저장도 가능
+      </div>
 
       {/* Actions */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-5)' }}>
