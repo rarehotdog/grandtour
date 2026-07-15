@@ -1854,7 +1854,7 @@ function App() {
     window.scrollTo(0, y == null ? 0 : y);
   }, [view]);
   const [forkCode, setForkCode] = useState(null);
-  const [daysFocus, setDaysFocus] = useState(null); // 홈 챕터 진행 → 일정 자세히 연결용
+  // (47차) 일정 펼침 딥링크는 pendingDayFocus 모듈 변수로 일원화 — 구 daysFocus state는 Days가 소비하지 않던 죽은 경로라 제거
   const [checks, setChecks] = useState({});
   const [checkMeta, setCheckMeta] = useState({});
   const [notes, setNotes] = useState({});
@@ -2395,16 +2395,17 @@ function App() {
         )}
         {loaded && (
           <div key={view} className="gt-view">
-            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} saveNote={saveNote} notesMeta={notesMeta} setView={setView} goToDay={(chId, dayN) => { setDaysFocus({ chId, dayN }); setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} dayItems={dayItems} toggleDayItem={toggleDayItem} />}
-            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} focus={daysFocus} clearFocus={() => setDaysFocus(null)} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} dayItems={dayItems} addDayItem={addDayItem} toggleDayItem={toggleDayItem} deleteDayItem={deleteDayItem} />}
+            {view === 'home' && <Home status={status} checks={checks} packing={packing} outputs={outputs} notes={notes} saveNote={saveNote} notesMeta={notesMeta} setView={setView} goToDay={(chId, dayN) => { pendingDayFocus = { chId, dayN }; setView('days'); }} DAYS={DAYS} FLIGHTS={FLIGHTS} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} exportData={exportData} importData={importData} dayItems={dayItems} toggleDayItem={toggleDayItem} />}
+            {view === 'days' && <Days notes={notes} saveNote={saveNote} DAYS={DAYS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} photos={photos} savePhoto={savePhoto} deletePhoto={deletePhoto} dayItems={dayItems} addDayItem={addDayItem} toggleDayItem={toggleDayItem} deleteDayItem={deleteDayItem} />}
             {view === 'check' && <Checklist checks={checks} toggleCheck={toggleCheck} checkMeta={checkMeta} packing={packing} togglePacking={togglePacking} packingCustom={packingCustom} packingEdits={packingEdits} savePackingEdit={savePackingEdit} resetPackingEdit={resetPackingEdit} addPackingItem={addPackingItem} removePackingItem={removePackingItem} />}
             {view === 'private' && <Private notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} photos={photos} outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} edits={edits} onForkOpen={(code) => { setForkCode(code); setView('forkpreview'); }} />}
+            {view === 'album' && <AlbumView photos={photos} notes={notes} DAYS={DAYS} goToDay={(chId, dayN) => { pendingDayFocus = { chId, dayN }; setView('days'); }} setView={setView} />}
             {view === 'forkpreview' && <ForkPreview code={forkCode} onFork={onFork} onClose={() => setView('home')} />}
             {view === 'logi' && <Logistics HOTELS={HOTELS} FLIGHTS={FLIGHTS} saveEdit={saveEdit} resetEdit={resetEdit} isEdited={isEdited} />}
           </div>
         )}
       </main>
-      <BottomNav view={view} setView={setView} />
+      <BottomNav view={view} setView={setView} phase={status.phase} />
       {showOnboard && <Onboarding onClose={closeOnboard} setView={setView} />}
     </div>
   );
@@ -2419,7 +2420,7 @@ function Header({ status, setView }) {
     ? `D-${status.dDay}` 
     : status.phase === 'during' 
       ? `Day ${status.current?.n}/27`
-      : `+${status.dDay}일`;
+      : `D+${status.dDay}`;
   
   const dDaySubtitle = status.phase === 'pre'
     ? '2026.06.15 출발'
@@ -3192,7 +3193,7 @@ function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutp
     <div style={{ padding: '24px 0' }}>
       <h2 style={pageTitleStyle}>📖 기록</h2>
       <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
-        둘이 함께 남기는 사색 · 메모 {writtenCount}/27 · 관점 {outputDone}/19
+        둘이 함께 남긴 기록 · 메모 {writtenCount}/27 · 관점 {outputDone}/19
       </div>
 
       {/* 기록 캘린더 — 27일이 얼마나 채워졌는지 한눈에 (사진=도시색 채움 · 골드 점=메모) */}
@@ -3226,18 +3227,19 @@ function Private({ notes, saveNote, notesMeta, DAYS, photos, outputs, toggleOutp
         );
       })()}
 
-      <JourneyShareCard edits={edits} outputs={outputs} onForkOpen={onForkOpen} />
-
       {/* Sub-tabs */}
       <div style={{ display: 'flex', gap: 'var(--space-2)', marginBottom: 'var(--space-5)' }}>
         <SubTab active={view === 'notes'} onClick={() => setView('notes')}>📝 메모</SubTab>
-        <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>🎯 관점</SubTab>
+        <SubTab active={view === 'outputs'} onClick={() => setView('outputs')}>✦ 관점</SubTab>
         <SubTab active={view === 'docs'} onClick={() => setView('docs')}>🔐 문서</SubTab>
       </div>
 
       {view === 'notes' && <NotesInner notes={notes} saveNote={saveNote} notesMeta={notesMeta} DAYS={DAYS} />}
       {view === 'outputs' && <OutputsInner outputs={outputs} toggleOutput={toggleOutput} saveOutputContent={saveOutputContent} />}
       {view === 'docs' && <DocumentsInner />}
+
+      {/* 여정 공개/가져오기 — 매일 쓰는 기록보다 아래(47차: 공유는 가끔의 일) */}
+      <JourneyShareCard edits={edits} outputs={outputs} onForkOpen={onForkOpen} />
     </div>
   );
 }
@@ -3498,9 +3500,16 @@ function NotesInner({ notes, saveNote, notesMeta, DAYS }) {
               }}>{day.n}</div>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{day.d} · {ch.flag} {ch.name}</div>
-                <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                  💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
-                </div>
+                {/* 접힌 줄엔 내가 쓴 메모 첫 줄이 먼저(다시 읽는 가치) — 없으면 씨앗 질문 미리보기 */}
+                {noteContent && noteContent.trim() ? (
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', marginTop: '2px', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {noteContent.trim().split('\n')[0]}
+                  </div>
+                ) : (
+                  <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)', fontStyle: 'italic', marginTop: '2px', lineHeight: 1.4, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    💭 {day.q.length > 30 ? day.q.substring(0, 30) + '...' : day.q}
+                  </div>
+                )}
               </div>
               <div style={{ fontSize: 'var(--type-body)' }}>{noteContent ? '✏️' : '○'}</div>
             </summary>
@@ -3640,9 +3649,9 @@ function DocumentsInner() {
 
 // 산물 티어 정의 — OutputsInner·OutputsProgress 공용 (star 3=Lifetime / 2=Major / 1=Working)
 const OUTPUTS_TIERS = [
-  { star: 3, label: '⭐⭐⭐ Lifetime', tone: '#9A3412', bg: '#FFF3E0' },
-  { star: 2, label: '⭐⭐ Major',    tone: '#854D0E', bg: '#FEF3C7' },
-  { star: 1, label: '⭐ Working',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
+  { star: 3, label: '⭐⭐⭐ 평생 관점', tone: '#9A3412', bg: '#FFF3E0' },
+  { star: 2, label: '⭐⭐ 굵직한 관점', tone: '#854D0E', bg: '#FEF3C7' },
+  { star: 1, label: '⭐ 작은 관점',    tone: 'var(--color-text-soft)', bg: 'var(--color-border-soft)' },
 ];
 
 // 도시별 관점 렌즈 — 이 도시에선 어떤 경제·역사·정치 관점을 읽을 수 있는지.
@@ -3793,7 +3802,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
       {/* 진행 요약 (홈 '관점 진행' 카드와 싱크) */}
       <div style={{ background: 'var(--color-bg-surface)', border: '1px solid var(--color-border-default)', borderRadius: 'var(--radius-md)', padding: '14px 16px', marginBottom: '16px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '12px' }}>
-          <span style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>관점 진행</span>
+          <span style={{ fontSize: 'var(--type-eyebrow)', letterSpacing: 'var(--track-label)', color: 'var(--color-text-muted)', textTransform: 'uppercase', fontWeight: 600 }}>{getCurrentStatus().phase === 'post' ? '우리가 가져온 관점' : '관점 진행'}</span>
           <span className="gt-serif" style={{ fontSize: 'var(--type-h2)', fontStyle: 'italic', color: 'var(--color-text-strong)' }}>{doneAll}<span style={{ fontSize: 'var(--type-body-sm)', color: 'var(--color-text-muted)' }}>/{totalAll}</span></span>
         </div>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -3821,7 +3830,7 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
           ⭐⭐⭐ 평생 간직할 관점 4개
         </div>
         <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-text-soft)', lineHeight: 1.5 }}>
-          Seceda 정상 · Pantheon · Nike · "우리, 이제 시작이다" 봉인
+          Seceda 정상 · Pantheon · Nike · 마지막 밤의 약속 "우리, 이제 시작이다"
         </div>
       </div>
 
@@ -3863,7 +3872,8 @@ function OutputsInner({ outputs, toggleOutput, saveOutputContent }) {
                   </span>
                   {stars && <span style={{ fontSize: 'var(--type-micro)' }}>{stars}</span>}
                 </div>
-                <div style={{ fontSize: 'var(--type-body)', fontWeight: 500, color: state.done ? 'var(--color-text-muted)' : 'var(--color-atomic-navy-900)', textDecoration: state.done ? 'line-through' : 'none' }}>
+                {/* 완성해도 취소선 없이 — 관점은 지워지는 할일이 아니라 다시 읽는 기록 (체크+금테두리로 충분) */}
+                <div style={{ fontSize: 'var(--type-body)', fontWeight: 500, color: 'var(--color-atomic-navy-900)' }}>
                   {o.t}
                 </div>
                 <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', lineHeight: 1.5, marginTop: '4px' }}>
@@ -4152,7 +4162,9 @@ function BackupReminder({ exportData, status }) {
   const shouldWarn = lastAt === null || days >= 14;
   if (!shouldWarn) return null;
   const msg = lastAt === null
-    ? '아직 백업을 한 적이 없어요. 출발 전에 한 번 받아두세요.'
+    ? (status && status.phase === 'post'
+      ? '여행의 기록이 이 기기에만 있어요. 파일로 한 번 받아두세요.'
+      : '아직 백업을 한 적이 없어요. 출발 전에 한 번 받아두세요.')
     : `마지막 백업 ${days}일 전. 다시 받아둘 시간이에요.`;
   return (
     <div style={{
@@ -4693,7 +4705,7 @@ function MemoryOfToday({ notes, photos, goToDay, setView }) {
           <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', lineHeight: 1.6, wordBreak: 'keep-all' }}>이 날의 메모는 아직 비어 있어 — 기억이 생생할 때 한 줄 남겨볼까?</div>
         )}
         <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
-          <button onClick={openDay} className="gt-chip" style={chip}>그날 일정 →</button>
+          <button onClick={openDay} className="gt-chip" style={chip}>그날로 가기 →</button>
           <button onClick={openNote} className="gt-chip" style={chip}>{note ? '메모 이어 쓰기' : '✍️ 한 줄 남기기'}</button>
         </div>
       </div>
@@ -4862,59 +4874,16 @@ function buildMemoirHtml({ notes, photos, outputs, expenses, fxRates, exportedAt
     + '</div>\n</body>\n</html>';
 }
 
-function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
+function RetrospectHero({ status, notes, photos, outputs, setView }) {
   const [replay, setReplay] = useState(false);
-  const [exporting, setExporting] = useState(false);
-  // 회고록 내보내기 — 백업과 동일한 Blob 다운로드 패턴 (iOS PWA 검증된 경로)
-  const exportMemoir = async () => {
-    try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
-    setExporting(true);
-    try {
-      const [exp, fx] = await Promise.all([storage.get('expenses'), storage.get('fx_cache')]);
-      const d = new Date();
-      const stamp = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
-      const html = buildMemoirHtml({
-        notes, photos, outputs,
-        expenses: Array.isArray(exp) ? exp : [],
-        fxRates: (fx && fx.rates) || null,
-        exportedAt: stamp,
-      });
-      const blob = new Blob([html], { type: 'text/html' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'grand-tour-memoir-' + d.toISOString().slice(0, 10) + '.html';
-      a.click();
-      URL.revokeObjectURL(url);
-    } finally {
-      setExporting(false);
-    }
-  };
-  // 여행 가계부 결산 — 기록이 있을 때만 노출(날조 0). 환율 캐시 없으면 건수만.
-  const [expSummary, setExpSummary] = useState(null);
-  useEffect(() => {
-    (async () => {
-      const e = await storage.get('expenses');
-      const items = Array.isArray(e) ? e : [];
-      if (!items.length) return;
-      const fx = await storage.get('fx_cache');
-      const rates = fx && fx.rates;
-      const totalKRW = rates
-        ? items.reduce((s, x) => s + (rates[x.cur] ? Math.round((Number(x.amount) || 0) / rates[x.cur]) : 0), 0)
-        : null;
-      setExpSummary({ count: items.length, totalKRW });
-    })();
-  }, []);
   const noteCount = Object.values(notes || {}).filter(n => n && n.content && n.content.trim()).length;
   const photoCount = Object.keys(photos || {}).length;
   const outputDone = OUTPUTS.filter(o => outputs[o.id] && outputs[o.id].done).length;
-  const lifetimeTotal = OUTPUTS.filter(o => o.star === 3).length;
-  const lifetimeDone = OUTPUTS.filter(o => o.star === 3 && outputs[o.id] && outputs[o.id].done).length;
   const daysSince = status.dDay; // days since TRIP_END
 
   const stats = [
     { label: '메모', value: noteCount, total: 27, icon: '📝', action: 'private' },
-    { label: '사진', value: photoCount, total: 27, icon: '📸', action: 'days' },
+    { label: '사진', value: photoCount, total: 27, icon: '📸', action: 'album' },
     { label: '관점', value: outputDone, total: OUTPUTS.length, icon: '✦', action: 'private' },
   ];
 
@@ -4973,56 +4942,6 @@ function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
         ))}
       </div>
 
-      {/* 빈 기록 채우기 넛지 — 기억이 휘발되기 전에 (메모가 다 차면 사라짐) */}
-      {noteCount < 27 && (
-        <button onClick={() => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} lastPrivateSub = 'notes'; setView('private'); }} style={{
-          width: '100%', marginTop: 'var(--space-3)', padding: '10px 14px',
-          background: 'transparent', border: '1px dashed rgba(201,169,97,0.45)', borderRadius: 'var(--radius-md)',
-          color: 'rgba(250,246,239,0.78)', fontSize: 'var(--type-caption)', textAlign: 'left',
-          cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1.5, wordBreak: 'keep-all',
-        }}>
-          ✍️ 메모가 비어 있는 {27 - noteCount}일 — 기억이 생생할 때 채워두자 →
-        </button>
-      )}
-
-      {/* Lifetime outputs highlight */}
-      <div style={{
-        marginTop: 'var(--space-4)',
-        padding: 'var(--space-3) var(--space-4)',
-        background: 'rgba(201,169,97,0.10)',
-        border: '1px solid rgba(201,169,97,0.30)',
-        borderRadius: 'var(--radius-md)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)',
-      }}>
-        <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.85)' }}>
-          ⭐⭐⭐ 평생 간직할 관점
-        </div>
-        <div className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
-          {lifetimeDone} / {lifetimeTotal} 완성
-        </div>
-      </div>
-
-      {/* 여행 가계부 결산 — 지출 기록이 있을 때만, 탭하면 가계부로 */}
-      {expSummary && (
-        <button onClick={() => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} if (goLogi) goLogi('expense'); }} style={{
-          width: '100%',
-          marginTop: 'var(--space-2)',
-          padding: 'var(--space-3) var(--space-4)',
-          background: 'rgba(250,246,239,0.06)',
-          border: '1px solid rgba(201,169,97,0.30)',
-          borderRadius: 'var(--radius-md)',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)',
-          cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
-        }}>
-          <div style={{ fontSize: 'var(--type-caption)', color: 'rgba(250,246,239,0.85)' }}>
-            🧾 여행 가계부 결산
-          </div>
-          <div className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
-            {expSummary.totalKRW != null ? `${expSummary.totalKRW.toLocaleString()}원 · ${expSummary.count}건` : `${expSummary.count}건 기록`}
-          </div>
-        </button>
-      )}
-
       {/* Closing line */}
       <div className="gt-serif" style={{
         marginTop: 'var(--space-5)', textAlign: 'center',
@@ -5039,32 +4958,141 @@ function RetrospectHero({ status, notes, photos, outputs, setView, goLogi }) {
         fontSize: 'var(--type-body-sm)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
       }}>▶ 27일을 한 편으로 — 리플레이</button>
       {replay && <ReplayOverlay notes={notes} photos={photos} onClose={() => setReplay(false)} />}
+    </div>
+  );
+}
 
-      {/* 회고록 내보내기 — 사진·메모·관점·가계부를 파일 하나로 영구 보관 */}
-      <button onClick={exportMemoir} disabled={exporting} style={{
-        width: '100%', marginTop: 'var(--space-2)', padding: 'var(--space-3)',
-        background: 'rgba(250,246,239,0.08)', color: 'var(--color-accent-soft)',
-        border: '1px solid rgba(201,169,97,0.4)', borderRadius: 'var(--radius-md)',
-        fontSize: 'var(--type-caption)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-        opacity: exporting ? 0.6 : 1,
-      }}>{exporting ? '회고록 만드는 중…' : '📕 회고록 파일로 간직하기'}</button>
-      <div style={{ marginTop: '6px', fontSize: 'var(--type-micro)', color: 'rgba(250,246,239,0.5)', textAlign: 'center', wordBreak: 'keep-all' }}>
-        사진·메모·관점·가계부를 한 파일로 — 브라우저 인쇄로 PDF 저장도 가능
+// =================== RETRO ARCHIVE CARD (회고 보관함) ===================
+// post 홈 — 히어로에서 분리한 '가끔 찾는 것들': 평생 관점 · 가계부 결산 · 회고록 파일.
+// 매일 보는 첫 화면(추억·히어로)은 가볍게, 보관·결산은 여기에 모은다.
+function RetroArchiveCard({ notes, photos, outputs, setView, goLogi }) {
+  const [exporting, setExporting] = useState(false);
+  // 여행 가계부 결산 — 기록이 있을 때만 노출(날조 0). 환율 캐시 없으면 건수만.
+  const [expSummary, setExpSummary] = useState(null);
+  useEffect(() => {
+    (async () => {
+      const e = await storage.get('expenses');
+      const items = Array.isArray(e) ? e : [];
+      if (!items.length) return;
+      const fx = await storage.get('fx_cache');
+      const rates = fx && fx.rates;
+      const totalKRW = rates
+        ? items.reduce((s, x) => s + (rates[x.cur] ? Math.round((Number(x.amount) || 0) / rates[x.cur]) : 0), 0)
+        : null;
+      setExpSummary({ count: items.length, totalKRW });
+    })();
+  }, []);
+  // 회고록 내보내기 — 백업과 동일한 Blob 다운로드 패턴 (iOS PWA 검증된 경로)
+  const exportMemoir = async () => {
+    try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {}
+    setExporting(true);
+    try {
+      const [exp, fx] = await Promise.all([storage.get('expenses'), storage.get('fx_cache')]);
+      const d = new Date();
+      const stamp = d.getFullYear() + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + String(d.getDate()).padStart(2, '0');
+      const html = buildMemoirHtml({
+        notes, photos, outputs,
+        expenses: Array.isArray(exp) ? exp : [],
+        fxRates: (fx && fx.rates) || null,
+        exportedAt: stamp,
+      });
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'grand-tour-memoir-' + d.toISOString().slice(0, 10) + '.html';
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  };
+  const lifetimeTotal = OUTPUTS.filter(o => o.star === 3).length;
+  const lifetimeDone = OUTPUTS.filter(o => o.star === 3 && outputs[o.id] && outputs[o.id].done).length;
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} };
+  const rowStyle = {
+    width: '100%', padding: '12px 14px',
+    background: 'var(--color-bg-page)', border: '1px solid var(--color-border-default)',
+    borderRadius: 'var(--radius-md)',
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--space-3)',
+    cursor: 'pointer', fontFamily: 'inherit', textAlign: 'left',
+  };
+  return (
+    <Card>
+      <SectionTitle>🗂 회고 보관함</SectionTitle>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <button onClick={() => { buzz(); lastPrivateSub = 'outputs'; setView('private'); }} className="gt-chip" style={rowStyle}>
+          <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>⭐ 평생 간직할 관점</span>
+          <span className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>{lifetimeDone} / {lifetimeTotal}</span>
+        </button>
+        {expSummary && (
+          <button onClick={() => { buzz(); if (goLogi) goLogi('expense'); }} className="gt-chip" style={rowStyle}>
+            <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>🧾 여행 가계부 결산</span>
+            <span className="gt-num" style={{ fontSize: 'var(--type-body-sm)', fontWeight: 600, color: 'var(--color-accent-primary)' }}>
+              {expSummary.totalKRW != null ? `${expSummary.totalKRW.toLocaleString()}원 · ${expSummary.count}건` : `${expSummary.count}건 기록`}
+            </span>
+          </button>
+        )}
+        <button onClick={exportMemoir} disabled={exporting} className="gt-chip" style={{ ...rowStyle, opacity: exporting ? 0.6 : 1 }}>
+          <span style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>{exporting ? '회고록 만드는 중…' : '📕 회고록 파일로 간직하기'}</span>
+          <span style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)' }}>HTML · 인쇄→PDF</span>
+        </button>
       </div>
+      <div style={{ marginTop: '8px', fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', lineHeight: 1.5, wordBreak: 'keep-all' }}>
+        회고록 파일엔 사진 · 메모 · 관점 · 가계부가 모두 담겨 — 파일 하나로 영구 보관.
+      </div>
+    </Card>
+  );
+}
 
-      {/* Actions */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 'var(--space-2)', marginTop: 'var(--space-5)' }}>
-        <button onClick={() => setView('days')} style={{
-          padding: 'var(--space-3)', background: 'rgba(250,246,239,0.08)', color: 'var(--color-text-inverse)',
-          border: '1px solid rgba(201,169,97,0.4)', borderRadius: 'var(--radius-md)',
-          fontSize: 'var(--type-caption)', fontWeight: 600, cursor: 'pointer', fontFamily: 'inherit',
-        }}>🗺️ 여정 다시 보기</button>
-        <button onClick={() => setView('private')} style={{
-          padding: 'var(--space-3)', background: 'var(--color-accent-primary)', color: 'var(--color-bg-inverse)',
-          border: 'none', borderRadius: 'var(--radius-md)',
-          fontSize: 'var(--type-caption)', fontWeight: 700, cursor: 'pointer', fontFamily: 'inherit',
-        }}>📓 메모·관점 보기</button>
+// =================== ALBUM VIEW (앨범 탭, post 전용) ===================
+// 27일 사진을 한눈에 — 내 사진이 있는 날은 사진, 없는 날은 도시색 칸(골드 점=메모).
+// 칸을 탭하면 그날의 기록(일정 펼침)으로. 기록 캘린더(기록 탭)와 같은 시각 문법.
+function AlbumView({ photos, notes, DAYS, goToDay, setView }) {
+  const [broken, setBroken] = useState({});
+  const photoCount = DAYS.filter(d => photos && photos[d.n] && photos[d.n].data).length;
+  const buzz = () => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} };
+  return (
+    <div style={{ padding: '24px 0' }}>
+      <h2 style={pageTitleStyle}>📸 앨범</h2>
+      <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: 'var(--space-4)', lineHeight: 1.6 }}>
+        우리의 사진 {photoCount}/27 · 칸을 탭하면 그날의 기록으로
       </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '6px' }}>
+        {DAYS.map(d => {
+          const ch = C(d.c) || { color: '#F5F5F4', accent: '#57534E', flag: '' };
+          const my = photos && photos[d.n] && photos[d.n].data;
+          const hasNote = !!(notes && notes[d.n] && notes[d.n].content && notes[d.n].content.trim());
+          return (
+            <button key={d.n} onClick={() => { buzz(); goToDay(d.c, d.n); }} aria-label={`Day ${d.n} ${d.city}`} className="gt-chip" style={{
+              position: 'relative', height: '110px', padding: 0, border: '1px solid var(--color-border-soft)',
+              borderRadius: 'var(--radius-md)', overflow: 'hidden', cursor: 'pointer',
+              background: ch.color, textAlign: 'left',
+            }}>
+              {my && !broken[d.n] ? (
+                <img src={my} alt={d.city} loading="lazy" onError={() => setBroken(b => ({ ...b, [d.n]: true }))}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 'var(--type-h1)' }}>{ch.icon || ch.flag}</div>
+              )}
+              <span className="gt-num" style={{
+                position: 'absolute', left: '6px', bottom: '5px',
+                fontSize: 'var(--type-micro)', fontWeight: 700,
+                color: my && !broken[d.n] ? 'var(--color-atomic-white)' : ch.accent,
+                textShadow: my && !broken[d.n] ? '0 1px 3px rgba(16,26,48,0.7)' : 'none',
+              }}>Day {d.n}</span>
+              {hasNote && <span style={{ position: 'absolute', top: '6px', right: '6px', width: '6px', height: '6px', borderRadius: '50%', background: 'var(--color-accent-primary)', boxShadow: '0 0 0 2px rgba(16,26,48,0.25)' }} />}
+            </button>
+          );
+        })}
+      </div>
+      <div style={{ fontSize: 'var(--type-micro)', color: 'var(--color-text-muted)', marginTop: '8px' }}>
+        <span style={{ display: 'inline-block', width: '5px', height: '5px', borderRadius: '50%', background: 'var(--color-accent-primary)', verticalAlign: 'middle', marginRight: '4px' }} />= 메모가 있는 날 · 사진이 없는 날은 도시색 칸
+      </div>
+      {/* 여행 준비 시절의 체크리스트 — 탭에선 내렸지만 여기로 진입 가능 */}
+      <button onClick={() => { buzz(); setView('check'); }} style={{ ...btnLightStyle, width: '100%', marginTop: 'var(--space-5)' }}>
+        ✓ 여행 준비 체크리스트 보기
+      </button>
     </div>
   );
 }
@@ -5445,6 +5473,7 @@ function TimelineStrip({ DAYS, status, setView }) {
 function OutputsProgress({ outputs, setView }) {
   // Tier is derived from `star` (3 = Lifetime, 2 = Major, 1 = Working). star is the source of truth.
   const tiers = OUTPUTS_TIERS;
+  const isPost = getCurrentStatus().phase === 'post';
   const counts = tiers.map(t => {
     const total = OUTPUTS.filter(o => o.star === t.star).length;
     const done = OUTPUTS.filter(o => o.star === t.star && outputs[o.id]?.done).length;
@@ -5455,7 +5484,7 @@ function OutputsProgress({ outputs, setView }) {
   return (
     <Card onClick={() => setView('private')} style={{ cursor: 'pointer' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
-        <SectionTitle>관점 진행</SectionTitle>
+        <SectionTitle>{isPost ? '우리가 가져온 관점' : '관점 진행'}</SectionTitle>
         <div className="gt-serif" style={{ fontSize: 'var(--type-h1)', color: 'var(--color-text-strong)', fontStyle: 'italic' }}>
           {doneAll}<span style={{ color: 'var(--color-text-muted)', fontSize: 'var(--type-body)' }}>/{totalAll}</span>
         </div>
@@ -5486,14 +5515,16 @@ function OutputsProgress({ outputs, setView }) {
 }
 
 // Chapter progress dots (9 chapters with per-day status)
-function ChapterProgress({ DAYS, status, setView, goToDay }) {
+function ChapterProgress({ DAYS, status, setView, goToDay, photos, notes }) {
   const todayN = status.current?.n;
+  // 여행 후엔 '진행'이 아니라 '기억' — 점을 오늘 기준(전부 회색으로 보이던 문제) 대신 사진/메모 기록 유무로 채움
+  const isPost = status.phase === 'post';
   const [openId, setOpenId] = useState(null);
   // group days by chapter (excluding 'p' and 'ret')
   const chapters = CHAPTERS.filter(c => !['p', 'ret'].includes(c.id));
   return (
     <Card>
-      <SectionTitle>9 챕터 진행</SectionTitle>
+      <SectionTitle>{isPost ? '9개 도시의 기억' : '9 챕터 진행'}</SectionTitle>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
         {chapters.map(ch => {
           const chapterDays = DAYS.filter(d => d.c === ch.id);
@@ -5541,12 +5572,15 @@ function ChapterProgress({ DAYS, status, setView, goToDay }) {
                   {chapterDays.map(d => {
                     const isDayPast = todayN && d.n < todayN;
                     const isDayToday = d.n === todayN;
+                    const hasRecord = isPost && !!((photos && photos[d.n]) || (notes && notes[d.n] && notes[d.n].content && notes[d.n].content.trim()));
                     return (
                       <span key={d.n} style={{
                         width: isDayToday ? '8px' : '6px',
                         height: isDayToday ? '8px' : '6px',
                         borderRadius: '50%',
-                        background: isDayToday ? 'var(--color-accent-primary)' : (isDayPast ? ch.accent : 'var(--color-border-default)'),
+                        background: isPost
+                          ? (hasRecord ? ch.accent : 'var(--color-border-default)')
+                          : (isDayToday ? 'var(--color-accent-primary)' : (isDayPast ? ch.accent : 'var(--color-border-default)')),
                         display: 'inline-block',
                       }} />
                     );
@@ -6170,7 +6204,8 @@ function ConciergeCard({ status, FLIGHTS, DAYS, checks, packing, notes, photos, 
 }
 
 function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, setView, goToDay, DAYS, FLIGHTS, photos, savePhoto, deletePhoto, exportData, importData, dayItems, toggleDayItem }) {
-  const [withPhotos, setWithPhotos] = useState(false);
+  // 여행 후엔 사진이 기록의 본체 — 백업 '사진 포함'을 기본 ON (pre/during은 용량 고려 기본 OFF)
+  const [withPhotos, setWithPhotos] = useState(status.phase === 'post');
   const checkTotal = Object.values(CHECKLIST).flat().length;
   const checkDone = Object.values(checks).filter(Boolean).length;
   const outputDone = Object.values(outputs).filter(o => o.done).length;
@@ -6192,11 +6227,31 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       {/* Hero Countdown — pre(D-day) · during(Day N + 현재/다음 도시 날씨). 여행 중에도 '초기 대시보드 느낌' 유지 */}
       {(status.phase === 'pre' || status.phase === 'during') && <HeroCountdown status={status} setView={setView} />}
 
-      {/* Retrospective Hero — post-trip only */}
-      {status.phase === 'post' && <RetrospectHero status={status} notes={notes} photos={photos} outputs={outputs} setView={setView} goLogi={goLogi} />}
-
-      {/* 오늘의 추억 한 조각 — post 전용, 매일 다른 여행일 회상 */}
+      {/* post 홈 — '추억 우선' 동선(47차): 매일 바뀌는 오늘의 추억이 맨 위,
+          이어서 빈 기록 채우기 → 콤팩트 히어로 → 회고 보관함(가끔 찾는 것들) */}
       {status.phase === 'post' && <MemoryOfToday notes={notes} photos={photos} goToDay={goToDay} setView={setView} />}
+
+      {/* 빈 기록 채우기 넛지 — 기억이 휘발되기 전에 (메모가 다 차면 사라짐) */}
+      {status.phase === 'post' && (() => {
+        const postNoteCount = Object.values(notes || {}).filter(n => n && n.content && n.content.trim()).length;
+        if (postNoteCount >= 27) return null;
+        return (
+          <button onClick={() => { try { if (navigator.vibrate) navigator.vibrate(8); } catch (e) {} lastPrivateSub = 'notes'; setView('private'); }} className="gt-chip" style={{
+            width: '100%', marginBottom: 'var(--space-5)', padding: '12px 14px',
+            background: 'var(--color-bg-surface)', border: '1px dashed var(--color-accent-primary)', borderRadius: 'var(--radius-md)',
+            color: 'var(--color-text-strong)', fontSize: 'var(--type-caption)', textAlign: 'left',
+            cursor: 'pointer', fontFamily: 'inherit', lineHeight: 1.5, wordBreak: 'keep-all',
+          }}>
+            ✍️ 메모가 비어 있는 {27 - postNoteCount}일 — 기억이 생생할 때 채워두자 →
+          </button>
+        );
+      })()}
+
+      {/* Retrospective Hero — post-trip only (콤팩트: 정체성·통계·리플레이) */}
+      {status.phase === 'post' && <RetrospectHero status={status} notes={notes} photos={photos} outputs={outputs} setView={setView} />}
+
+      {/* 회고 보관함 — 평생 관점·가계부 결산·회고록 파일 */}
+      {status.phase === 'post' && <RetroArchiveCard notes={notes} photos={photos} outputs={outputs} setView={setView} goLogi={goLogi} />}
 
       {/* Trip Summary — pre-trip compact widget (D-7 임박: 준비 현황·예약을 철학 위로) */}
       {status.phase === 'pre' && <TripSummaryCard status={status} setView={setView} checks={checks} packing={packing} />}
@@ -6309,7 +6364,7 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       )}
 
       {/* Chapter Progress (visual) */}
-      <ChapterProgress DAYS={DAYS} status={status} setView={setView} goToDay={goToDay} />
+      <ChapterProgress DAYS={DAYS} status={status} setView={setView} goToDay={goToDay} photos={photos} notes={notes} />
 
       {/* Outputs 3-tier Progress */}
       <OutputsProgress outputs={outputs} setView={setView} />
@@ -6323,8 +6378,8 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       <Card>
         <SectionTitle>빠른 이동</SectionTitle>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
-          <button onClick={() => setView('days')} style={btnLightStyle}>📅 27일 일정</button>
-          <button onClick={() => setView('logi')} style={btnLightStyle}>🗺️ 지도·예약</button>
+          <button onClick={() => setView('days')} style={btnLightStyle}>{status.phase === 'post' ? '📅 27일의 기록' : '📅 27일 일정'}</button>
+          <button onClick={() => setView('logi')} style={btnLightStyle}>{status.phase === 'post' ? '🗺️ 여정 지도' : '🗺️ 지도·예약'}</button>
           {status.phase === 'post' ? (
             <button onClick={() => setView('private')} style={btnLightStyle}>📖 기록·사진</button>
           ) : (
@@ -6345,7 +6400,9 @@ function Home({ status, checks, packing, outputs, notes, saveNote, notesMeta, se
       <Card>
         <SectionTitle>💾 백업 / 복원</SectionTitle>
         <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-soft)', marginBottom: '12px', lineHeight: 1.6, letterSpacing: 'normal', wordBreak: 'keep-all' }}>
-          체크 · 메모 · 편집 · 관점을 JSON으로 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.
+          {status.phase === 'post'
+            ? '사진 · 메모 · 관점 · 가계부 — 여행의 기록을 파일 하나로. 기기를 잃어도 기록은 남아.'
+            : '체크 · 메모 · 편집 · 관점을 JSON으로 백업. 브라우저 캐시 삭제·다른 기기 이전 시 필수.'}
         </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px', cursor: 'pointer', fontSize: 'var(--type-caption)', color: 'var(--color-text-strong)' }}>
           <input
@@ -6433,13 +6490,18 @@ function Days({ notes, saveNote, DAYS, saveEdit, resetEdit, isEdited, photos, sa
 
   return (
     <div style={{ padding: '24px 0' }}>
-      <h2 style={pageTitleStyle}>27일 일정</h2>
+      <h2 style={pageTitleStyle}>{getCurrentStatus().phase === 'post' ? '27일의 기록' : '27일 일정'}</h2>
       <div style={{ fontSize: 'var(--type-caption)', color: 'var(--color-text-muted)', marginBottom: '8px' }}>
-        탭하여 상세 · 모든 필드 ✎ 편집 · 매일 사진 1장 · 도시 지도 + 추천
+        {getCurrentStatus().phase === 'post'
+          ? '탭하면 그날의 사진 · 메모 · 이야기'
+          : '탭하여 상세 · 모든 필드 ✎ 편집 · 매일 사진 1장 · 도시 지도 + 추천'}
       </div>
-      <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', marginBottom: '14px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: 'var(--radius-sm)' }}>
-        💡 편집된 항목은 골드 ● 표시 · "원래대로" 버튼으로 초기화 가능
-      </div>
+      {/* 편집 팁 — 여행 후엔 상시 배너로 둘 정보가 아님 */}
+      {getCurrentStatus().phase !== 'post' && (
+        <div style={{ fontSize: 'var(--type-eyebrow)', color: 'var(--color-accent-primary)', marginBottom: '14px', padding: '8px 12px', background: 'rgba(201,169,97,0.1)', borderRadius: 'var(--radius-sm)' }}>
+          💡 편집된 항목은 골드 ● 표시 · "원래대로" 버튼으로 초기화 가능
+        </div>
+      )}
 
       {/* Chapter filter pills — 글래스 헤더 바로 아래 sticky 고정(스크롤해도 챕터 전환 가능) */}
       <div className="gt-chips" style={{ position: 'sticky', top: headerH + 'px', zIndex: 40, background: 'var(--color-bg-page)', marginLeft: '-16px', marginRight: '-16px', paddingLeft: '16px', paddingRight: '16px', paddingTop: '10px', paddingBottom: '10px', marginBottom: '14px', boxShadow: '0 6px 8px -6px rgba(27,42,74,0.18)' }}>
@@ -9573,11 +9635,12 @@ const pageTitleStyle = {
 };
 
 // =================== BOTTOM NAV ===================
-function BottomNav({ view, setView }) {
+function BottomNav({ view, setView, phase }) {
+  // 여행 후엔 준비(체크) 대신 사진(앨범)이 매일의 동선 — 체크리스트는 앨범 하단 링크로 진입 가능
   const tabs = [
     { id: 'home', label: '홈', icon: '🏠' },
     { id: 'days', label: '일정', icon: '📅' },
-    { id: 'check', label: '체크', icon: '✓' },
+    phase === 'post' ? { id: 'album', label: '앨범', icon: '📸' } : { id: 'check', label: '체크', icon: '✓' },
     { id: 'logi', label: '여정', icon: '🧭' },
     { id: 'private', label: '기록', icon: '📖' },
   ];
